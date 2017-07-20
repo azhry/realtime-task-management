@@ -25,7 +25,7 @@ import java.util.Map;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
-    private static final String URL_FOR_LOGIN = "http://192.168.43.144/pln/login.php";
+    private static final String URL_FOR_LOGIN = "http://pln-comm.azurewebsites.net/login.php";
     ProgressDialog progressDialog;
     private EditText loginInputEmail, loginInputPassword;
     private Button btnLogin;
