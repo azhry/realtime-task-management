@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">PLN Wunderlist</string>
+    <string name="create_new_list_label">+ Create New List</string>
 </resources>
