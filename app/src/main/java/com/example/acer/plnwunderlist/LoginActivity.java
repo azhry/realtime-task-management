@@ -27,7 +27,7 @@ import java.util.Map;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
-    private static final String URL_FOR_LOGIN = Resources.getSystem().getString(R.string.uri_login);
+    private static final String URL_FOR_LOGIN = "http://pudinglab.id/puding-master/PLN/login.php";
     ProgressDialog progressDialog;
     private EditText loginInputEmail, loginInputPassword;
     private Button btnLogin;
