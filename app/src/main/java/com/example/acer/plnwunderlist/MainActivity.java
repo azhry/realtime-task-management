@@ -39,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         btnSubmit = (Button)findViewById(R.id.submit);
         btnTodoListsList = (Button) findViewById(R.id.todolistlist_btn);
         textView = (TextView)findViewById(R.id.email);
-        textView.setText(userData.get("email"));
+        setText(textView, userData.get("email"));
         connectionStatus = (TextView)findViewById(R.id.connection_status);
         editText = (EditText)findViewById(R.id.something);
         progressDialog = new ProgressDialog(this);
@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onException(Exception e) {
-                System.out.println(e.getMessage());
+                Log.e("WSERROR", e.getMessage());
             }
 
             @Override
@@ -129,8 +129,18 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String text = editText.getText().toString();
+                Log.d("TEXTTTT", text);
                 webSocketClient.send(text);
                 editText.setText("");
+            }
+        });
+    }
+
+    private void setText(final TextView text, final String value) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                text.setText(value);
             }
         });
     }
