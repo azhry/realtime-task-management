@@ -3,23 +3,23 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="16dp">
+    android:padding="12dp">
 
     <ImageView
         android:id="@+id/listIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center_vertical"
 
         android:src="@drawable/ic_format_list_bulleted_black_24dp"
         android:tint="@android:color/darker_gray" />
 
     <TextView
         android:id="@+id/listTitle"
-        android:layout_gravity="center_vertical"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
-        android:fontFamily="sans-serif-medium"
+        android:layout_gravity="center_vertical"
         android:paddingLeft="12dp"
-        android:text="DEFAULT TITLE" />
+        android:text="DEFAULT TITLE"
+        android:textSize="@dimen/font_normal" />
 </LinearLayout>

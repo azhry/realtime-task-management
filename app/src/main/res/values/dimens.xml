@@ -1,4 +1,5 @@
 
 <resources>
     <dimen name="normal_btn_margin">12dp</dimen>
+    <dimen name="font_normal">16sp</dimen>
 </resources>

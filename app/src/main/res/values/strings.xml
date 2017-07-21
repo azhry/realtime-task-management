@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">PLN Wunderlist</string>
+    <string name="app_name">Aib Guys......</string>
     <string name="create_new_list_label">+ Create New List</string>
     <string name="uri_websocket">ws://pudinglab.id:2000/puding-master/PLN</string>
     <string name="uri_login">http://pudinglab.id/puding-master/PLN/login.php</string>
+    <string name="emptyList_Text">You don\'t have any lists.\n Create one using the button below!</string>
 </resources>
