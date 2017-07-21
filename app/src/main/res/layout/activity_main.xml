@@ -60,8 +60,20 @@
             android:layout_width="match_parent"
             android:layout_height="42dp"
             android:layout_marginTop="20dp"
-            android:background="#5e9fd7"
+            android:background="@color/btn_blue"
             android:text="Keluar"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/todolistlist_btn"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="20dp"
+            android:background="@color/btn_blue"
+            android:text="See main activity!"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:textSize="19sp"

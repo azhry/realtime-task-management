@@ -3,6 +3,7 @@ package com.example.acer.plnwunderlist;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,7 +27,7 @@ import java.util.Map;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
-    private static final String URL_FOR_LOGIN = "http://pudinglab.id/puding-master/PLN/login.php";
+    private static final String URL_FOR_LOGIN = Resources.getSystem().getString(R.string.uri_login);
     ProgressDialog progressDialog;
     private EditText loginInputEmail, loginInputPassword;
     private Button btnLogin;

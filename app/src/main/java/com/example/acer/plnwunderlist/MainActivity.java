@@ -2,6 +2,7 @@ package com.example.acer.plnwunderlist;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,8 +20,9 @@ public class MainActivity extends AppCompatActivity {
 
     ProgressDialog progressDialog;
     private TextView textView, connectionStatus;
-    private Button btnLogout, btnSubmit;
+    private Button btnLogout, btnSubmit, btnTodoListsList;
     private EditText editText;
+
     Context context;
     private WebSocketClient webSocketClient;
     HashMap<String, String> userData;
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnLogout = (Button)findViewById(R.id.logout_btn);
         btnSubmit = (Button)findViewById(R.id.submit);
+        btnTodoListsList = (Button) findViewById(R.id.todolistlist_btn);
         textView = (TextView)findViewById(R.id.email);
         textView.setText(userData.get("email"));
         connectionStatus = (TextView)findViewById(R.id.connection_status);
@@ -42,12 +45,23 @@ public class MainActivity extends AppCompatActivity {
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
         context = this;
+
+        // Set click listeners
         btnLogout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 SessionManager sessionManager = new SessionManager(context);
                 sessionManager.logoutUser();
                 finish();
+            }
+        });
+
+        btnTodoListsList.setOnClickListener(new View.OnClickListener() {
+            // The code in this method will be executed when the numbers View is clicked on.
+            @Override
+            public void onClick(View view) {
+                Intent mainIntent = new Intent(MainActivity.this, MainMenuActivity.class);
+                startActivity(mainIntent);
             }
         });
 
@@ -58,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         connectionStatus.setText("Connecting...");
         URI uri;
         try {
-            uri = new URI("ws://pudinglab.id:2000/puding-master/PLN");
+            uri = new URI(getString(R.string.uri_websocket));
         }
         catch (URISyntaxException e) {
             e.printStackTrace();

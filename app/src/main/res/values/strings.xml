@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">PLN Wunderlist</string>
+    <string name="create_new_list_label">+ Create New List</string>
+    <string name="uri_websocket">ws://pudinglab.id:2000/puding-master/PLN</string>
+    <string name="uri_login">http://pudinglab.id/puding-master/PLN/login.php</string>
 </resources>
