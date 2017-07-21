@@ -9,7 +9,7 @@
 
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/add_list_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/create_new_list_label"

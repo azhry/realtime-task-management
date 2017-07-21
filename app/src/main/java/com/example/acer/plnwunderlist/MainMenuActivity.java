@@ -1,16 +1,19 @@
 package com.example.acer.plnwunderlist;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AbsListView;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
-import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.zip.Inflater;
@@ -42,13 +45,21 @@ public class MainMenuActivity extends AppCompatActivity {
         todoLists.add("Belajar");
 
 
+
         todoListAdapter adapter = new todoListAdapter(this, todoLists);
         todoListsList.setAdapter(adapter);
 
-        //Ibflate the create list button
         View layout = getLayoutInflater().inflate(R.layout.main_menu_create_list_btn,null);
         todoListsList.addFooterView(layout);
 
+
+        Button newListBtn = (Button) findViewById(R.id.add_list_btn);
+        newListBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Toast.makeText(MainMenuActivity.this, "Add a new list", Toast.LENGTH_SHORT).show();
+            }
+        });
         //FINISH (CREATE NEW LIST) BUTTON LOGIC
         //---------------------------------------------------------------------------------
 
@@ -62,4 +73,27 @@ public class MainMenuActivity extends AppCompatActivity {
 
     }
 
+    private void showAddListDialog(Context context){
+        final AlertDialog.Builder addListBuilder = new AlertDialog.Builder(context);
+        LayoutInflater inflater = LayoutInflater.from(context);
+        final View addListDialogView = inflater.inflate(R.layout.main_menu_create_list_dialog, null);
+        addListBuilder.setView(addListDialogView);
+
+        final String newListName;
+        final EditText newListText = (EditText) findViewById(R.id.newListTitleText);
+
+        addListBuilder.setTitle("Create New To-Do List");
+        addListBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //TODO: GET THE USER INPUTTED TEXT
+            }
+        });
+        addListBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+    }
 }
