@@ -30,6 +30,31 @@
             android:textSize="19sp"
             android:textStyle="bold" />
 
+        <EditText
+            android:id="@+id/something"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/edit_text_style"
+            android:hint="Enter something..." />
+
+        <TextView
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:text="Offline"
+            android:id="@+id/connection_status"/>
+
+        <Button
+            android:id="@+id/submit"
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:layout_marginTop="20dp"
+            android:background="#5e9fd7"
+            android:text="Submit"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="19sp"
+            android:textStyle="bold" />
+
         <Button
             android:id="@+id/logout_btn"
             android:layout_width="match_parent"
