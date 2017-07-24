@@ -3,6 +3,7 @@ package com.example.acer.plnwunderlist;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -70,7 +72,17 @@ public class MainMenuActivity extends AppCompatActivity {
         userData = sessionManager.getUserDetails();
 
         adapter = new TodoListAdapter(this, todoLists);
+
         todoListsList.setAdapter(adapter);
+        //Set onclick listener; send user to the item's respective to-do list.
+        todoListsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView parent, View view, int position, long id) {
+                Intent todolistIntent = new Intent(getApplicationContext(), ListMenuActivity.class);
+                todolistIntent.putExtra("TODO_LIST_NAME",todoLists.get(position));
+                startActivity(todolistIntent);
+            }
+        });
 
         String reqUrl = endpoint + "?action=get_list&user_id=" + userData.get("user_id");
         JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, reqUrl, null,

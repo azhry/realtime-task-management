@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -22,6 +23,11 @@ public class ListMenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list_menu);
 
+        //If calling activity supplies current to-do list name,
+        //Change App Title to the supplied name.
+        if(getIntent().hasExtra("TODO_LIST_NAME")){
+            this.setTitle(getIntent().getStringExtra("TODO_LIST_NAME"));
+        }
 
         listView = (ListView) findViewById(R.id.listView);
 
@@ -54,5 +60,6 @@ public class ListMenuActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         });
+//        CheckBox test = (CheckBox)listView.findViewById(R.id.checkBox);
     }
 }
