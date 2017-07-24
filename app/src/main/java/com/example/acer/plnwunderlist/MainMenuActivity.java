@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -45,6 +47,7 @@ public class MainMenuActivity extends AppCompatActivity {
     HashMap<String, String> userData;
 
     private String endpoint;
+    private String postEndpoint;
     ProgressDialog progressDialog;
 
     @Override
@@ -52,8 +55,8 @@ public class MainMenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_menu);
 
-        //Instantiated in onCreate, because getResources() is NOT a static method.
-        endpoint = getResources().getString(R.string.uri_endpoint);
+        endpoint = getString(R.string.uri_endpoint);
+        postEndpoint = getString(R.string.uri_post_endpoint);
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
@@ -104,6 +107,7 @@ public class MainMenuActivity extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("Error.Response", error.getMessage());
+                        hideDialog();
                     }
                 }
 
@@ -134,12 +138,74 @@ public class MainMenuActivity extends AppCompatActivity {
             emptyListText.setGravity(Gravity.CENTER_HORIZONTAL);
             todoListsList.addHeaderView(emptyListText);
         }
-
     }
 
-    private void addNewList(String newListName){
-        adapter.add(newListName);
-        adapter.notifyDataSetChanged();
+    private void addNewList(final String newListName){
+        progressDialog.setMessage("Processing...");
+        showDialog();
+        StringRequest addRequest = new StringRequest(Request.Method.POST, postEndpoint,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            int status = jsonObject.getInt("status");
+                            if (status == 0)
+                            {
+                                adapter.add(newListName);
+                                adapter.notifyDataSetChanged();
+                                Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
+                            }
+                            else if (status == 1)
+                                Toast.makeText(getApplicationContext(), "Insert list failed!", Toast.LENGTH_LONG).show();
+                            else if (status == 2)
+                                Toast.makeText(getApplicationContext(), "Insert access failed!", Toast.LENGTH_LONG).show();
+                            else if (status == -1)
+                                Toast.makeText(getApplicationContext(), "Unknown attempt!", Toast.LENGTH_LONG).show();
+                            else Log.e("RESPONSEe", response);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            String msg = e.getMessage();
+                            if (msg != null)
+                            {
+                                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG);
+                                Log.e("JSONException", msg);
+                            }
+                        }
+
+                        hideDialog();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String msg = error.getMessage();
+                        if (msg != null)
+                            Log.e("ADD_ERROR", error.getMessage());
+                        hideDialog();
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "insert");
+                params.put("list_name", newListName);
+                params.put("user_id", userData.get("user_id"));
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "insert");
+                params.put("list_name", newListName);
+                params.put("user_id", userData.get("user_id"));
+                return params;
+            }
+        };
+
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(addRequest, "add_list");
     }
 
     private void showAddListDialog(Context context){
@@ -163,7 +229,6 @@ public class MainMenuActivity extends AppCompatActivity {
                 //Because the EditText is not from the activity's view,
                 //Explicitly call findViewById from addListDialogView to access the EditText from dialog.
                 EditText newListText = (EditText) addListDialogView.findViewById(R.id.newListTitleText);
-                Log.e("TEST",newListText.getText().toString());
                 //Call the activity's addNewList function using user's string.
                 addNewList(newListText.getText().toString());
             }
