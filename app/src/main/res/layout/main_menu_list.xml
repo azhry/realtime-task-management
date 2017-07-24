@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
@@ -7,19 +8,29 @@
 
     <ImageView
         android:id="@+id/listIcon"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
+        android:layout_width="@dimen/img_list_default"
+        android:layout_height="@dimen/img_list_default"
         android:layout_gravity="center_vertical"
-
         android:src="@drawable/ic_format_list_bulleted_black_24dp"
         android:tint="@android:color/darker_gray" />
 
     <TextView
         android:id="@+id/listTitle"
+        android:layout_toEndOf="@id/listIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:paddingLeft="12dp"
-        android:text="DEFAULT TITLE"
+        android:text="@string/list_default_value"
         android:textSize="@dimen/font_normal" />
-</LinearLayout>
+
+    <ImageView
+        android:id="@+id/shareIcon"
+        android:layout_alignParentRight="true"
+        android:layout_width="@dimen/img_list_default"
+        android:layout_height="@dimen/img_list_default"
+        android:layout_gravity="center_vertical"
+        android:src="@drawable/ic_people_black_24dp"
+        android:tint="@android:color/darker_gray" />
+
+</RelativeLayout>

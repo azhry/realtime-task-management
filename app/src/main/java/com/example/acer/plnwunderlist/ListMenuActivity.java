@@ -1,11 +1,21 @@
 package com.example.acer.plnwunderlist;
 
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -17,6 +27,34 @@ public class ListMenuActivity extends AppCompatActivity {
     ArrayList<DataModel> dataModels;
     ListView listView;
     private CustomAdapter adapter;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = this.getMenuInflater();
+        inflater.inflate(R.menu.todo_list_menu, menu);
+
+        //------------------------------------------------------------------------------------------
+        //START Menu Icon Tinting
+
+        //Retrieve all Menu Items
+        MenuItem shareBtn = (MenuItem) menu.findItem(R.id.action_refresh);
+
+        //Retrieve all Icons
+        Drawable shareBtnIcon = (Drawable)shareBtn.getIcon();
+        shareBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()){
+            case R.id.action_refresh:
+                Log.d("MENUEXAMPLE","Yooo it works!");
+        }
+
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +98,5 @@ public class ListMenuActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         });
-//        CheckBox test = (CheckBox)listView.findViewById(R.id.checkBox);
     }
 }

@@ -64,10 +64,6 @@ public class MainMenuActivity extends AppCompatActivity {
         ListView todoListsList = (ListView) findViewById(R.id.todolistslist);
         todoListsList.setDivider(null);
         todoListsList.setDividerHeight(0);
-        todoLists.add("Kerjaan");
-        todoLists.add("Gawean");
-        todoLists.add("Lokak");
-        todoLists.add("Belajar");
 
         SessionManager sessionManager = new SessionManager(this);
         userData = sessionManager.getUserDetails();
