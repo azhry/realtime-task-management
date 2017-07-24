@@ -13,10 +13,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.zip.Inflater;
 
 /**
  * Created by Ryan Fadholi on 20/07/2017.
@@ -26,6 +24,7 @@ public class MainMenuActivity extends AppCompatActivity {
 
     private static final String TAG = "MainMenuActivity";
     private ArrayList<String> todoLists = new ArrayList<>();
+    private TodoListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +39,7 @@ public class MainMenuActivity extends AppCompatActivity {
         todoLists.add("Lokak");
         todoLists.add("Belajar");
 
-        todoListAdapter adapter = new todoListAdapter(this, todoLists);
+        this.adapter = new TodoListAdapter(this, todoLists);
         todoListsList.setAdapter(adapter);
 
         View layout = getLayoutInflater().inflate(R.layout.main_menu_create_list_btn,null);
@@ -66,7 +65,8 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     private void addNewList(String newListName){
-        todoLists.add(newListName);
+        adapter.add(newListName);
+        adapter.notifyDataSetChanged();
     }
 
     private void showAddListDialog(Context context){

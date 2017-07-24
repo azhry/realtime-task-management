@@ -25,6 +25,7 @@
         <activity android:name=".LoginActivity"></activity>
         <activity android:name=".MainActivity"></activity>
         <activity android:name=".MainMenuActivity"></activity>
+        <activity android:name=".ListMenuActivity"></activity>
     </application>
 
 </manifest>

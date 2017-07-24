@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
 
     ProgressDialog progressDialog;
     private TextView textView, connectionStatus;
-    private Button btnLogout, btnSubmit, btnTodoListsList;
+    private Button btnLogout, btnSubmit, btnTodoListsList, btnListMenu;
     private EditText editText;
 
     Context context;
@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
         btnLogout = (Button)findViewById(R.id.logout_btn);
         btnSubmit = (Button)findViewById(R.id.submit);
         btnTodoListsList = (Button) findViewById(R.id.todolistlist_btn);
+        btnListMenu = (Button) findViewById(R.id.listmenu_btn);
         textView = (TextView)findViewById(R.id.email);
         setText(textView, userData.get("email"));
         connectionStatus = (TextView)findViewById(R.id.connection_status);
@@ -62,6 +63,14 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent mainIntent = new Intent(MainActivity.this, MainMenuActivity.class);
                 startActivity(mainIntent);
+            }
+        });
+
+        btnListMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent listIntent = new Intent(MainActivity.this, ListMenuActivity.class);
+                startActivity(listIntent);
             }
         });
 

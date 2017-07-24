@@ -16,9 +16,9 @@ import java.util.List;
  * Created by Ryan Fadholi on 20/07/2017.
  */
 
-public class todoListAdapter extends ArrayAdapter<String> {
+public class TodoListAdapter extends ArrayAdapter<String> {
 
-    public todoListAdapter(@NonNull Context context, @NonNull List<String> objects) {
+    public TodoListAdapter(@NonNull Context context, @NonNull List<String> objects) {
         super(context, 0, objects);
     }
 
