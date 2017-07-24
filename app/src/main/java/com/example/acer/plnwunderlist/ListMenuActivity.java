@@ -22,6 +22,11 @@ public class ListMenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list_menu);
 
+        //If calling activity supplies current to-do list name,
+        //Change App Title to the supplied name.
+        if(getIntent().hasExtra("TODO_LIST_NAME")){
+            getActionBar().setTitle(getIntent().getStringExtra("TODO_LIST_NAME"));
+        }
 
         listView = (ListView) findViewById(R.id.listView);
 

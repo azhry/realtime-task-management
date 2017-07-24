@@ -2,6 +2,7 @@ package com.example.acer.plnwunderlist;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,8 @@ public class CustomAdapter extends ArrayAdapter {
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 
+        CheckBox itemCheckBox;
+
         ViewHolder viewHolder;
         final View result;
 
@@ -69,7 +72,13 @@ public class CustomAdapter extends ArrayAdapter {
 
         viewHolder.txtName.setText(item.name);
         viewHolder.checkBox.setChecked(item.checked);
-
+        itemCheckBox = (CheckBox) result.findViewById(R.id.checkBox);
+        itemCheckBox.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("Checkbox","It works, y'know?");
+            }
+        });
         return result;
     }
 }
