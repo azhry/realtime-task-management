@@ -4,4 +4,5 @@
     <string name="uri_websocket">ws://pudinglab.id:2000/puding-master/PLN</string>
     <string name="uri_login">http://pudinglab.id/puding-master/PLN/login.php</string>
     <string name="emptyList_Text">You don\'t have any lists.\n Create one using the button below!</string>
+    <string name="uri_endpoint">http://pudinglab.id/puding-master/PLN/endpoint.php</string>
 </resources>
