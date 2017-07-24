@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 SessionManager sessionManager = new SessionManager(context);
                 sessionManager.logoutUser();
+                webSocketClient.close();
                 finish();
             }
         });
@@ -95,41 +96,37 @@ public class MainActivity extends AppCompatActivity {
         webSocketClient = new WebSocketClient(uri) {
             @Override
             public void onOpen() {
-                System.out.println("onOpen");
                 Log.i("WEBUSOCKETO: ", "on open!");
                 webSocketClient.send(userData.get("email") + " is online!");
-                connectionStatus.setText("Online");
+                setText(connectionStatus, "Online");
             }
 
             @Override
             public void onTextReceived(String message) {
-                System.out.println("onTextReceived");
             }
 
             @Override
             public void onBinaryReceived(byte[] data) {
-                System.out.println("onBinaryReceived");
             }
 
             @Override
             public void onPingReceived(byte[] data) {
-                System.out.println("onPingReceived");
             }
 
             @Override
             public void onPongReceived(byte[] data) {
-                System.out.println("onPongReceived");
             }
 
             @Override
             public void onException(Exception e) {
-                Log.e("WSERROR", e.getMessage());
+                String err = e.getMessage();
+                if (err != null)
+                    Log.e("WSERROR", err);
             }
 
             @Override
             public void onCloseReceived() {
-                System.out.println("onCloseReceived");
-                connectionStatus.setText("Disconnected");
+                setText(connectionStatus, "Disconnected!");
             }
         };
 

@@ -42,9 +42,8 @@ public class MainMenuActivity extends AppCompatActivity {
     private TodoListAdapter adapter;
     HashMap<String, String> userData;
 
-    String endpoint = "http://pudinglab.id/puding-master/PLN/endpoint.php";
+    String endpoint = getResources().getResourceName(R.string.uri_endpoint);
     ProgressDialog progressDialog;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +67,7 @@ public class MainMenuActivity extends AppCompatActivity {
         SessionManager sessionManager = new SessionManager(this);
         userData = sessionManager.getUserDetails();
 
-        final TodoListAdapter adapter = new TodoListAdapter(this, todoLists);
+        adapter = new TodoListAdapter(this, todoLists);
         todoListsList.setAdapter(adapter);
 
         String reqUrl = endpoint + "?action=get_list&user_id=" + userData.get("user_id");
@@ -115,8 +114,11 @@ public class MainMenuActivity extends AppCompatActivity {
         });
 
         TextView emptyListText = new TextView(this);
-        emptyListText.setText(R.string.emptyList_Text);
-        emptyListText.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
+
+        String emptyListMsg = this.getResources().getString(R.string.emptyList_Text);
+        setText(emptyListText, emptyListMsg, TypedValue.COMPLEX_UNIT_SP, 20);
+        //emptyListText.setText(R.string.emptyList_Text);
+        //emptyListText.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
         if(todoLists.size() == 0){
             emptyListText.setGravity(Gravity.CENTER_HORIZONTAL);
             todoListsList.addHeaderView(emptyListText);
@@ -150,7 +152,7 @@ public class MainMenuActivity extends AppCompatActivity {
                 //Because the EditText is not from the activity's view,
                 //Explicitly call findViewById from addListDialogView to access the EditText from dialog.
                 EditText newListText = (EditText) addListDialogView.findViewById(R.id.newListTitleText);
-
+                Log.e("TEST",newListText.getText().toString());
                 //Call the activity's addNewList function using user's string.
                 addNewList(newListText.getText().toString());
             }
@@ -165,7 +167,6 @@ public class MainMenuActivity extends AppCompatActivity {
         //END AlertDialog Definition
         //------------------------------------------------------------------------------------------
 
-
         AlertDialog newList = addListBuilder.create();
         newList.show();
     }
@@ -178,5 +179,15 @@ public class MainMenuActivity extends AppCompatActivity {
     private void hideDialog() {
         if (progressDialog.isShowing())
             progressDialog.dismiss();
+    }
+
+    private void setText(final TextView text, final String value, final int unit, final float textSize) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                text.setText(value);
+                text.setTextSize(unit, textSize);
+            }
+        });
     }
 }
