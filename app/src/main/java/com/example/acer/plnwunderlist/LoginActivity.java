@@ -1,5 +1,9 @@
 package com.example.acer.plnwunderlist;
 
+/**
+ * Created by Azhary Arliansyah on 20/07/2017.
+ */
+
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -68,10 +72,13 @@ public class LoginActivity extends AppCompatActivity {
                     boolean error = jObj.getBoolean("error");
 
                     if (!error) {
-                        String user_email = jObj.getJSONObject("user").getString("email");
+                        JSONObject userJson = jObj.getJSONObject("user");
+                        String user_email   = userJson.getString("email");
+                        String user_name    = userJson.getString("name");
+                        int user_id         = userJson.getInt("user_id");
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         SessionManager sessionManager = new SessionManager(loginContext);
-                        sessionManager.createLoginSession(user_email, user_email);
+                        sessionManager.createLoginSession(user_name, user_email, String.valueOf(user_id));
                         intent.putExtra("email", user_email);
                         startActivity(intent);
                         finish();

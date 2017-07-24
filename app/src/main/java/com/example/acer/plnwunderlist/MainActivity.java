@@ -16,6 +16,10 @@ import java.util.HashMap;
 
 import tech.gusavila92.websocketclient.WebSocketClient;
 
+/**
+ * Created by Azhary Arliansyah on 20/07/2017.
+ */
+
 public class MainActivity extends AppCompatActivity {
 
     ProgressDialog progressDialog;
