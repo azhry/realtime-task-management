@@ -44,13 +44,16 @@ public class MainMenuActivity extends AppCompatActivity {
     private TodoListAdapter adapter;
     HashMap<String, String> userData;
 
-    String endpoint = getResources().getString(R.string.uri_endpoint);
+    private String endpoint;
     ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_menu);
+
+        //Instantiated in onCreate, because getResources() is NOT a static method.
+        endpoint = getResources().getString(R.string.uri_endpoint);
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
