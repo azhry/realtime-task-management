@@ -32,10 +32,6 @@ public class MainMenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_menu);
 
-        //the scale. Refer to:
-        //https://stackoverflow.com/questions/4275797/view-setpadding-accepts-only-in-px-is-there-anyway-to-setpadding-in-dp
-        final float scale = getResources().getDisplayMetrics().density;
-
         ListView todoListsList = (ListView) findViewById(R.id.todolistslist);
         todoListsList.setDivider(null);
         todoListsList.setDividerHeight(0);
@@ -43,8 +39,6 @@ public class MainMenuActivity extends AppCompatActivity {
         todoLists.add("Gawean");
         todoLists.add("Lokak");
         todoLists.add("Belajar");
-
-
 
         todoListAdapter adapter = new todoListAdapter(this, todoLists);
         todoListsList.setAdapter(adapter);
@@ -58,10 +52,9 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Toast.makeText(MainMenuActivity.this, "Add a new list", Toast.LENGTH_SHORT).show();
+                showAddListDialog(MainMenuActivity.this);
             }
         });
-        //FINISH (CREATE NEW LIST) BUTTON LOGIC
-        //---------------------------------------------------------------------------------
 
         TextView emptyListText = new TextView(this);
         emptyListText.setText(R.string.emptyList_Text);
@@ -73,27 +66,33 @@ public class MainMenuActivity extends AppCompatActivity {
 
     }
 
+    private void addNewList(String newListName){
+        todoLists.add(newListName);
+    }
+
     private void showAddListDialog(Context context){
         final AlertDialog.Builder addListBuilder = new AlertDialog.Builder(context);
         LayoutInflater inflater = LayoutInflater.from(context);
         final View addListDialogView = inflater.inflate(R.layout.main_menu_create_list_dialog, null);
         addListBuilder.setView(addListDialogView);
 
-        final String newListName;
-        final EditText newListText = (EditText) findViewById(R.id.newListTitleText);
-
         addListBuilder.setTitle("Create New To-Do List");
         addListBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                //TODO: GET THE USER INPUTTED TEXT
+                EditText newListText = (EditText) addListDialogView.findViewById(R.id.newListTitleText);
+                addNewList(newListText.getText().toString());
             }
         });
         addListBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
             }
         });
+
+        AlertDialog newList = addListBuilder.create();
+        newList.show();
+
+        Toast.makeText(MainMenuActivity.this, "Should've quicker!", Toast.LENGTH_SHORT).show();
     }
 }
