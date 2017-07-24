@@ -51,7 +51,6 @@ public class MainMenuActivity extends AppCompatActivity {
         newListBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Toast.makeText(MainMenuActivity.this, "Add a new list", Toast.LENGTH_SHORT).show();
                 showAddListDialog(MainMenuActivity.this);
             }
         });
@@ -71,28 +70,43 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     private void showAddListDialog(Context context){
-        final AlertDialog.Builder addListBuilder = new AlertDialog.Builder(context);
+
+        //Get inflater from current context
         LayoutInflater inflater = LayoutInflater.from(context);
         final View addListDialogView = inflater.inflate(R.layout.main_menu_create_list_dialog, null);
+
+        //------------------------------------------------------------------------------------------
+        //START AlertDialog Definition
+        final AlertDialog.Builder addListBuilder = new AlertDialog.Builder(context);
+
+        //Set its title and view
+        addListBuilder.setTitle("Create New To-Do List");
         addListBuilder.setView(addListDialogView);
 
-        addListBuilder.setTitle("Create New To-Do List");
+        //Add the "Positive" (Right button) logic
         addListBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                //Because the EditText is not from the activity's view,
+                //Explicitly call findViewById from addListDialogView to access the EditText from dialog.
                 EditText newListText = (EditText) addListDialogView.findViewById(R.id.newListTitleText);
+
+                //Call the activity's addNewList function using user's string.
                 addNewList(newListText.getText().toString());
             }
         });
+        //Add the "Negative" (Left button) logic
         addListBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
             }
         });
 
+        //END AlertDialog Definition
+        //------------------------------------------------------------------------------------------
+
+
         AlertDialog newList = addListBuilder.create();
         newList.show();
-
-        Toast.makeText(MainMenuActivity.this, "Should've quicker!", Toast.LENGTH_SHORT).show();
     }
 }
