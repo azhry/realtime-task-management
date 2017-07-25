@@ -7,11 +7,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
-import android.util.TypedValue;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Gravity;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,20 +44,17 @@ public class MainMenuActivity extends AppCompatActivity {
 
     //Statics
     private static final String TAG = "MainMenuActivity";
-
+    ProgressDialog progressDialog;      //'nuff said.
+    HashMap<String, String> userData;
     //Pseudo-statics. Cannot be initialized because it's fetched from resources XML.
     private String endpoint;
     private String postEndpoint;
-
     //Declare attributes necessary for UI black magic.
     //Everything is assumed to be initialized in onCreate() method.
-    private ArrayList<String> todoLists = new ArrayList<>();//Used to hold data
-    private TodoListAdapter adapter; //Used to bridge todoLists and todoListsList
-    private ListView todoListsList; //The RecyclerView.
-    private View emptyTextView; //Header that pops up when the list is empty.
-    ProgressDialog progressDialog; //'nuff said.
-
-    HashMap<String, String> userData;
+    private ArrayList<TodoList> todoLists = new ArrayList<>();//Used to hold data
+    private TodoListAdapter adapter;    //Used to bridge todoLists and todoListsList
+    private ListView todoListsList;     //The RecyclerView.
+    private View emptyTextView;         //Header that pops up when the list is empty.
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,8 +90,10 @@ public class MainMenuActivity extends AppCompatActivity {
             public void onItemClick(AdapterView parent, View view, int position, long id) {
                 //Initialize the Intent
                 Intent todolistIntent = new Intent(getApplicationContext(), ListMenuActivity.class);
+                //Get selected Todolist object, and extract its name for the page title.
+                String pageTitle = ((TodoList) todoListsList.getItemAtPosition(position)).getName();
                 //Send the to-do list title as extra information to the ListMenuActivity
-                todolistIntent.putExtra("TODO_LIST_NAME", (String)todoListsList.getItemAtPosition(position));
+                todolistIntent.putExtra("TODO_LIST_NAME", pageTitle);
                 startActivity(todolistIntent);
 
             }
@@ -108,7 +108,9 @@ public class MainMenuActivity extends AppCompatActivity {
                         for (int i = 0; i < response.length(); i++) {
                             try {
                                 JSONObject jsonObject = response.getJSONObject(i);
-                                adapter.add(jsonObject.getString("LIST_NAME"));
+                                String listID = jsonObject.getString("LIST_ID");
+                                String listName = jsonObject.getString("LIST_NAME");
+                                adapter.add(new TodoList(listID, listName));
                                 adapter.notifyDataSetChanged();
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -145,6 +147,79 @@ public class MainMenuActivity extends AppCompatActivity {
             }
         });
 
+        //Lastly, register the specified ContextMenu to the Listview.
+        registerForContextMenu(todoListsList);
+
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.todolistlists_context_menu, menu);
+
+        //Catch the ContextMenu.ContextMenuItem sent from parameter
+        //as AdapterView.AdapterContextMenuInfo to itemInfo variable.
+        AdapterView.AdapterContextMenuInfo itemInfo = (AdapterView.AdapterContextMenuInfo)menuInfo;
+        //Get the Item at the specified position, and get the value.
+        TodoList selectedList  = (TodoList) todoListsList.getItemAtPosition(itemInfo.position);
+        String titleName = selectedList.getName();
+        //Set the header title
+        menu.setHeaderTitle(titleName);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch(item.getItemId()) {
+
+            case R.id.deleteTodoList:
+                showDeleteListDialog(MainMenuActivity.this,
+                        (TodoList) todoListsList.getItemAtPosition(info.position));
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
+    private void showDeleteListDialog(Context context,final TodoList todolist){
+
+        //------------------------------------------------------------------------------------------
+        //START AlertDialog Definition
+        final AlertDialog.Builder deleteListBuilder = new AlertDialog.Builder(context);
+
+        //Set its title and view
+        String dialogMsg = getString(R.string.delete_dialog_start).
+                concat(" ").concat(todolist.getName()).
+                concat(" ").concat(getString(R.string.delete_dialog_end));
+
+        //Set title and message
+        deleteListBuilder.setTitle(R.string.delete_dialog_title).setMessage(dialogMsg);
+
+        //Add the "Positive" (Right button) logic
+        deleteListBuilder.setPositiveButton(R.string.dialog_default_positive_labeal, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //Call the delete function
+                deleteList(todolist.getID());
+            }
+        });
+        //Add the "Negative" (Left button) logic
+        deleteListBuilder.setNegativeButton(R.string.dialog_default_negative_label, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        });
+
+        //END AlertDialog Definition
+        //------------------------------------------------------------------------------------------
+
+        AlertDialog newList = deleteListBuilder.create();
+        newList.show();
+    }
+
+    private void deleteList(String listID){
+        //TODO: Lajukela az, logic delete
     }
 
     private void addNewList(final String newListName) {
@@ -158,7 +233,9 @@ public class MainMenuActivity extends AppCompatActivity {
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
-                                adapter.add(newListName);
+                                String newListID = jsonObject.getString("list_id");
+                                String newListName = jsonObject.getString("list_name");
+                                adapter.add(new TodoList(newListID, newListName));
                                 adapter.notifyDataSetChanged();
                                 Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
                             } else if (status == 1)
@@ -213,19 +290,19 @@ public class MainMenuActivity extends AppCompatActivity {
         setEmptyTextVisibility(emptyTextView);
     }
 
-    private void setEmptyTextVisibility(View headerView){
+    private void setEmptyTextVisibility(View headerView) {
         //Set the visibility of empty to-do lists notice.
-        if(adapter.isEmpty()){
+        if (adapter.isEmpty()) {
             //if the adapter is empty, check the number of views in the header.
             //If it's zero, then add the notice. otherwise continue.
-            if(todoListsList.getHeaderViewsCount() == 0) {
+            if (todoListsList.getHeaderViewsCount() == 0) {
                 todoListsList.addHeaderView(headerView, null, false);
             }
         } else {
             //else if the adapter is NOT empty, check the number of views in the header.
             //If it's more than zero (meaning there's something there, then remove the notice).
             //otherwise continue.
-            if(todoListsList.getHeaderViewsCount() > 0) {
+            if (todoListsList.getHeaderViewsCount() > 0) {
                 todoListsList.removeHeaderView(headerView);
             }
         }
@@ -242,11 +319,11 @@ public class MainMenuActivity extends AppCompatActivity {
         final AlertDialog.Builder addListBuilder = new AlertDialog.Builder(context);
 
         //Set its title and view
-        addListBuilder.setTitle("Create New To-Do List");
+        addListBuilder.setTitle(R.string.add_dialog_title);
         addListBuilder.setView(addListDialogView);
 
         //Add the "Positive" (Right button) logic
-        addListBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        addListBuilder.setPositiveButton(R.string.dialog_default_positive_labeal, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 //Because the EditText is not from the activity's view,
@@ -257,7 +334,7 @@ public class MainMenuActivity extends AppCompatActivity {
             }
         });
         //Add the "Negative" (Left button) logic
-        addListBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+        addListBuilder.setNegativeButton(R.string.dialog_default_negative_label, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
             }
