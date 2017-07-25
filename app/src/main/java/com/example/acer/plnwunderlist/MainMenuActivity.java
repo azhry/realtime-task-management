@@ -41,33 +41,45 @@ import java.util.Map;
 
 public class MainMenuActivity extends AppCompatActivity {
 
+    //Statics
     private static final String TAG = "MainMenuActivity";
-    private ArrayList<String> todoLists = new ArrayList<>();
-    private TodoListAdapter adapter;
-    HashMap<String, String> userData;
 
+    //Pseudo-statics. Cannot be initialized because it's fetched from resources XML.
     private String endpoint;
     private String postEndpoint;
-    ProgressDialog progressDialog;
+
+    //Declare attributes necessary for UI black magic.
+    //Everything is assumed to be initialized in onCreate() method.
+    private ArrayList<String> todoLists = new ArrayList<>();//Used to hold data
+    private TodoListAdapter adapter; //Used to bridge todoLists and todoListsList
+    private ListView todoListsList; //The RecyclerView.
+    private View emptyTextView; //Header that pops up when the list is empty.
+    ProgressDialog progressDialog; //'nuff said.
+
+    HashMap<String, String> userData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_menu);
 
+        //Initalize the pseudo-statics
         endpoint = getString(R.string.uri_endpoint);
         postEndpoint = getString(R.string.uri_post_endpoint);
 
+        //Initialize progressDialog
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
-
         progressDialog.setMessage("Loading data...");
         showDialog();
 
-        ListView todoListsList = (ListView) findViewById(R.id.todolistslist);
+        todoListsList = (ListView) findViewById(R.id.todolistslist);
         todoListsList.setDivider(null);
         todoListsList.setDividerHeight(0);
 
+        emptyTextView = getLayoutInflater().inflate(R.layout.main_menu_empty_list_text, null);
+
+        todoListsList.addHeaderView(emptyTextView, null, false);
         SessionManager sessionManager = new SessionManager(this);
         userData = sessionManager.getUserDetails();
 
@@ -78,9 +90,12 @@ public class MainMenuActivity extends AppCompatActivity {
         todoListsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView parent, View view, int position, long id) {
+                //Initialize the Intent
                 Intent todolistIntent = new Intent(getApplicationContext(), ListMenuActivity.class);
-                todolistIntent.putExtra("TODO_LIST_NAME",todoLists.get(position));
+                //Send the to-do list title as extra information to the ListMenuActivity
+                todolistIntent.putExtra("TODO_LIST_NAME", (String)todoListsList.getItemAtPosition(position));
                 startActivity(todolistIntent);
+
             }
         });
 
@@ -100,6 +115,8 @@ public class MainMenuActivity extends AppCompatActivity {
                             }
                         }
 
+                        setEmptyTextVisibility(emptyTextView);
+
                         hideDialog();
                     }
                 },
@@ -116,7 +133,7 @@ public class MainMenuActivity extends AppCompatActivity {
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(getRequest, "retrieve_list");
 
 
-        View layout = getLayoutInflater().inflate(R.layout.main_menu_create_list_btn,null);
+        View layout = getLayoutInflater().inflate(R.layout.main_menu_create_list_btn, null);
         todoListsList.addFooterView(layout);
 
 
@@ -128,19 +145,9 @@ public class MainMenuActivity extends AppCompatActivity {
             }
         });
 
-        TextView emptyListText = new TextView(this);
-
-        String emptyListMsg = this.getResources().getString(R.string.emptyList_Text);
-        setText(emptyListText, emptyListMsg, TypedValue.COMPLEX_UNIT_SP, 20);
-        //emptyListText.setText(R.string.emptyList_Text);
-        //emptyListText.setTextSize(TypedValue.COMPLEX_UNIT_SP,20);
-        if(todoLists.size() == 0){
-            emptyListText.setGravity(Gravity.CENTER_HORIZONTAL);
-            todoListsList.addHeaderView(emptyListText);
-        }
     }
 
-    private void addNewList(final String newListName){
+    private void addNewList(final String newListName) {
         progressDialog.setMessage("Processing...");
         showDialog();
         StringRequest addRequest = new StringRequest(Request.Method.POST, postEndpoint,
@@ -150,13 +157,11 @@ public class MainMenuActivity extends AppCompatActivity {
                         try {
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
-                            if (status == 0)
-                            {
+                            if (status == 0) {
                                 adapter.add(newListName);
                                 adapter.notifyDataSetChanged();
                                 Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
-                            }
-                            else if (status == 1)
+                            } else if (status == 1)
                                 Toast.makeText(getApplicationContext(), "Insert list failed!", Toast.LENGTH_LONG).show();
                             else if (status == 2)
                                 Toast.makeText(getApplicationContext(), "Insert access failed!", Toast.LENGTH_LONG).show();
@@ -166,8 +171,7 @@ public class MainMenuActivity extends AppCompatActivity {
                         } catch (JSONException e) {
                             e.printStackTrace();
                             String msg = e.getMessage();
-                            if (msg != null)
-                            {
+                            if (msg != null) {
                                 Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG);
                                 Log.e("JSONException", msg);
                             }
@@ -206,9 +210,28 @@ public class MainMenuActivity extends AppCompatActivity {
         };
 
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(addRequest, "add_list");
+        setEmptyTextVisibility(emptyTextView);
     }
 
-    private void showAddListDialog(Context context){
+    private void setEmptyTextVisibility(View headerView){
+        //Set the visibility of empty to-do lists notice.
+        if(adapter.isEmpty()){
+            //if the adapter is empty, check the number of views in the header.
+            //If it's zero, then add the notice. otherwise continue.
+            if(todoListsList.getHeaderViewsCount() == 0) {
+                todoListsList.addHeaderView(headerView, null, false);
+            }
+        } else {
+            //else if the adapter is NOT empty, check the number of views in the header.
+            //If it's more than zero (meaning there's something there, then remove the notice).
+            //otherwise continue.
+            if(todoListsList.getHeaderViewsCount() > 0) {
+                todoListsList.removeHeaderView(headerView);
+            }
+        }
+    }
+
+    private void showAddListDialog(Context context) {
 
         //Get inflater from current context
         LayoutInflater inflater = LayoutInflater.from(context);
