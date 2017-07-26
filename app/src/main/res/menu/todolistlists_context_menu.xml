@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/deleteTodoList"
+        android:title="Delete List"
+        app:showAsAction="ifRoom|withText"
+        />
+    <item android:id="@+id/EditTodoList"
+        android:title="Edit List"
+        app:showAsAction="ifRoom|withText"
+        />
+</menu>

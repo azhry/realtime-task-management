@@ -18,9 +18,9 @@ import java.util.List;
  * Created by Ryan Fadholi on 20/07/2017.
  */
 
-public class TodoListAdapter extends ArrayAdapter<String> {
+public class TodoListAdapter extends ArrayAdapter<TodoList> {
 
-    public TodoListAdapter(@NonNull Context context, @NonNull List<String> objects) {
+    public TodoListAdapter(@NonNull Context context, @NonNull List<TodoList> objects) {
         super(context, 0, objects);
     }
 
@@ -35,13 +35,14 @@ public class TodoListAdapter extends ArrayAdapter<String> {
         }
 
         // Get the {@link Word} object located at this position in the list
-        String currentList = getItem(position);
+        TodoList currentList = getItem(position);
+        String currentListName = currentList.getName();
 
         // Find the TextView in the main_menu_list.xml layout with the ID ListTitle
         TextView todoListTextView = (TextView) listItemView.findViewById(R.id.listTitle);
         // Get the list title from the current object and
         // set this text on the name TextView
-        todoListTextView.setText(currentList);
+        todoListTextView.setText(currentListName);
 
         // Return the whole list item layout (containing an ImageView and a TextView)
         // so that it can be shown in the ListView

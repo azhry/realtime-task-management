@@ -1,6 +1,6 @@
 package com.example.acer.plnwunderlist;
 
-import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -12,10 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -37,19 +34,34 @@ public class ListMenuActivity extends AppCompatActivity {
         //START Menu Icon Tinting
 
         //Retrieve all Menu Items
-        MenuItem shareBtn = (MenuItem) menu.findItem(R.id.action_refresh);
+        final MenuItem shareBtn = (MenuItem) menu.findItem(R.id.list_share_btn);
 
         //Retrieve all Icons
         Drawable shareBtnIcon = (Drawable)shareBtn.getIcon();
         shareBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
 
+        shareBtn.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                switch(menuItem.getItemId()){
+                    case R.id.list_share_btn:
+                        //Initialize the Intent
+                        Intent shareIntent = new Intent(getApplicationContext(), ListShareActivity.class);
+                        startActivity(shareIntent);
+                        return true;
+                    default:
+                        break;
+                }
+                return false;
+            }
+        });
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
-            case R.id.action_refresh:
+            case R.id.list_share_btn:
                 Log.d("MENUEXAMPLE","Yooo it works!");
         }
 
