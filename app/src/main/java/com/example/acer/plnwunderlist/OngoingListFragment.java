@@ -63,9 +63,8 @@ public class OngoingListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        TextView textView = new TextView(getActivity());
-        textView.setText(R.string.hello_blank_fragment);
-        return textView;
+        // Inflate the layout for this fragment
+        return inflater.inflate(R.layout.fragment_ongoing_list, container, false);
     }
 
     // TODO: Rename method, update argument and hook method into UI event
