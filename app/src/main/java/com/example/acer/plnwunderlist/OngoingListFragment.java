@@ -7,7 +7,11 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -64,7 +68,38 @@ public class OngoingListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_ongoing_list, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_ongoing_list, container, false);
+        ListView listView = (ListView) rootView.findViewById(R.id.ongoingListView);
+
+        final ArrayList dataModels = new ArrayList();
+
+        dataModels.add(new DataModel("Ongoing 1", false));
+        dataModels.add(new DataModel("Ongoing 2", false));
+        dataModels.add(new DataModel("Ongoing 3", false));
+        dataModels.add(new DataModel("Ongoing 4", false));
+        dataModels.add(new DataModel("Ongoing 5", false));
+        dataModels.add(new DataModel("Ongoing 6", false));
+        dataModels.add(new DataModel("Ongoing 7", false));
+        dataModels.add(new DataModel("Ongoing 8", false));
+        dataModels.add(new DataModel("Ongoing 9", false));
+        dataModels.add(new DataModel("Ongoing 10", false));
+        dataModels.add(new DataModel("Ongoing 11", false));
+        dataModels.add(new DataModel("Ongoing 12", false));
+
+        final CustomAdapter adapter = new CustomAdapter(dataModels, this.getContext());
+
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView parent, View view, int position, long id) {
+
+                DataModel dataModel= (DataModel) dataModels.get(position);
+                dataModel.checked = !dataModel.checked;
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        return rootView;
     }
 
     // TODO: Rename method, update argument and hook method into UI event

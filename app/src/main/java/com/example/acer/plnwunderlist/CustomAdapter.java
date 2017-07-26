@@ -17,8 +17,10 @@ import java.util.ArrayList;
  * Created by Ryan Fadholi on 24/07/2017.
  */
 
-public class CustomAdapter extends ArrayAdapter {
+public class CustomAdapter extends ArrayAdapter{
+
     private ArrayList<DataModel> dataSet;
+    OnCheckboxClickedListener mCallback;
     Context mContext;
 
     // View lookup cache
@@ -27,7 +29,9 @@ public class CustomAdapter extends ArrayAdapter {
         CheckBox checkBox;
     }
 
-
+    public interface OnCheckboxClickedListener {
+        public void checkboxClicked(int pos);
+    }
 
     public CustomAdapter(ArrayList data, Context context) {
         super(context, R.layout.list_menu_list, data);
@@ -45,12 +49,15 @@ public class CustomAdapter extends ArrayAdapter {
         return dataSet.get(position);
     }
 
-
+    public void setOnCheckboxClickedListener(OnCheckboxClickedListener mCallback) {
+        this.mCallback = mCallback;
+    }
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 
         CheckBox itemCheckBox;
 
+        final int callbackPosition = position;
         ViewHolder viewHolder;
         final View result;
 
@@ -76,7 +83,7 @@ public class CustomAdapter extends ArrayAdapter {
         itemCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("Checkbox","It works, y'know?");
+                mCallback.checkboxClicked(callbackPosition);
             }
         });
         return result;

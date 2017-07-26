@@ -10,6 +10,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.NavUtils;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -79,8 +80,12 @@ public class ListMenuActivityTabbed extends AppCompatActivity implements
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
             case R.id.list_share_btn:
                 Log.d("MENUEXAMPLE","Yooo it works!");
+                return true;
         }
 
         return true;
@@ -95,7 +100,6 @@ public class ListMenuActivityTabbed extends AppCompatActivity implements
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().set
 
         this.viewPager = (ViewPager) findViewById(R.id.viewpager);
        setupViewPager(viewPager);
@@ -109,12 +113,16 @@ public class ListMenuActivityTabbed extends AppCompatActivity implements
         }
     }
 
-
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(new OngoingListFragment(), "ONGOING");
         adapter.addFragment(new CompletedListFragment(), "COMPLETED");
         viewPager.setAdapter(adapter);
+    }
+
+    @Override
+    public boolean completedItemClicked(DataModel data) {
+        return true;
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
