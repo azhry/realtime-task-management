@@ -71,7 +71,7 @@ public class ListMenuActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.list_menu);
+        setContentView(R.layout.activity_list_menu);
 
         //If calling activity supplies current to-do list name,
         //Change App Title to the supplied name.
