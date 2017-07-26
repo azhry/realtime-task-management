@@ -1,5 +1,6 @@
 package com.example.acer.plnwunderlist;
 
+import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -177,6 +178,10 @@ public class MainMenuActivity extends AppCompatActivity {
                 showDeleteListDialog(MainMenuActivity.this,
                         (TodoList) todoListsList.getItemAtPosition(info.position));
                 return true;
+            case R.id.EditTodoList:
+                showEditListDialog(MainMenuActivity.this,
+                        (TodoList) todoListsList.getItemAtPosition(info.position));
+                return true;
             default:
                 return super.onContextItemSelected(item);
         }
@@ -201,7 +206,7 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 //Call the delete function
-                deleteList(todolist.getID());
+                deleteList(todolist);
             }
         });
         //Add the "Negative" (Left button) logic
@@ -218,8 +223,58 @@ public class MainMenuActivity extends AppCompatActivity {
         newList.show();
     }
 
-    private void deleteList(String listID){
-        //TODO: Lajukela az, logic delete
+    private void deleteList(final TodoList list){
+        progressDialog.setMessage("Deleting...");
+        showDialog();
+        Response.Listener<String> responseListener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject jsonObject = new JSONObject(response);
+                    int status = jsonObject.getInt("status");
+                    if (status == 0) {
+                        String listName = jsonObject.getString("list_name");
+                        adapter.remove(list);
+                        adapter.notifyDataSetChanged();
+                        Toast.makeText(MainMenuActivity.this, listName + " has been deleted", Toast.LENGTH_LONG).show();
+                    } else if (status == 1) {
+                        Toast.makeText(MainMenuActivity.this, "You don't have access to delete this list!", Toast.LENGTH_LONG).show();
+                    } else if (status == 2) {
+                        Toast.makeText(MainMenuActivity.this, "Delete failed!", Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(MainMenuActivity.this, "Unknown attempt!", Toast.LENGTH_LONG).show();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } finally {
+                    hideDialog();
+                }
+            }
+        };
+        Response.ErrorListener responseErrorListener = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                String msg = error.getMessage();
+                if (msg != null)
+                    Log.e("DELETE_REQUEST", msg);
+                else Log.e("DELETE_REQUEST", "An error occured but the error message is empty. You must chase the bug yourself, good luck!");
+                hideDialog();
+            }
+        };
+
+        StringRequest deleteRequest = new StringRequest(Request.Method.POST, postEndpoint,
+                responseListener, responseErrorListener) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "delete");
+                params.put("list_id", list.getID());
+                params.put("user_id", userData.get("user_id"));
+                return params;
+            }
+        };
+
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(deleteRequest, "delete_list");
     }
 
     private void addNewList(final String newListName) {
@@ -244,7 +299,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), "Insert access failed!", Toast.LENGTH_LONG).show();
                             else if (status == -1)
                                 Toast.makeText(getApplicationContext(), "Unknown attempt!", Toast.LENGTH_LONG).show();
-                            else Log.e("RESPONSEe", response);
+                            else Log.e("RESPONSE", response);
                         } catch (JSONException e) {
                             e.printStackTrace();
                             String msg = e.getMessage();
@@ -288,6 +343,62 @@ public class MainMenuActivity extends AppCompatActivity {
 
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(addRequest, "add_list");
         setEmptyTextVisibility(emptyTextView);
+    }
+
+    private void editList(final String newListName, final TodoList list) {
+        progressDialog.setMessage("Editing...");
+        showDialog();
+        Response.Listener<String> responseListener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    Log.e("EDIT_RESPONSE", response);
+                    JSONObject jsonObject = new JSONObject(response);
+                    int status = jsonObject.getInt("status");
+                    if (status == 0) {
+                        String oldListName = list.getName();
+                        list.setName(newListName);
+                        adapter.notifyDataSetChanged();
+                        Toast.makeText(MainMenuActivity.this, oldListName + " changed to " + newListName, Toast.LENGTH_LONG).show();
+                    } else if (status == 1) {
+                        Toast.makeText(MainMenuActivity.this, "You don't have access to edit this list!", Toast.LENGTH_LONG).show();
+                    } else if (status == 2) {
+                        Toast.makeText(MainMenuActivity.this, "Edit failed!", Toast.LENGTH_LONG).show();
+                    } else if (status == -1) {
+                        Toast.makeText(MainMenuActivity.this, "Unknown attempt!", Toast.LENGTH_LONG).show();
+                    } else {
+                        Log.d("EDIT_RESPONSE", response);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } finally {
+                    hideDialog();
+                }
+            }
+        };
+        Response.ErrorListener responseErrorListener = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                String msg = error.getMessage();
+                if (msg != null)
+                    Log.e("EDIT_REQUEST", msg);
+                else Log.e("EDIT_REQUEST", "An error occured but the error message is empty. You must chase the bugs yourself, good luck!");
+                hideDialog();
+            }
+        };
+        StringRequest editRequest = new StringRequest(Request.Method.POST, postEndpoint,
+                responseListener, responseErrorListener) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "edit_list");
+                params.put("user_id", userData.get("user_id"));
+                params.put("list_id", list.getID());
+                params.put("new_list_name", newListName);
+                return params;
+            }
+        };
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(editRequest, "edit_list");
     }
 
     private void setEmptyTextVisibility(View headerView) {
@@ -345,6 +456,30 @@ public class MainMenuActivity extends AppCompatActivity {
 
         AlertDialog newList = addListBuilder.create();
         newList.show();
+    }
+
+    private void showEditListDialog(Context context, final TodoList list) {
+        LayoutInflater inflater = LayoutInflater.from(context);
+        final View editListDialogView = inflater.inflate(R.layout.main_menu_create_list_dialog, null);
+        final EditText editText = (EditText) editListDialogView.findViewById(R.id.newListTitleText);
+        editText.setText(list.getName());
+        AlertDialog.Builder editListDialog = new AlertDialog.Builder(context);
+        editListDialog.setTitle("Edit " + list.getName());
+        editListDialog.setView(editListDialogView);
+        editListDialog.setPositiveButton("EDIT", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                editList(editText.getText().toString(), list);
+            }
+        });
+        editListDialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+
+        AlertDialog editDialog = editListDialog.create();
+        editDialog.show();
     }
 
     private void showDialog() {
