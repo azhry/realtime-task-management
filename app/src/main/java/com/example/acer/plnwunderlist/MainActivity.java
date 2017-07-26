@@ -10,9 +10,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import org.json.JSONObject;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.Map;
 
 import tech.gusavila92.websocketclient.WebSocketClient;
 
@@ -23,12 +27,11 @@ import tech.gusavila92.websocketclient.WebSocketClient;
 public class MainActivity extends AppCompatActivity {
 
     ProgressDialog progressDialog;
-    private TextView textView, connectionStatus;
+    private TextView textView;
     private Button btnLogout, btnSubmit, btnTodoListsList, btnListMenu;
     private EditText editText;
 
     Context context;
-    private WebSocketClient webSocketClient;
     HashMap<String, String> userData;
 
     @Override
@@ -45,7 +48,6 @@ public class MainActivity extends AppCompatActivity {
         btnListMenu = (Button) findViewById(R.id.listmenu_btn);
         textView = (TextView)findViewById(R.id.email);
         setText(textView, userData.get("email"));
-        connectionStatus = (TextView)findViewById(R.id.connection_status);
         editText = (EditText)findViewById(R.id.something);
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
@@ -57,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 SessionManager sessionManager = new SessionManager(context);
                 sessionManager.logoutUser();
-                webSocketClient.close();
+                WebSocketClientManager.close();
                 finish();
             }
         });
@@ -79,68 +81,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        createWebSocketClient();
-    }
 
-    private void createWebSocketClient() {
-        connectionStatus.setText("Connecting...");
-        URI uri;
-        try {
-            uri = new URI(getString(R.string.uri_websocket));
-        }
-        catch (URISyntaxException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        webSocketClient = new WebSocketClient(uri) {
-            @Override
-            public void onOpen() {
-                Log.i("WEBUSOCKETO: ", "on open!");
-                webSocketClient.send(userData.get("email") + " is online!");
-                setText(connectionStatus, "Online");
-            }
-
-            @Override
-            public void onTextReceived(String message) {
-            }
-
-            @Override
-            public void onBinaryReceived(byte[] data) {
-            }
-
-            @Override
-            public void onPingReceived(byte[] data) {
-            }
-
-            @Override
-            public void onPongReceived(byte[] data) {
-            }
-
-            @Override
-            public void onException(Exception e) {
-                String err = e.getMessage();
-                if (err != null)
-                    Log.e("WSERROR", err);
-            }
-
-            @Override
-            public void onCloseReceived() {
-                setText(connectionStatus, "Disconnected!");
-            }
-        };
-
-        webSocketClient.setConnectTimeout(10000);
-        webSocketClient.setReadTimeout(60000);
-        webSocketClient.enableAutomaticReconnection(5000);
-        webSocketClient.connect();
-
+        WebSocketClientManager.createWebSocketConnection(getApplicationContext(), getString(R.string.uri_websocket));
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String text = editText.getText().toString();
-                Log.d("TEXTTTT", text);
-                webSocketClient.send(text);
+                Map<String, String> msg = new HashMap<>();
+                msg.put("type", "sending_info");
+                msg.put("user", userData.get("email"));
+                msg.put("msg", text);
+                JSONObject jsonMsg = new JSONObject(msg);
+                WebSocketClientManager.send(jsonMsg.toString());
                 editText.setText("");
             }
         });
