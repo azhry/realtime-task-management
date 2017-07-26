@@ -11,8 +11,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -75,7 +73,7 @@ public class ListMenuActivityTabbed extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.testcoordinatorlayout);
+        setContentView(R.layout.activity_testcoordinatorlayout);
 
         //If calling activity supplies current to-do list name,
         //Change App Title to the supplied name.
