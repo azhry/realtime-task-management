@@ -5,25 +5,36 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.NavUtils;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Ryan Fadholi on 24/07/2017.
  */
 
-public class ListMenuActivity extends AppCompatActivity {
+public class ListMenuActivity extends AppCompatActivity implements
+        TaskListFragment.OnFragmentInteractionListener {
     ArrayList<DataModel> dataModels;
     ListView listView;
     private CustomAdapter adapter;
+
+    private Toolbar toolbar;
+    private TabLayout tabLayout;
+    private ViewPager viewPager;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -34,10 +45,10 @@ public class ListMenuActivity extends AppCompatActivity {
         //START Menu Icon Tinting
 
         //Retrieve all Menu Items
-        final MenuItem shareBtn = (MenuItem) menu.findItem(R.id.list_share_btn);
+        final MenuItem shareBtn = menu.findItem(R.id.list_share_btn);
 
         //Retrieve all Icons
-        Drawable shareBtnIcon = (Drawable)shareBtn.getIcon();
+        Drawable shareBtnIcon = shareBtn.getIcon();
         shareBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
 
         shareBtn.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
@@ -58,11 +69,17 @@ public class ListMenuActivity extends AppCompatActivity {
         return true;
     }
 
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()){
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
             case R.id.list_share_btn:
                 Log.d("MENUEXAMPLE","Yooo it works!");
+                return true;
         }
 
         return true;
@@ -71,44 +88,63 @@ public class ListMenuActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list_menu);
+        setContentView(R.layout.activity_testcoordinatorlayout);
 
+        this.toolbar = (Toolbar) findViewById(R.id.list_toolbar);
+        setSupportActionBar(toolbar);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        this.viewPager = (ViewPager) findViewById(R.id.viewpager);
+       setupViewPager(viewPager);
+
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout.setupWithViewPager(viewPager);
         //If calling activity supplies current to-do list name,
         //Change App Title to the supplied name.
         if(getIntent().hasExtra("TODO_LIST_NAME")){
             this.setTitle(getIntent().getStringExtra("TODO_LIST_NAME"));
         }
+    }
 
-        listView = (ListView) findViewById(R.id.listView);
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(TaskListFragment.newInstance(false), "ONGOING");
+        adapter.addFragment(TaskListFragment.newInstance(true), "COMPLETED");
+        viewPager.setAdapter(adapter);
+    }
 
-        dataModels = new ArrayList();
+    @Override
+    public boolean completedItemClicked(DataModel data) {
+        return true;
+    }
 
-        dataModels.add(new DataModel("Apple Pie", false));
-        dataModels.add(new DataModel("Banana Bread", false));
-        dataModels.add(new DataModel("Cupcake", false));
-        dataModels.add(new DataModel("Donut", true));
-        dataModels.add(new DataModel("Eclair", true));
-        dataModels.add(new DataModel("Froyo", true));
-        dataModels.add(new DataModel("Gingerbread", true));
-        dataModels.add(new DataModel("Honeycomb", false));
-        dataModels.add(new DataModel("Ice Cream Sandwich", false));
-        dataModels.add(new DataModel("Jelly Bean", false));
-        dataModels.add(new DataModel("Kitkat", false));
-        dataModels.add(new DataModel("Lollipop", false));
-        dataModels.add(new DataModel("Marshmallow", false));
-        dataModels.add(new DataModel("Nougat", false));
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
 
-        adapter = new CustomAdapter(dataModels, getApplicationContext());
+        public ViewPagerAdapter(FragmentManager manager) {
+            super(manager);
+        }
 
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView parent, View view, int position, long id) {
+        @Override
+        public Fragment getItem(int position) {
+            return mFragmentList.get(position);
+        }
 
-                DataModel dataModel= dataModels.get(position);
-                dataModel.checked = !dataModel.checked;
-                adapter.notifyDataSetChanged();
-            }
-        });
+        @Override
+        public int getCount() {
+            return mFragmentList.size();
+        }
+
+        public void addFragment(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitleList.get(position);
+        }
     }
 }

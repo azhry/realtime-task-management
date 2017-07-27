@@ -1,7 +1,6 @@
 package com.example.acer.plnwunderlist;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -17,27 +16,25 @@ import java.util.ArrayList;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link CompletedListFragment.OnFragmentInteractionListener} interface
+ * {@link TaskListFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link CompletedListFragment#newInstance} factory method to
+ * Use the {@link TaskListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class CompletedListFragment extends Fragment implements CustomAdapter.OnCheckboxClickedListener {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckboxClickedListener {
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+    private static final String ARG_PARAM1 = "isStrikethrough";
+
+    //Variables to store param
+    private Boolean mIsStrikethrough;
 
     private OnFragmentInteractionListener mListener;
     private CustomAdapter adapter;
     private ArrayList<DataModel> taskList;
     private ListView listView;
 
-    public CompletedListFragment() {
+    public TaskListFragment() {
         // Required empty public constructor
     }
 
@@ -45,16 +42,13 @@ public class CompletedListFragment extends Fragment implements CustomAdapter.OnC
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment CompletedListFragment.
+     * @param isStrikethrough a flag to decide if the view needs Strikethrough.
+     * @return A new instance of fragment TaskListFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static CompletedListFragment newInstance(String param1, String param2) {
-        CompletedListFragment fragment = new CompletedListFragment();
+    public static TaskListFragment newInstance(Boolean isStrikethrough) {
+        TaskListFragment fragment = new TaskListFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
+        args.putBoolean(ARG_PARAM1, isStrikethrough);
         fragment.setArguments(args);
         return fragment;
     }
@@ -63,13 +57,12 @@ public class CompletedListFragment extends Fragment implements CustomAdapter.OnC
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            mIsStrikethrough = getArguments().getBoolean(ARG_PARAM1);
         }
 
         //Initialize ArrayList and CustomAdapter
         taskList = new ArrayList<>();
-        adapter = new CustomAdapter(taskList, this.getContext());
+        adapter = new CustomAdapter(taskList, this.getContext(), mIsStrikethrough);
         //Initialize OnCheckboxClickedListener to make the damn thing work.
         adapter.setOnCheckboxClickedListener(this);
     }

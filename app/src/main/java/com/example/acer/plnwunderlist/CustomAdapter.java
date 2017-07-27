@@ -1,6 +1,7 @@
 package com.example.acer.plnwunderlist;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,8 +21,9 @@ import java.util.ArrayList;
 public class CustomAdapter extends ArrayAdapter{
 
     private ArrayList<DataModel> dataSet;
-    OnCheckboxClickedListener mCallback;
-    Context mContext;
+    private OnCheckboxClickedListener mCallback;
+    private Context mContext;
+    private Boolean isStrikethrough;
 
     // View lookup cache
     private static class ViewHolder {
@@ -33,11 +35,11 @@ public class CustomAdapter extends ArrayAdapter{
         public void checkboxClicked(int pos);
     }
 
-    public CustomAdapter(ArrayList data, Context context) {
+    public CustomAdapter(ArrayList data, Context context, Boolean isStrikethrough) {
         super(context, R.layout.list_menu_list, data);
         this.dataSet = data;
         this.mContext = context;
-
+        this.isStrikethrough = isStrikethrough;
     }
     @Override
     public int getCount() {
@@ -66,6 +68,10 @@ public class CustomAdapter extends ArrayAdapter{
             convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_menu_list, parent, false);
             viewHolder.txtName = (TextView) convertView.findViewById(R.id.txtName);
             viewHolder.checkBox = (CheckBox) convertView.findViewById(R.id.checkBox);
+
+            if(isStrikethrough){
+                viewHolder.txtName.setPaintFlags(viewHolder.txtName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            }
 
             result=convertView;
             convertView.setTag(viewHolder);
