@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.acer.plnwunderlist.Singleton.WebSocketClientManager;
+
 import org.json.JSONObject;
 
 import java.util.HashMap;

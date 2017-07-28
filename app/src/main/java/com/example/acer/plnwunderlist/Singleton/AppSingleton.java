@@ -1,4 +1,4 @@
-package com.example.acer.plnwunderlist;
+package com.example.acer.plnwunderlist.Singleton;
 
 import android.content.Context;
 
