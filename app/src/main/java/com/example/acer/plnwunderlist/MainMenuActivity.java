@@ -1,6 +1,5 @@
 package com.example.acer.plnwunderlist;
 
-import android.app.Application;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,6 +26,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
+import com.example.acer.plnwunderlist.Singleton.AppSingleton;
 
 import org.json.JSONArray;
 import org.json.JSONException;

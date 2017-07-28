@@ -5,20 +5,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.example.acer.plnwunderlist.Singleton.WebSocketClientManager;
+
 import org.json.JSONObject;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
-
-import tech.gusavila92.websocketclient.WebSocketClient;
 
 /**
  * Created by Azhary Arliansyah on 20/07/2017.

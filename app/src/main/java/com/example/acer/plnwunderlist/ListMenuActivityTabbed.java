@@ -95,10 +95,9 @@ public class ListMenuActivityTabbed extends AppCompatActivity implements
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().set
 
         this.viewPager = (ViewPager) findViewById(R.id.viewpager);
-       setupViewPager(viewPager);
+        setupViewPager(viewPager);
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);

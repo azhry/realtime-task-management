@@ -1,10 +1,11 @@
-package com.example.acer.plnwunderlist;
+package com.example.acer.plnwunderlist.Singleton;
 
 import android.content.Context;
 import android.util.Log;
 import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
+import com.example.acer.plnwunderlist.SessionManager;
 
 import org.json.JSONObject;
 

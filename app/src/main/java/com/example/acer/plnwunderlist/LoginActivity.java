@@ -7,10 +7,8 @@ package com.example.acer.plnwunderlist;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,6 +19,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
+import com.example.acer.plnwunderlist.Singleton.AppSingleton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,17 +57,28 @@ public class LoginActivity extends AppCompatActivity {
 
     private void loginUser(final String email, final String password) {
         String cancel_req_tag = "login";
+
+        /** Displaying progress dialog while logging in, for user experience */
         progressDialog.setMessage("Logging in...");
         showDialog();
 
+        /** Listener to handle server 'OK' response from login request */
         final Context loginContext = this;
         Response.Listener<String> responseListener = new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                Log.d(TAG, "Register Response: " + response.toString());
+
+                /** Dismiss progress dialog after receiving response */
                 hideDialog();
+
                 try {
+                    /** Convert string response to JSON object */
                     JSONObject jObj = new JSONObject(response);
+
+                    /**
+                     * Check whether the user entered valid credentials.
+                     * Error is occured when user entered wrong credentials or required params is missing.
+                     */
                     boolean error = jObj.getBoolean("error");
 
                     if (!error) {
@@ -87,22 +97,29 @@ public class LoginActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
+                    /** Exception is thrown if the response is not valid JSON string */
                     e.printStackTrace();
                 }
             }
         };
 
+        /**
+         * Listener to handle server 'NOT OK' response.
+         * Usually happens when there is network error or internal server error (HTTP 500).
+         */
         Response.ErrorListener responseErrorListener = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, "Login Error: " + error.getMessage());
                 Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_LONG).show();
                 hideDialog();
             }
         };
 
+        /** Attach the listeners to string request object with POST method */
         StringRequest strReq = new StringRequest(Request.Method.POST,
                 URL_FOR_LOGIN, responseListener, responseErrorListener) {
+
+            /** Set required parameters to be sent to server */
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
@@ -120,6 +137,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         };
 
+        /** Add request to request queue */
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(strReq, cancel_req_tag);
     }
 
