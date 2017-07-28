@@ -42,10 +42,13 @@ public class WebSocketClientManager {
 
         getInstance();
 
-        mWebSocketClient.setConnectTimeout(10000);
-        mWebSocketClient.setReadTimeout(60000);
-        mWebSocketClient.enableAutomaticReconnection(5000);
-        mWebSocketClient.connect();
+        if (!isConnected)
+        {
+            mWebSocketClient.setConnectTimeout(10000);
+            mWebSocketClient.setReadTimeout(60000);
+            mWebSocketClient.enableAutomaticReconnection(5000);
+            mWebSocketClient.connect();
+        }
     }
 
     public static void send(String data) {

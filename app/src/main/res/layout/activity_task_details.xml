@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    tools:context="com.example.acer.plnwunderlist.TaskDetailsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            style="@style/TaskDetailsLabel"
+            android:id="@+id/taskNameLabel"
+            android:text="Task" />
+
+        <EditText
+            android:id="@+id/taskNameEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textEmailAddress" />
+
+        <View style="@style/Divider" />
+
+        <TextView
+            style="@style/TaskDetailsLabel"
+            android:textSize="16sp"
+            android:id="@+id/taskDueDateLabel"
+            android:text="Finish Date" />
+
+
+        <TextView
+            android:id="@+id/taskDueDateEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="@dimen/app_default_label_left_margin"
+            android:text="No Due Date Set"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/addEditDueDateBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@color/btn_blue"
+                android:minHeight="36dp"
+                android:text="Set Due Date"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/deleteDueDateBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/holo_red_light"
+                android:text="Remove Due Date"
+                android:textColor="@android:color/white"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <View style="@style/Divider" />
+
+        <TextView
+            style="@style/TaskDetailsLabel"
+            android:id="@+id/taskNotesLabel"
+            android:text="Note" />
+
+        <EditText
+            android:id="@+id/editTaskNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textMultiLine" />
+
+        <View style="@style/Divider" />
+
+        <TextView
+            style="@style/TaskDetailsLabel"
+            android:id="@+id/taskFileLabel"
+            android:text="Attached Files" />
+
+        <LinearLayout
+            android:id="@+id/fileListView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/addFileBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="Add File" />
+
+        <View style="@style/Divider" />
+
+
+    </LinearLayout>
+</ScrollView>
