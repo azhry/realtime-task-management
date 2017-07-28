@@ -23,5 +23,4 @@
         android:textSize="16sp"
         android:layout_toEndOf="@+id/checkBox" />
 
-
 </RelativeLayout>

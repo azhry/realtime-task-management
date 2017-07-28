@@ -1,6 +1,7 @@
 package com.example.acer.plnwunderlist;
 
 import android.content.Context;
+import android.graphics.Paint;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,9 +18,12 @@ import java.util.ArrayList;
  * Created by Ryan Fadholi on 24/07/2017.
  */
 
-public class CustomAdapter extends ArrayAdapter {
+public class CustomAdapter extends ArrayAdapter{
+
     private ArrayList<DataModel> dataSet;
-    Context mContext;
+    private OnCheckboxClickedListener mCallback;
+    private Context mContext;
+    private Boolean isStrikethrough;
 
     // View lookup cache
     private static class ViewHolder {
@@ -27,13 +31,15 @@ public class CustomAdapter extends ArrayAdapter {
         CheckBox checkBox;
     }
 
+    public interface OnCheckboxClickedListener {
+        public void checkboxClicked(int pos);
+    }
 
-
-    public CustomAdapter(ArrayList data, Context context) {
+    public CustomAdapter(ArrayList data, Context context, Boolean isStrikethrough) {
         super(context, R.layout.list_menu_list, data);
         this.dataSet = data;
         this.mContext = context;
-
+        this.isStrikethrough = isStrikethrough;
     }
     @Override
     public int getCount() {
@@ -45,12 +51,15 @@ public class CustomAdapter extends ArrayAdapter {
         return dataSet.get(position);
     }
 
-
+    public void setOnCheckboxClickedListener(OnCheckboxClickedListener mCallback) {
+        this.mCallback = mCallback;
+    }
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 
         CheckBox itemCheckBox;
 
+        final int callbackPosition = position;
         ViewHolder viewHolder;
         final View result;
 
@@ -59,6 +68,10 @@ public class CustomAdapter extends ArrayAdapter {
             convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_menu_list, parent, false);
             viewHolder.txtName = (TextView) convertView.findViewById(R.id.txtName);
             viewHolder.checkBox = (CheckBox) convertView.findViewById(R.id.checkBox);
+
+            if(isStrikethrough){
+                viewHolder.txtName.setPaintFlags(viewHolder.txtName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+            }
 
             result=convertView;
             convertView.setTag(viewHolder);
@@ -76,7 +89,7 @@ public class CustomAdapter extends ArrayAdapter {
         itemCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d("Checkbox","It works, y'know?");
+                mCallback.checkboxClicked(callbackPosition);
             }
         });
         return result;
