@@ -105,6 +105,15 @@
 
         <View style="@style/Divider" />
 
+        <Button
+            android:id="@+id/addTask"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/btn_blue"
+            android:minHeight="36dp"
+            android:text="Add Task"
+            android:textColor="@android:color/white"/>
 
     </LinearLayout>
+
 </ScrollView>

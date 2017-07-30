@@ -85,6 +85,7 @@ public class WebSocketClientManager {
 
                 @Override
                 public void onTextReceived(String message) {
+                    Log.e("WSHandler", "on text received");
                     try {
                         JSONObject response = new JSONObject(message);
                         String action = response.getString("action");
@@ -99,17 +100,17 @@ public class WebSocketClientManager {
 
                 @Override
                 public void onBinaryReceived(byte[] data) {
-
+                    Log.e("WSHandler", "on binary received");
                 }
 
                 @Override
                 public void onPingReceived(byte[] data) {
-
+                    Log.e("WSHandler", "on ping received");
                 }
 
                 @Override
                 public void onPongReceived(byte[] data) {
-
+                    Log.e("WSHandler", "on pong received");
                 }
 
                 @Override

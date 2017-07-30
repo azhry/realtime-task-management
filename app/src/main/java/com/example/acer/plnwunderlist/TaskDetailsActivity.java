@@ -15,6 +15,8 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.volley.toolbox.JsonObjectRequest;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
@@ -23,6 +25,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     private Button addEditDueDateBtn;
     private Button deleteDueDateBtn;
+    private Button addTaskBtn;
     private FileListPseudoAdapter fileListPseudoAdapter;
     private LinearLayout fileList;
 
@@ -41,8 +44,9 @@ public class TaskDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task_details);
 
-        addEditDueDateBtn = (Button) findViewById(R.id.addEditDueDateBtn);
-        deleteDueDateBtn = (Button) findViewById(R.id.deleteDueDateBtn);
+        addEditDueDateBtn   = (Button) findViewById(R.id.addEditDueDateBtn);
+        deleteDueDateBtn    = (Button) findViewById(R.id.deleteDueDateBtn);
+        addTaskBtn          = (Button) findViewById(R.id.addTask);
 
         addEditDueDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,6 +63,12 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 setDateBtnsVisibility(false);
             }
         });
+        addTaskBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
 
 
         fileList = (LinearLayout) findViewById(R.id.fileListView);
@@ -66,6 +76,10 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         fileListPseudoAdapter.add("Data Azhary");
         fileListPseudoAdapter.add("Data Ryan");
+    }
+
+    private void addTask() {
+        //JsonObjectRequest jsonObjectRequest = new JsonObjectRequest();
     }
 
     public static class DatePickerFragment extends DialogFragment
