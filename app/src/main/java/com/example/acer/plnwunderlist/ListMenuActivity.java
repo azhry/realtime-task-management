@@ -20,13 +20,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.karumi.expandableselector.ExpandableItem;
-import com.karumi.expandableselector.ExpandableSelector;
-import com.karumi.expandableselector.ExpandableSelectorListener;
-import com.karumi.expandableselector.OnExpandableItemClickListener;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,9 +36,6 @@ public class ListMenuActivity extends AppCompatActivity implements
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private FloatingActionButton mFloatingActionButton;
-
-    ExpandableSelector sizesExpandableSelector;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
