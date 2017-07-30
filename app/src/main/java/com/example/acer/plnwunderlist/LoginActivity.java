@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,7 +31,7 @@ import java.util.Map;
 public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
-    private static final String URL_FOR_LOGIN = "http://pudinglab.id/puding-master/PLN/login.php";
+    private String URL_FOR_LOGIN;
     ProgressDialog progressDialog;
     private EditText loginInputEmail, loginInputPassword;
     private Button btnLogin;
@@ -43,6 +44,8 @@ public class LoginActivity extends AppCompatActivity {
         loginInputEmail = (EditText)findViewById(R.id.email);
         loginInputPassword = (EditText)findViewById(R.id.password);
         btnLogin = (Button)findViewById(R.id.login_btn);
+
+        URL_FOR_LOGIN = getString(R.string.uri_endpoint);
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
@@ -71,6 +74,8 @@ public class LoginActivity extends AppCompatActivity {
                 /** Dismiss progress dialog after receiving response */
                 hideDialog();
 
+                // Log.e("LOGIN_JSON", response);
+
                 try {
                     /** Convert string response to JSON object */
                     JSONObject jObj = new JSONObject(response);
@@ -98,6 +103,7 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 } catch (JSONException e) {
                     /** Exception is thrown if the response is not valid JSON string */
+                    Log.e("LOGIN", "exception - " + e.getMessage());
                     e.printStackTrace();
                 }
             }
@@ -110,6 +116,7 @@ public class LoginActivity extends AppCompatActivity {
         Response.ErrorListener responseErrorListener = new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                Log.e("LOGIN", error.getMessage());
                 Toast.makeText(getApplicationContext(), error.getMessage(), Toast.LENGTH_LONG).show();
                 hideDialog();
             }
@@ -123,6 +130,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
+                params.put("action", "login");
                 params.put("email", email);
                 params.put("password", password);
                 return params;
@@ -131,6 +139,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
+                params.put("action", "login");
                 params.put("email", email);
                 params.put("password", password);
                 return params;

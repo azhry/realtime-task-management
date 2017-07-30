@@ -49,7 +49,6 @@ public class MainMenuActivity extends AppCompatActivity {
     HashMap<String, String> userData;
     //Pseudo-statics. Cannot be initialized because it's fetched from resources XML.
     private String endpoint;
-    private String postEndpoint;
     //Declare attributes necessary for UI black magic.
     //Everything is assumed to be initialized in onCreate() method.
     private ArrayList<TodoList> todoLists = new ArrayList<>();//Used to hold data
@@ -64,7 +63,6 @@ public class MainMenuActivity extends AppCompatActivity {
 
         //Initalize the pseudo-statics
         endpoint = getString(R.string.uri_endpoint);
-        postEndpoint = getString(R.string.uri_post_endpoint);
 
         //Initialize progressDialog
         progressDialog = new ProgressDialog(this);
@@ -100,12 +98,12 @@ public class MainMenuActivity extends AppCompatActivity {
             }
         });
 
-        String reqUrl = endpoint + "?action=get_list&user_id=" + userData.get("user_id");
+        String reqUrl = endpoint + "?action=get_todo_list&user_id=" + userData.get("user_id");
         JsonArrayRequest getRequest = new JsonArrayRequest(Request.Method.GET, reqUrl, null,
                 new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        Log.e("JSON", response.toString());
+                        //Log.e("JSON", response.toString());
                         for (int i = 0; i < response.length(); i++) {
                             try {
                                 JSONObject jsonObject = response.getJSONObject(i);
@@ -114,6 +112,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                 adapter.add(new TodoList(listID, listName));
                                 adapter.notifyDataSetChanged();
                             } catch (JSONException e) {
+                                Log.e("JSON_Exception", e.getMessage());
                                 e.printStackTrace();
                             }
                         }
@@ -229,6 +228,7 @@ public class MainMenuActivity extends AppCompatActivity {
         Response.Listener<String> responseListener = new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+                Log.e("DELETE_RESPONSE", response);
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
@@ -262,12 +262,12 @@ public class MainMenuActivity extends AppCompatActivity {
             }
         };
 
-        StringRequest deleteRequest = new StringRequest(Request.Method.POST, postEndpoint,
+        StringRequest deleteRequest = new StringRequest(Request.Method.POST, endpoint,
                 responseListener, responseErrorListener) {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("action", "delete");
+                params.put("action", "delete_todo_list");
                 params.put("list_id", list.getID());
                 params.put("user_id", userData.get("user_id"));
                 return params;
@@ -280,10 +280,11 @@ public class MainMenuActivity extends AppCompatActivity {
     private void addNewList(final String newListName) {
         progressDialog.setMessage("Processing...");
         showDialog();
-        StringRequest addRequest = new StringRequest(Request.Method.POST, postEndpoint,
+        StringRequest addRequest = new StringRequest(Request.Method.POST, endpoint,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        Log.e("RESPONSE", response);
                         try {
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
@@ -325,7 +326,7 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("action", "insert");
+                params.put("action", "insert_todo_list");
                 params.put("list_name", newListName);
                 params.put("user_id", userData.get("user_id"));
                 return params;
@@ -334,7 +335,7 @@ public class MainMenuActivity extends AppCompatActivity {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
-                params.put("action", "insert");
+                params.put("action", "insert_todo_list");
                 params.put("list_name", newListName);
                 params.put("user_id", userData.get("user_id"));
                 return params;
@@ -386,12 +387,12 @@ public class MainMenuActivity extends AppCompatActivity {
                 hideDialog();
             }
         };
-        StringRequest editRequest = new StringRequest(Request.Method.POST, postEndpoint,
+        StringRequest editRequest = new StringRequest(Request.Method.POST, endpoint,
                 responseListener, responseErrorListener) {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<>();
-                params.put("action", "edit_list");
+                params.put("action", "update_todo_list");
                 params.put("user_id", userData.get("user_id"));
                 params.put("list_id", list.getID());
                 params.put("new_list_name", newListName);
