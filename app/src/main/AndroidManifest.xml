@@ -14,7 +14,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainEmptyActivity"
+            android:name=".MainGatewayActivity"
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,8 +29,9 @@
         <activity
             android:name=".ListMenuActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName="com.example.acer.plnwunderlist.MainMenuActivity"/>
+            android:parentActivityName=".MainMenuActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".TaskDetailsActivity"></activity>
     </application>
 
 </manifest>

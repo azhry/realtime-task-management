@@ -5,4 +5,5 @@
     <dimen name="text_margin">16dp</dimen>
     <dimen name="item_margin">12dp</dimen>
     <dimen name="item_text_size">15sp</dimen>
+    <dimen name="app_default_label_left_margin">12dp</dimen>
 </resources>
