@@ -7,6 +7,7 @@ import android.widget.TextView;
 import com.android.volley.RequestQueue;
 import com.example.acer.plnwunderlist.SessionManager;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URI;
@@ -52,6 +53,10 @@ public class WebSocketClientManager {
         }
     }
 
+    public static boolean connected() {
+        return isConnected;
+    }
+
     public static void send(String data) {
         if (isConnected)
             mWebSocketClient.send(data);
@@ -67,6 +72,7 @@ public class WebSocketClientManager {
             mWebSocketClient = new WebSocketClient(uri) {
                 @Override
                 public void onOpen() {
+                    Log.e("WS", "open");
                     isConnected = true;
                     Map<String, String> msg = new HashMap<>();
                     msg.put("type", "establishing_connection");
@@ -79,7 +85,16 @@ public class WebSocketClientManager {
 
                 @Override
                 public void onTextReceived(String message) {
-
+                    try {
+                        JSONObject response = new JSONObject(message);
+                        String action = response.getString("action");
+                        if (action.equals("connection_status")) {
+                            isConnected = false;
+                            Log.e("ConnectionStatus", "Disconnect");
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
@@ -102,6 +117,7 @@ public class WebSocketClientManager {
                     String msg = e.getMessage();
                     if (msg != null)
                         Log.e("WebSocket", msg);
+                    isConnected = false;
                 }
 
                 @Override
