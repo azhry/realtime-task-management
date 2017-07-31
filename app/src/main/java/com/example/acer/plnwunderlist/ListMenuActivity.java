@@ -20,6 +20,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 
+import com.github.clans.fab.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,10 +35,12 @@ public class ListMenuActivity extends AppCompatActivity implements
     ListView listView;
     private CustomAdapter adapter;
 
+    private int currentListID;
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
-
+    private FloatingActionButton floatingBtn;
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = this.getMenuInflater();
@@ -59,6 +63,11 @@ public class ListMenuActivity extends AppCompatActivity implements
                     case R.id.list_share_btn:
                         //Initialize the Intent
                         Intent shareIntent = new Intent(getApplicationContext(), ListShareActivity.class);
+                        //Setup data to pass w/ the intent
+                        shareIntent.putExtra("TODO_LIST_ID", currentListID);
+                        if(getIntent().hasExtra("TODO_LIST_NAME")){
+                            shareIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
+                        }
                         startActivity(shareIntent);
                         return true;
                     default:
@@ -91,6 +100,8 @@ public class ListMenuActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_testcoordinatorlayout);
 
+        this.currentListID = getIntent().getIntExtra("TODO_LIST_ID",-1);
+
         this.toolbar = (Toolbar) findViewById(R.id.list_toolbar);
         setSupportActionBar(toolbar);
 
@@ -101,6 +112,7 @@ public class ListMenuActivity extends AppCompatActivity implements
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+
         //If calling activity supplies current to-do list name,
         //Change App Title to the supplied name.
         if(getIntent().hasExtra("TODO_LIST_NAME")){

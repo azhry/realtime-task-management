@@ -18,4 +18,5 @@
     <string name="task_details_note_label">Note</string>
     <string name="task_details_files_label">Attached Files</string>
     <string name="task_details_add_file_btn_label">Add File</string>
+    <string name="list_share_title_default">INSERT TITLE HERE</string>
 </resources>

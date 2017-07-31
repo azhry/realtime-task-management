@@ -1,6 +1,7 @@
 package com.example.acer.plnwunderlist;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -29,7 +30,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     //Variables to store param
     private Boolean mIsStrikethrough;
 
-    private OnFragmentInteractionListener mListener;
     private CustomAdapter adapter;
     private ArrayList<DataModel> taskList;
     private ListView listView;
@@ -87,7 +87,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -123,9 +122,14 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
             @Override
             public void onItemClick(AdapterView parent, View view, int position, long id) {
 
-                DataModel dataModel= (DataModel) taskList.get(position);
-                dataModel.checked = !dataModel.checked;
-                adapter.notifyDataSetChanged();
+                //Initialize the Intent
+                Intent taskDetailsIntent = new Intent(getActivity().getApplicationContext(), TaskDetailsActivity.class);
+                //Get selected Todolist object, and extract its name for the page title.
+                String pageTitle = ((DataModel) listView.getItemAtPosition(position)).name;
+                //Send the to-do list title as extra information to the ListMenuActivity
+                taskDetailsIntent.putExtra("TASK_NAME", pageTitle);
+                taskDetailsIntent.putExtra("INTENT_TYPE", "EDIT");
+                startActivity(taskDetailsIntent);
             }
         });
         
@@ -135,7 +139,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
     /**

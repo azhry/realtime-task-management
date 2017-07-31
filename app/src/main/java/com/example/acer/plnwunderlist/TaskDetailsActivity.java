@@ -70,12 +70,19 @@ public class TaskDetailsActivity extends AppCompatActivity {
             }
         });
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         fileList = (LinearLayout) findViewById(R.id.fileListView);
         fileListPseudoAdapter = new FileListPseudoAdapter(fileList, this);
 
         fileListPseudoAdapter.add("Data Azhary");
         fileListPseudoAdapter.add("Data Ryan");
+    }
+
+    @Override
+    public boolean onSupportNavigateUp(){
+        finish();
+        return true;
     }
 
     private void addTask() {
