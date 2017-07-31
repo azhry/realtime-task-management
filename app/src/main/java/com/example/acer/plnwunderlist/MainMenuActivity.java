@@ -89,10 +89,12 @@ public class MainMenuActivity extends AppCompatActivity {
             public void onItemClick(AdapterView parent, View view, int position, long id) {
                 //Initialize the Intent
                 Intent todolistIntent = new Intent(getApplicationContext(), ListMenuActivity.class);
+                String itemID = ((TodoList) todoListsList.getItemAtPosition(position)).getID();
                 //Get selected Todolist object, and extract its name for the page title.
                 String pageTitle = ((TodoList) todoListsList.getItemAtPosition(position)).getName();
                 //Send the to-do list title as extra information to the ListMenuActivity
                 todolistIntent.putExtra("TODO_LIST_NAME", pageTitle);
+                todolistIntent.putExtra("TODO_LIST_ID", itemID);
                 startActivity(todolistIntent);
 
             }

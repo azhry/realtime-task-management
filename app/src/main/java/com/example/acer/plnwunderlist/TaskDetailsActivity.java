@@ -15,11 +15,20 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.acer.plnwunderlist.Singleton.AppSingleton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class TaskDetailsActivity extends AppCompatActivity {
 
@@ -28,6 +37,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private Button addTaskBtn;
     private FileListPseudoAdapter fileListPseudoAdapter;
     private LinearLayout fileList;
+    private String endpoint;
 
     public void setDateBtnsVisibility(boolean isDateSet) {
         if (isDateSet) {
@@ -47,6 +57,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
         addEditDueDateBtn   = (Button) findViewById(R.id.addEditDueDateBtn);
         deleteDueDateBtn    = (Button) findViewById(R.id.deleteDueDateBtn);
         addTaskBtn          = (Button) findViewById(R.id.addTask);
+
+        endpoint = getString(R.string.uri_endpoint);
 
         addEditDueDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,8 +90,23 @@ public class TaskDetailsActivity extends AppCompatActivity {
         fileListPseudoAdapter.add("Data Ryan");
     }
 
-    private void addTask() {
-        //JsonObjectRequest jsonObjectRequest = new JsonObjectRequest();
+    private void addTask(JSONObject data) throws JSONException {
+        String REQUEST_TAG = "insert_todo_item";
+        data.put("action", REQUEST_TAG);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST, endpoint, data,
+                new Response.Listener<JSONObject>(){
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+                    }
+                },
+                new Response.ErrorListener(){
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest, REQUEST_TAG);
     }
 
     public static class DatePickerFragment extends DialogFragment

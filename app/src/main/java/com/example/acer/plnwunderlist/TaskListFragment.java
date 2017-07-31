@@ -4,11 +4,22 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.example.acer.plnwunderlist.Singleton.AppSingleton;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -25,14 +36,19 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
 
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "isStrikethrough";
+    private static final String ARG_PARAM2 = "listID";
 
     //Variables to store param
     private Boolean mIsStrikethrough;
+    private String listID;
 
     private OnFragmentInteractionListener mListener;
     private CustomAdapter adapter;
     private ArrayList<DataModel> taskList;
     private ListView listView;
+
+    private String endpoint;
+    private JSONArray todoItems;
 
     public TaskListFragment() {
         // Required empty public constructor
@@ -45,10 +61,11 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
      * @param isStrikethrough a flag to decide if the view needs Strikethrough.
      * @return A new instance of fragment TaskListFragment.
      */
-    public static TaskListFragment newInstance(Boolean isStrikethrough) {
+    public static TaskListFragment newInstance(Boolean isStrikethrough, String listID) {
         TaskListFragment fragment = new TaskListFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_PARAM1, isStrikethrough);
+        args.putString(ARG_PARAM2, listID);
         fragment.setArguments(args);
         return fragment;
     }
@@ -58,7 +75,10 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mIsStrikethrough = getArguments().getBoolean(ARG_PARAM1);
+            listID = getArguments().getString(ARG_PARAM2);
         }
+
+        endpoint = getString(R.string.uri_endpoint);
 
         //Initialize ArrayList and CustomAdapter
         taskList = new ArrayList<>();
@@ -68,7 +88,12 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     }
 
     public void refreshList(){
+        adapter.notifyDataSetChanged();
+    }
 
+    public void addTask(DataModel task) {
+        adapter.add(task);
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -103,33 +128,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        
-        adapter.add(new DataModel("Completed 1", true));
-        adapter.add(new DataModel("Completed 2", true));
-        adapter.add(new DataModel("Completed 3", true));
-        adapter.add(new DataModel("Completed 4", true));
-        adapter.add(new DataModel("Completed 5", true));
-        adapter.add(new DataModel("Completed 6", true));
-        adapter.add(new DataModel("Completed 7", true));
-        adapter.add(new DataModel("Completed 8", true));
-        adapter.add(new DataModel("Completed 9", true));
-        adapter.add(new DataModel("Completed 10", true));
-        adapter.add(new DataModel("Completed 11", true));
-        adapter.add(new DataModel("Completed 12", true));
-        adapter.notifyDataSetChanged();
-
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView parent, View view, int position, long id) {
-
-                DataModel dataModel= (DataModel) taskList.get(position);
-                dataModel.checked = !dataModel.checked;
-                adapter.notifyDataSetChanged();
-            }
-        });
-        
-        
+        getItemsList(listID);
     }
 
     @Override
@@ -150,5 +149,50 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
      */
     public interface OnFragmentInteractionListener {
         boolean completedItemClicked(DataModel data);
+    }
+
+    private void getItemsList(String listID) {
+        final String REQUEST_TAG = "get_todo_item";
+        String REQUEST_URI = endpoint + "?action=" + REQUEST_TAG + "&list_id=" + listID;
+        JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, REQUEST_URI, null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        todoItems = response;
+                        for (int i = 0; i < todoItems.length(); i++) {
+                            try {
+                                JSONObject item = todoItems.getJSONObject(i);
+                                boolean is_completed = item.getInt("IS_COMPLETED") == 1 ? true : false;
+                                if (is_completed == mIsStrikethrough) {
+                                    adapter.add(new DataModel(item.getString("ITEM_DESC"), is_completed));
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        adapter.notifyDataSetChanged();
+
+                        listView.setAdapter(adapter);
+                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView parent, View view, int position, long id) {
+
+                                DataModel dataModel= (DataModel) taskList.get(position);
+                                dataModel.checked = !dataModel.checked;
+                                adapter.notifyDataSetChanged();
+                            }
+                        });
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String msg = error.getMessage();
+                        if (msg != null)
+                            Log.e(REQUEST_TAG, msg);
+                    }
+                });
+        AppSingleton.getInstance(getActivity().getApplicationContext()).addToRequestQueue(jsonArrayRequest, REQUEST_TAG);
     }
 }
