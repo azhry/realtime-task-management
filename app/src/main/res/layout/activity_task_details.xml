@@ -14,12 +14,13 @@
         <TextView
             style="@style/TaskDetailsLabel"
             android:id="@+id/taskNameLabel"
-            android:text="Task" />
+            android:text="@string/task_details_name_label" />
 
         <EditText
             android:id="@+id/taskNameEdit"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/app_default_left_margin"
             android:ems="10"
             android:inputType="textEmailAddress" />
 
@@ -27,9 +28,8 @@
 
         <TextView
             style="@style/TaskDetailsLabel"
-            android:textSize="16sp"
             android:id="@+id/taskDueDateLabel"
-            android:text="Finish Date" />
+            android:text="@string/task_details_date_label" />
 
 
         <TextView
@@ -37,7 +37,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:layout_marginLeft="@dimen/app_default_label_left_margin"
+            android:layout_marginLeft="@dimen/app_default_left_margin"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/btn_blue"
             android:text="No Due Date Set"
             android:textSize="20sp" />
 
@@ -53,7 +56,7 @@
                 android:layout_weight="1"
                 android:background="@color/btn_blue"
                 android:minHeight="36dp"
-                android:text="Set Due Date"
+                android:text="@string/task_details_set_date_btn_label_1"
                 android:textColor="@android:color/white" />
 
             <Button
@@ -62,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@android:color/holo_red_light"
-                android:text="Remove Due Date"
+                android:text="@string/task_details_delete_date_btn_label"
                 android:textColor="@android:color/white"
                 android:visibility="gone" />
         </LinearLayout>
@@ -72,12 +75,13 @@
         <TextView
             style="@style/TaskDetailsLabel"
             android:id="@+id/taskNotesLabel"
-            android:text="Note" />
+            android:text="@string/task_details_note_label" />
 
         <EditText
             android:id="@+id/editTaskNote"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/app_default_left_margin"
             android:ems="10"
             android:inputType="textMultiLine" />
 
@@ -86,7 +90,7 @@
         <TextView
             style="@style/TaskDetailsLabel"
             android:id="@+id/taskFileLabel"
-            android:text="Attached Files" />
+            android:text="@string/task_details_files_label" />
 
         <LinearLayout
             android:id="@+id/fileListView"
@@ -101,7 +105,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:text="Add File" />
+            android:text="@string/task_details_add_file_btn_label" />
 
         <View style="@style/Divider" />
 

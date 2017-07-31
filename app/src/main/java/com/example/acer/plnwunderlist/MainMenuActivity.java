@@ -237,6 +237,7 @@ public class MainMenuActivity extends AppCompatActivity {
                         adapter.remove(list);
                         adapter.notifyDataSetChanged();
                         Toast.makeText(MainMenuActivity.this, listName + " has been deleted", Toast.LENGTH_LONG).show();
+                        setEmptyTextVisibility(emptyTextView);
                     } else if (status == 1) {
                         Toast.makeText(MainMenuActivity.this, "You don't have access to delete this list!", Toast.LENGTH_LONG).show();
                     } else if (status == 2) {
@@ -275,6 +276,7 @@ public class MainMenuActivity extends AppCompatActivity {
         };
 
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(deleteRequest, "delete_list");
+
     }
 
     private void addNewList(final String newListName) {
@@ -293,6 +295,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                 String newListName = jsonObject.getString("list_name");
                                 adapter.add(new TodoList(newListID, newListName));
                                 adapter.notifyDataSetChanged();
+                                setEmptyTextVisibility(emptyTextView);
                                 Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
                             } else if (status == 1)
                                 Toast.makeText(getApplicationContext(), "Insert list failed!", Toast.LENGTH_LONG).show();
@@ -343,7 +346,6 @@ public class MainMenuActivity extends AppCompatActivity {
         };
 
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(addRequest, "add_list");
-        setEmptyTextVisibility(emptyTextView);
     }
 
     private void editList(final String newListName, final TodoList list) {

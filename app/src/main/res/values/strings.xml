@@ -1,9 +1,9 @@
 <resources>
     <string name="app_name">PLN-Comm</string>
     <string name="create_new_list_label">+ Create New List</string>
-    <string name="uri_websocket">ws://192.168.1.104:2000/PLN</string>
+    <string name="uri_websocket">ws://192.168.43.144:2000/PLN</string>
     <string name="emptyList_Text">You don\'t have any lists.\n Create one using the button below!</string>
-    <string name="uri_endpoint">http://192.168.1.104/PLN/endpoint.php</string>
+    <string name="uri_endpoint">http://192.168.43.144/PLN/endpoint.php</string>
     <string name="list_default_value">DEFAULT TITLE</string>
     <string name="delete_dialog_start">Are you sure you want to delete</string>
     <string name="delete_dialog_end">list?</string>
@@ -11,7 +11,11 @@
     <string name="dialog_default_positive_labeal">OK</string>
     <string name="dialog_default_negative_label">CANCEL</string>
     <string name="add_dialog_title">Create New To-Do List</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="task_details_date_label">Finish Date</string>
+    <string name="task_details_name_label">Task</string>
+    <string name="task_details_set_date_btn_label_1">Set Due Date</string>
+    <string name="task_details_delete_date_btn_label">Remove Due Date</string>
+    <string name="task_details_note_label">Note</string>
+    <string name="task_details_files_label">Attached Files</string>
+    <string name="task_details_add_file_btn_label">Add File</string>
 </resources>
