@@ -89,12 +89,13 @@ public class MainMenuActivity extends AppCompatActivity {
             public void onItemClick(AdapterView parent, View view, int position, long id) {
                 //Initialize the Intent
                 Intent todolistIntent = new Intent(getApplicationContext(), ListMenuActivity.class);
-                String itemID = ((TodoList) todoListsList.getItemAtPosition(position)).getID();
-                //Get selected Todolist object, and extract its name for the page title.
-                String pageTitle = ((TodoList) todoListsList.getItemAtPosition(position)).getName();
-                //Send the to-do list title as extra information to the ListMenuActivity
-                todolistIntent.putExtra("TODO_LIST_NAME", pageTitle);
-                todolistIntent.putExtra("TODO_LIST_ID", itemID);
+
+                //Get selected Todolist object
+                TodoList clickedList = (TodoList) todoListsList.getItemAtPosition(position);
+                //and extract its name for the page title, and ID for reference.
+                todolistIntent.putExtra("TODO_LIST_ID", clickedList.getID());
+                todolistIntent.putExtra("TODO_LIST_NAME", clickedList.getName());
+
                 startActivity(todolistIntent);
 
             }
@@ -239,6 +240,7 @@ public class MainMenuActivity extends AppCompatActivity {
                         adapter.remove(list);
                         adapter.notifyDataSetChanged();
                         Toast.makeText(MainMenuActivity.this, listName + " has been deleted", Toast.LENGTH_LONG).show();
+                        setEmptyTextVisibility(emptyTextView);
                     } else if (status == 1) {
                         Toast.makeText(MainMenuActivity.this, "You don't have access to delete this list!", Toast.LENGTH_LONG).show();
                     } else if (status == 2) {
@@ -277,6 +279,7 @@ public class MainMenuActivity extends AppCompatActivity {
         };
 
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(deleteRequest, "delete_list");
+
     }
 
     private void addNewList(final String newListName) {
@@ -295,6 +298,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                 String newListName = jsonObject.getString("list_name");
                                 adapter.add(new TodoList(newListID, newListName));
                                 adapter.notifyDataSetChanged();
+                                setEmptyTextVisibility(emptyTextView);
                                 Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
                             } else if (status == 1)
                                 Toast.makeText(getApplicationContext(), "Insert list failed!", Toast.LENGTH_LONG).show();
@@ -345,7 +349,6 @@ public class MainMenuActivity extends AppCompatActivity {
         };
 
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(addRequest, "add_list");
-        setEmptyTextVisibility(emptyTextView);
     }
 
     private void editList(final String newListName, final TodoList list) {

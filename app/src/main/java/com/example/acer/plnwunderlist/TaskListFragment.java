@@ -1,6 +1,7 @@
 package com.example.acer.plnwunderlist;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -42,7 +43,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     private Boolean mIsStrikethrough;
     private String listID;
 
-    private OnFragmentInteractionListener mListener;
     private CustomAdapter adapter;
     private ArrayList<DataModel> taskList;
     private ListView listView;
@@ -112,7 +112,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -134,7 +133,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
     }
 
     /**

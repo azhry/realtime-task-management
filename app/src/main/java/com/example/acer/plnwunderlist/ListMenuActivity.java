@@ -38,6 +38,8 @@ import com.github.clans.fab.FloatingActionButton;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.github.clans.fab.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,6 +55,7 @@ public class ListMenuActivity extends AppCompatActivity implements
     ListView listView;
     private CustomAdapter adapter;
 
+    private int currentListID;
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -87,6 +90,11 @@ public class ListMenuActivity extends AppCompatActivity implements
                     case R.id.list_share_btn:
                         //Initialize the Intent
                         Intent shareIntent = new Intent(getApplicationContext(), ListShareActivity.class);
+                        //Setup data to pass w/ the intent
+                        shareIntent.putExtra("TODO_LIST_ID", currentListID);
+                        if(getIntent().hasExtra("TODO_LIST_NAME")){
+                            shareIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
+                        }
                         startActivity(shareIntent);
                         return true;
                     default:
@@ -118,6 +126,8 @@ public class ListMenuActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_testcoordinatorlayout);
+
+        this.currentListID = getIntent().getIntExtra("TODO_LIST_ID",-1);
 
         this.toolbar = (Toolbar) findViewById(R.id.list_toolbar);
         setSupportActionBar(toolbar);

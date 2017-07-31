@@ -11,7 +11,12 @@
     <string name="dialog_default_positive_labeal">OK</string>
     <string name="dialog_default_negative_label">CANCEL</string>
     <string name="add_dialog_title">Create New To-Do List</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="task_details_date_label">Finish Date</string>
+    <string name="task_details_name_label">Task</string>
+    <string name="task_details_set_date_btn_label_1">Set Due Date</string>
+    <string name="task_details_delete_date_btn_label">Remove Due Date</string>
+    <string name="task_details_note_label">Note</string>
+    <string name="task_details_files_label">Attached Files</string>
+    <string name="task_details_add_file_btn_label">Add File</string>
+    <string name="list_share_title_default">INSERT TITLE HERE</string>
 </resources>

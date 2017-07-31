@@ -82,6 +82,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
             }
         });
 
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         fileList = (LinearLayout) findViewById(R.id.fileListView);
         fileListPseudoAdapter = new FileListPseudoAdapter(fileList, this);
@@ -107,6 +108,12 @@ public class TaskDetailsActivity extends AppCompatActivity {
                     }
                 });
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjectRequest, REQUEST_TAG);
+    }
+
+    @Override
+    public boolean onSupportNavigateUp(){
+        finish();
+        return true;
     }
 
     public static class DatePickerFragment extends DialogFragment

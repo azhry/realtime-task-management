@@ -2,9 +2,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/list_share_btn"
+        android:id="@+id/task_edit_ok_btn"
         android:orderInCategory="100"
         app:showAsAction="always"
         android:icon="@drawable/ic_person_add_black_24dp"
-        android:title="List Members"/>
+        android:title="Complete Edit"/>
 </menu>

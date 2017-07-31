@@ -31,7 +31,8 @@
             android:label="@string/app_name"
             android:parentActivityName=".MainMenuActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".TaskDetailsActivity"></activity>
+        <activity android:name=".TaskDetailsActivity"
+            android:windowSoftInputMode="adjustNothing" />
     </application>
 
 </manifest>
