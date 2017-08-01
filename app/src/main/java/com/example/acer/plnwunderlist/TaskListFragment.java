@@ -1,5 +1,6 @@
 package com.example.acer.plnwunderlist;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -85,16 +86,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
             //and vice versa.
             isOngoingFragment = !mIsStrikethrough;
         }
-
-
-
         endpoint = getString(R.string.uri_endpoint);
-
-        //Initialize ArrayList and CustomAdapter
-        taskList = new ArrayList<>();
-        adapter = new CustomAdapter(taskList, this.getContext(), mIsStrikethrough);
-        //Initialize OnCheckboxClickedListener to make the damn thing work.
-        adapter.setOnCheckboxClickedListener(this);
     }
 
     public void refreshList(){
@@ -122,6 +114,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
+            this.mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -130,15 +123,38 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
 
     @Override
     public void checkboxClicked(int pos) {
-//            adapter.remove(adapter.getItem(pos));
-        mListener.fragmentCheckboxClicked((DataModel) listView.getItemAtPosition(pos),
+        mListener.fragmentCheckboxClicked(adapter.getItem(pos),
                 isOngoingFragment);
-            adapter.notifyDataSetChanged();
-        }
+        adapter.remove(adapter.getItem(pos));
+        adapter.notifyDataSetChanged();
+
+    }
+
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        //Initialize ArrayList and CustomAdapter
+        taskList = new ArrayList<>();
+        this.adapter = new CustomAdapter(taskList, getContext(), mIsStrikethrough);
+        //Initialize OnCheckboxClickedListener to make the damn thing work.
+        this.adapter.setOnCheckboxClickedListener(this);
+        //asasa
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView parent, View view, int position, long id) {
+
+                DataModel dataModel= (DataModel) taskList.get(position);
+                dataModel.checked = !dataModel.checked;
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+//        adapter.add(new DataModel("Garok", false));
+//        adapter.add(new DataModel("Rizki", false));
+//        adapter.add(new DataModel("Atma", false));
         getItemsList(listID);
     }
 
@@ -159,11 +175,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
      */
     public interface OnFragmentInteractionListener {
         boolean fragmentCheckboxClicked(DataModel data, boolean isOngoingFragment);
-    }
-
-
-    public void setOnFragmentInteractionListener(TaskListFragment.OnFragmentInteractionListener listener){
-        mListener = listener;
     }
 
     private void getItemsList(String listID) {
@@ -187,17 +198,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                         }
 
                         adapter.notifyDataSetChanged();
-
-                        listView.setAdapter(adapter);
-                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView parent, View view, int position, long id) {
-
-                                DataModel dataModel= (DataModel) taskList.get(position);
-                                dataModel.checked = !dataModel.checked;
-                                adapter.notifyDataSetChanged();
-                            }
-                        });
                     }
                 },
                 new Response.ErrorListener() {
