@@ -148,8 +148,8 @@ public class ListMenuActivity extends AppCompatActivity implements
         }
 
         //Initialize Fragments
-        this.onGoingFragment = TaskListFragment.newInstance(false, listID);
-        this.completedFragment = TaskListFragment.newInstance(true, listID);
+        this.onGoingFragment    = TaskListFragment.newInstance(false, listID);
+        this.completedFragment  = TaskListFragment.newInstance(true, listID);
 
         this.viewPager = (ViewPager) findViewById(R.id.viewpager);
         viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
@@ -170,6 +170,16 @@ public class ListMenuActivity extends AppCompatActivity implements
             @Override
             public void onClick(View v) {
                 showQuickAddDialog(ListMenuActivity.this);
+            }
+        });
+
+        addTask.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent addTaskFormIntent = new Intent(ListMenuActivity.this, TaskDetailsActivity.class);
+                addTaskFormIntent.putExtra("TODO_LIST_ID", listID);
+                addTaskFormIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
+                startActivity(addTaskFormIntent);
             }
         });
     }
@@ -229,9 +239,9 @@ public class ListMenuActivity extends AppCompatActivity implements
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
                                 onGoingFragment.addTask(new DataModel(name, false));
-                                Toast.makeText(ListMenuActivity.this, name + " added!", Toast.LENGTH_LONG);
+                                Toast.makeText(ListMenuActivity.this, name + " added!", Toast.LENGTH_LONG).show();
                             } else if (status == 1) {
-                                Toast.makeText(ListMenuActivity.this, "Quick add failed!", Toast.LENGTH_LONG);
+                                Toast.makeText(ListMenuActivity.this, "Quick add failed!", Toast.LENGTH_LONG).show();
                             } else {
                                 Log.e("QUICK_ADD_SUCCESS", response.toString());
                             }
