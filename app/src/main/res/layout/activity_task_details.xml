@@ -100,12 +100,26 @@
 
         </LinearLayout>
 
-        <Button
-            android:id="@+id/addFileBtn"
-            android:layout_width="wrap_content"
+        <LinearLayout
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
-            android:text="@string/task_details_add_file_btn_label" />
+            android:layout_width="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/addFileBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="@string/task_details_add_file_btn_label" />
+
+            <Button
+                android:id="@+id/uploadFileBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="Upload" />
+
+        </LinearLayout>
 
         <View style="@style/Divider" />
 
