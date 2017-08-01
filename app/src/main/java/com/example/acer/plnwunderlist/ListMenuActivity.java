@@ -146,6 +146,8 @@ public class ListMenuActivity extends AppCompatActivity implements
         //Initialize Fragments
         this.onGoingFragment = TaskListFragment.newInstance(false, listID);
         this.completedFragment = TaskListFragment.newInstance(true, listID);
+        onGoingFragment.setOnFragmentInteractionListener(this);
+        completedFragment.setOnFragmentInteractionListener(this);
 
         this.viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);
@@ -178,7 +180,17 @@ public class ListMenuActivity extends AppCompatActivity implements
     }
 
     @Override
-    public boolean completedItemClicked(DataModel data) {
+    public boolean fragmentCheckboxClicked(DataModel data, boolean isOngoingFragment) {
+        //The boolean is used to identify which fragment called the callback.
+        //true means the calling fragment is ongoingFragment,
+        //false means the calling fragment is completedFragment.
+
+        if(isOngoingFragment){
+            Toast.makeText(this, "Ongoing item clicked!", Toast.LENGTH_LONG);
+        } else {
+            Toast.makeText(this, "Completed item clicked!", Toast.LENGTH_LONG);
+        }
+
         return true;
     }
 
@@ -205,6 +217,7 @@ public class ListMenuActivity extends AppCompatActivity implements
         AlertDialog newList = quickAddBuilder.create();
         newList.show();
     }
+
 
     private void quickAddTask(final String name) {
         progressDialog.setMessage("Processing...");

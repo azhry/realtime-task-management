@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -46,6 +47,9 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     private CustomAdapter adapter;
     private ArrayList<DataModel> taskList;
     private ListView listView;
+    private Boolean isOngoingFragment;
+
+    private TaskListFragment.OnFragmentInteractionListener mListener;
 
     private String endpoint;
     private JSONArray todoItems;
@@ -76,7 +80,13 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
         if (getArguments() != null) {
             mIsStrikethrough = getArguments().getBoolean(ARG_PARAM1);
             listID = getArguments().getString(ARG_PARAM2);
+            //isOngoing is the opposite of mIsStrikethroughm because if the strikethrough
+            //flag is set to true, then the fragment is supposed to be a completedFragment,
+            //and vice versa.
+            isOngoingFragment = !mIsStrikethrough;
         }
+
+
 
         endpoint = getString(R.string.uri_endpoint);
 
@@ -120,7 +130,9 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
 
     @Override
     public void checkboxClicked(int pos) {
-            adapter.remove(adapter.getItem(pos));
+//            adapter.remove(adapter.getItem(pos));
+        mListener.fragmentCheckboxClicked((DataModel) listView.getItemAtPosition(pos),
+                isOngoingFragment);
             adapter.notifyDataSetChanged();
         }
 
@@ -146,7 +158,12 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        boolean completedItemClicked(DataModel data);
+        boolean fragmentCheckboxClicked(DataModel data, boolean isOngoingFragment);
+    }
+
+
+    public void setOnFragmentInteractionListener(TaskListFragment.OnFragmentInteractionListener listener){
+        mListener = listener;
     }
 
     private void getItemsList(String listID) {
