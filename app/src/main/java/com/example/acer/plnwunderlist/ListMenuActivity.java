@@ -91,7 +91,7 @@ public class ListMenuActivity extends AppCompatActivity implements
                         //Initialize the Intent
                         Intent shareIntent = new Intent(getApplicationContext(), ListShareActivity.class);
                         //Setup data to pass w/ the intent
-                        shareIntent.putExtra("TODO_LIST_ID", currentListID);
+                        shareIntent.putExtra("TODO_LIST_ID", listID);
                         if(getIntent().hasExtra("TODO_LIST_NAME")){
                             shareIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
                         }
