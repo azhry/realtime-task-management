@@ -47,7 +47,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     private String listID;
 
     private CustomAdapter adapter;
-    private ArrayList<DataModel> taskList;
+    private ArrayList<TodoItem> taskList;
     private ListView listView;
     private Boolean isOngoingFragment;
 
@@ -94,7 +94,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
         adapter.notifyDataSetChanged();
     }
 
-    public void addTask(DataModel task) {
+    public void addTask(TodoItem task) {
         adapter.add(task);
         adapter.notifyDataSetChanged();
     }
@@ -147,15 +147,11 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
             @Override
             public void onItemClick(AdapterView parent, View view, int position, long id) {
 
-                DataModel dataModel= (DataModel) taskList.get(position);
-                dataModel.checked = !dataModel.checked;
+                TodoItem todoItem= (TodoItem) taskList.get(position);
                 adapter.notifyDataSetChanged();
             }
         });
-
-//        adapter.add(new DataModel("Garok", false));
-//        adapter.add(new DataModel("Rizki", false));
-//        adapter.add(new DataModel("Atma", false));
+        
         getItemsList(listID);
     }
 
@@ -175,7 +171,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        boolean fragmentCheckboxClicked(DataModel data, boolean isOngoingFragment);
+        boolean fragmentCheckboxClicked(TodoItem data, boolean isOngoingFragment);
     }
 
     private void getItemsList(String listID) {
@@ -190,12 +186,10 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                             try {
                                 JSONObject item = todoItems.getJSONObject(i);
                                 boolean is_completed = item.getInt("IS_COMPLETED") == 1 ? true : false;
-                                if (is_completed == mIsStrikethrough) {
-//                                    TodoItem temp = new TodoItem(item.getInt("TODO_ID"), item.getInt("LIST_ID"),
-//                                            item.getString("ITEM_DESC"), item.getString("NOTE"),
-//                                            Date.valueOf(item.getString("DUE_DATE")));
+                                TodoItem temp = TodoItem.newInstance(item);
 
-                                    adapter.add(new DataModel(item.getString("ITEM_DESC"), is_completed));
+                                if (is_completed == mIsStrikethrough) {
+                                    adapter.add(TodoItem.newInstance(item));
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();

@@ -33,6 +33,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
+import com.example.acer.plnwunderlist.TodoItem;
 import com.github.clans.fab.FloatingActionButton;
 
 import org.json.JSONException;
@@ -51,7 +52,7 @@ public class ListMenuActivity extends AppCompatActivity implements
 
     static int taskTabCount = 2;
 
-    ArrayList<DataModel> dataModels;
+    ArrayList<TodoItem> dataModels;
     ListView listView;
     private CustomAdapter adapter;
 
@@ -181,7 +182,7 @@ public class ListMenuActivity extends AppCompatActivity implements
     }
 
     @Override
-    public boolean fragmentCheckboxClicked(DataModel data, boolean isOngoingFragment) {
+    public boolean fragmentCheckboxClicked(TodoItem data, boolean isOngoingFragment) {
         //The boolean is used to identify which fragment called the callback.
         //true means the calling fragment is ongoingFragment,
         //false means the calling fragment is completedFragment.
@@ -234,8 +235,7 @@ public class ListMenuActivity extends AppCompatActivity implements
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
-
-                                onGoingFragment.addTask(new DataModel(name, false));
+                                onGoingFragment.addTask(TodoItem.newInstance(jsonObject));
                                 Toast.makeText(ListMenuActivity.this, name + " added!", Toast.LENGTH_LONG).show();
                             } else if (status == 1) {
                                 Toast.makeText(ListMenuActivity.this, "Quick add failed!", Toast.LENGTH_LONG).show();

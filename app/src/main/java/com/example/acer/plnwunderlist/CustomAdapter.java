@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 public class CustomAdapter extends ArrayAdapter{
 
-    private ArrayList<DataModel> dataSet;
+    private ArrayList<TodoItem> dataSet;
     private OnCheckboxClickedListener mCallback;
     private Context mContext;
     private Boolean isStrikethrough;
@@ -47,7 +47,7 @@ public class CustomAdapter extends ArrayAdapter{
     }
 
     @Override
-    public DataModel getItem(int position) {
+    public TodoItem getItem(int position) {
         return dataSet.get(position);
     }
 
@@ -81,10 +81,10 @@ public class CustomAdapter extends ArrayAdapter{
             result=convertView;
         }
 
-        DataModel item = getItem(position);
+        TodoItem item = getItem(position);
 
-        viewHolder.txtName.setText(item.name);
-        viewHolder.checkBox.setChecked(item.checked);
+        viewHolder.txtName.setText(item.getDescription());
+        //viewHolder.checkBox.setChecked(item.checked);
         itemCheckBox = (CheckBox) result.findViewById(R.id.checkBox);
         itemCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override
