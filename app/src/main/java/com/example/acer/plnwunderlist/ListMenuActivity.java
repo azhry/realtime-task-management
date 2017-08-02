@@ -234,7 +234,7 @@ public class ListMenuActivity extends AppCompatActivity implements
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
-                                
+
                                 onGoingFragment.addTask(new DataModel(name, false));
                                 Toast.makeText(ListMenuActivity.this, name + " added!", Toast.LENGTH_LONG).show();
                             } else if (status == 1) {
