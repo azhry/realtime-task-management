@@ -128,7 +128,10 @@ public class MainMenuActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("Error.Response", error.getMessage());
+
+                        String msg = error.getMessage();
+                        if (msg != null)
+                            Log.d("Error.Response", error.getMessage());
                         hideDialog();
                     }
                 }

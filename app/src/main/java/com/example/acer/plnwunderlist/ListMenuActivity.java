@@ -23,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -51,6 +52,9 @@ import java.util.Map;
 
 public class ListMenuActivity extends AppCompatActivity implements
         TaskListFragment.OnFragmentInteractionListener {
+
+    static int taskTabCount = 2;
+
     ArrayList<DataModel> dataModels;
     ListView listView;
     private CustomAdapter adapter;
@@ -148,7 +152,7 @@ public class ListMenuActivity extends AppCompatActivity implements
         this.completedFragment  = TaskListFragment.newInstance(true, listID);
 
         this.viewPager = (ViewPager) findViewById(R.id.viewpager);
-        setupViewPager(viewPager);
+        viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -180,15 +184,18 @@ public class ListMenuActivity extends AppCompatActivity implements
         });
     }
 
-    private void setupViewPager(ViewPager viewPager) {
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFragment(onGoingFragment, "ONGOING");
-        adapter.addFragment(completedFragment, "COMPLETED");
-        viewPager.setAdapter(adapter);
-    }
-
     @Override
-    public boolean completedItemClicked(DataModel data) {
+    public boolean fragmentCheckboxClicked(DataModel data, boolean isOngoingFragment) {
+        //The boolean is used to identify which fragment called the callback.
+        //true means the calling fragment is ongoingFragment,
+        //false means the calling fragment is completedFragment.
+
+        if(isOngoingFragment){
+            completedFragment.addTask(data);
+        } else {
+            onGoingFragment.addTask(data);
+        }
+
         return true;
     }
 
@@ -215,6 +222,7 @@ public class ListMenuActivity extends AppCompatActivity implements
         AlertDialog newList = quickAddBuilder.create();
         newList.show();
     }
+
 
     private void quickAddTask(final String name) {
         progressDialog.setMessage("Processing...");
@@ -277,9 +285,7 @@ public class ListMenuActivity extends AppCompatActivity implements
             progressDialog.dismiss();
     }
 
-    class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
+    public class ViewPagerAdapter extends FragmentPagerAdapter {
 
         public ViewPagerAdapter(FragmentManager manager) {
             super(manager);
@@ -287,22 +293,49 @@ public class ListMenuActivity extends AppCompatActivity implements
 
         @Override
         public Fragment getItem(int position) {
-            return mFragmentList.get(position);
+            // Do NOT try to save references to the Fragments in getItem(),
+            // because getItem() is not always called. If the Fragment
+            // was already created then it will be retrieved from the FragmentManger
+            // and not here (i.e. getItem() won't be called again).
+
+            switch (position) {
+                case 0:
+                    return TaskListFragment.newInstance(false, listID);
+                case 1:
+                    return TaskListFragment.newInstance(true, listID);
+                default:
+                    // This should never happen. Always account for each position above
+                    return null;
+            }
         }
 
         @Override
         public int getCount() {
-            return mFragmentList.size();
+            return ListMenuActivity.taskTabCount;
         }
 
-        public void addFragment(Fragment fragment, String title) {
-            mFragmentList.add(fragment);
-            mFragmentTitleList.add(title);
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            Fragment createdFragment = (Fragment) super.instantiateItem(container, position);
+            // save the appropriate reference depending on position
+            switch (position) {
+                case 0:
+                    onGoingFragment = (TaskListFragment) createdFragment;
+                    break;
+                case 1:
+                    completedFragment = (TaskListFragment) createdFragment;
+                    break;
+            }
+            return createdFragment;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return mFragmentTitleList.get(position);
+            switch (position) {
+                case 0: return "Ongoing";
+                case 1: return "Completed";
+                default: return "undefined";
+            }
         }
     }
 }
