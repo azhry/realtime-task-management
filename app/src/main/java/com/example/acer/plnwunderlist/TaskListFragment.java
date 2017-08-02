@@ -22,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.sql.Date;
 import java.util.ArrayList;
 
 
@@ -162,6 +163,10 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                                 JSONObject item = todoItems.getJSONObject(i);
                                 boolean is_completed = item.getInt("IS_COMPLETED") == 1 ? true : false;
                                 if (is_completed == mIsStrikethrough) {
+//                                    TodoItem temp = new TodoItem(item.getInt("TODO_ID"), item.getInt("LIST_ID"),
+//                                            item.getString("ITEM_DESC"), item.getString("NOTE"),
+//                                            Date.valueOf(item.getString("DUE_DATE")));
+
                                     adapter.add(new DataModel(item.getString("ITEM_DESC"), is_completed));
                                 }
                             } catch (JSONException e) {
