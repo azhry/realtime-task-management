@@ -33,7 +33,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
-import com.example.acer.plnwunderlist.TodoItem;
 import com.github.clans.fab.FloatingActionButton;
 
 import org.json.JSONException;
@@ -56,7 +55,7 @@ public class ListMenuActivity extends AppCompatActivity implements
     ListView listView;
     private CustomAdapter adapter;
 
-    private int currentListID;
+    private String currentListID;
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -126,17 +125,17 @@ public class ListMenuActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_testcoordinatorlayout);
+        setContentView(R.layout.activity_list_task);
 
-        this.currentListID = getIntent().getIntExtra("TODO_LIST_ID",-1);
-
-        this.toolbar = (Toolbar) findViewById(R.id.list_toolbar);
-        setSupportActionBar(toolbar);
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
+        //Define endpoint
         endpoint = getString(R.string.uri_endpoint);
 
+        //Define toolbar menu icons, and enable back arrow
+        this.toolbar = (Toolbar) findViewById(R.id.list_toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        //Define progress dialog
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
 
@@ -144,9 +143,18 @@ public class ListMenuActivity extends AppCompatActivity implements
             listID = getIntent().getStringExtra("TODO_LIST_ID");
         }
 
-        //Initialize Fragments
-        this.onGoingFragment    = TaskListFragment.newInstance(false, listID);
-        this.completedFragment  = TaskListFragment.newInstance(true, listID);
+        quickAddTask    = (FloatingActionButton) findViewById(R.id.quickAddTask);
+        addTask         = (FloatingActionButton) findViewById(R.id.addTask);
+
+        addTask.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent addTaskFormIntent = new Intent(ListMenuActivity.this, TaskDetailsActivity.class);
+                addTaskFormIntent.putExtra("TODO_LIST_ID", listID);
+                addTaskFormIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
+                startActivity(addTaskFormIntent);
+            }
+        });
 
         this.viewPager = (ViewPager) findViewById(R.id.viewpager);
         viewPager.setAdapter(new TaskListPagerAdapter(getSupportFragmentManager()));
@@ -160,25 +168,6 @@ public class ListMenuActivity extends AppCompatActivity implements
             this.setTitle(getIntent().getStringExtra("TODO_LIST_NAME"));
         }
 
-        quickAddTask    = (FloatingActionButton) findViewById(R.id.quickAddTask);
-        addTask         = (FloatingActionButton) findViewById(R.id.addTask);
-
-        quickAddTask.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showQuickAddDialog(ListMenuActivity.this);
-            }
-        });
-
-        addTask.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent addTaskFormIntent = new Intent(ListMenuActivity.this, TaskDetailsActivity.class);
-                addTaskFormIntent.putExtra("TODO_LIST_ID", listID);
-                addTaskFormIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
-                startActivity(addTaskFormIntent);
-            }
-        });
     }
 
     @Override
@@ -196,7 +185,11 @@ public class ListMenuActivity extends AppCompatActivity implements
         return true;
     }
 
-    private void showQuickAddDialog(Context context) {
+    //OnClickListener for "Quick Add" FloatingActionButton.
+    //Defined in the XML file.
+    public void showQuickAddDialog(View v) {
+        Context context = ListMenuActivity.this;
+
         LayoutInflater inflater = LayoutInflater.from(context);
         final View quickAddDialogView = inflater.inflate(R.layout.main_menu_create_list_dialog, null);
         final AlertDialog.Builder quickAddBuilder = new AlertDialog.Builder(context);
@@ -235,6 +228,8 @@ public class ListMenuActivity extends AppCompatActivity implements
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
+                                TodoItem test = TodoItem.newInstance(jsonObject);
+                                //Log.d("TODO","Itest.getDescription());
                                 onGoingFragment.addTask(TodoItem.newInstance(jsonObject));
                                 Toast.makeText(ListMenuActivity.this, name + " added!", Toast.LENGTH_LONG).show();
                             } else if (status == 1) {

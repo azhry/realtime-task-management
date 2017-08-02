@@ -151,7 +151,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                 adapter.notifyDataSetChanged();
             }
         });
-        
+
         getItemsList(listID);
     }
 
