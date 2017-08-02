@@ -31,7 +31,6 @@ import android.widget.Toast;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
 import com.github.clans.fab.FloatingActionButton;
@@ -39,11 +38,8 @@ import com.github.clans.fab.FloatingActionButton;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.github.clans.fab.FloatingActionButton;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -152,7 +148,7 @@ public class ListMenuActivity extends AppCompatActivity implements
         this.completedFragment  = TaskListFragment.newInstance(true, listID);
 
         this.viewPager = (ViewPager) findViewById(R.id.viewpager);
-        viewPager.setAdapter(new ViewPagerAdapter(getSupportFragmentManager()));
+        viewPager.setAdapter(new TaskListPagerAdapter(getSupportFragmentManager()));
 
         tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -238,6 +234,7 @@ public class ListMenuActivity extends AppCompatActivity implements
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
+                                
                                 onGoingFragment.addTask(new DataModel(name, false));
                                 Toast.makeText(ListMenuActivity.this, name + " added!", Toast.LENGTH_LONG).show();
                             } else if (status == 1) {
@@ -285,9 +282,9 @@ public class ListMenuActivity extends AppCompatActivity implements
             progressDialog.dismiss();
     }
 
-    public class ViewPagerAdapter extends FragmentPagerAdapter {
+    public class TaskListPagerAdapter extends FragmentPagerAdapter {
 
-        public ViewPagerAdapter(FragmentManager manager) {
+        public TaskListPagerAdapter(FragmentManager manager) {
             super(manager);
         }
 
