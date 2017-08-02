@@ -1,9 +1,16 @@
 package com.example.acer.plnwunderlist;
 
+import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -56,10 +63,21 @@ public class MainMenuActivity extends AppCompatActivity {
     private ListView todoListsList;     //The RecyclerView.
     private View emptyTextView;         //Header that pops up when the list is empty.
 
+    private DatabaseHelper db;
+    private BroadcastReceiver broadcastReceiver;
+
+    public static final int SYNCHED = 1;
+    public static final int UNSYNCHED = 0;
+    public static final String DATA_SAVED_BROADCAST = "DATASAVED";
+    public final static int PERMISSIONS_REQUEST_READ_PHONE_STATE = 11;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+
+        db = new DatabaseHelper(this);
 
         //Initalize the pseudo-statics
         endpoint = getString(R.string.uri_endpoint);
@@ -67,8 +85,6 @@ public class MainMenuActivity extends AppCompatActivity {
         //Initialize progressDialog
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
-        progressDialog.setMessage("Loading data...");
-        showDialog();
 
         todoListsList = (ListView) findViewById(R.id.todolistslist);
         todoListsList.setDivider(null);
@@ -79,6 +95,74 @@ public class MainMenuActivity extends AppCompatActivity {
         todoListsList.addHeaderView(emptyTextView, null, false);
         SessionManager sessionManager = new SessionManager(this);
         userData = sessionManager.getUserDetails();
+
+        //loadItems();
+
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //loadItems();
+            }
+        };
+
+        loadItemsFromServer();
+
+        registerReceiver(broadcastReceiver, new IntentFilter(DATA_SAVED_BROADCAST));
+        registerReceiver(new NetworkStateChecker(), new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+
+        View layout = getLayoutInflater().inflate(R.layout.main_menu_create_list_btn, null);
+        todoListsList.addFooterView(layout);
+
+        Button newListBtn = (Button) findViewById(R.id.add_list_btn);
+        newListBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showAddListDialog(MainMenuActivity.this);
+            }
+        });
+
+        //Lastly, register the specified ContextMenu to the Listview.
+        registerForContextMenu(todoListsList);
+
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.todolistlists_context_menu, menu);
+
+        //Catch the ContextMenu.ContextMenuItem sent from parameter
+        //as AdapterView.AdapterContextMenuInfo to itemInfo variable.
+        AdapterView.AdapterContextMenuInfo itemInfo = (AdapterView.AdapterContextMenuInfo)menuInfo;
+        //Get the Item at the specified position, and get the value.
+        TodoList selectedList  = (TodoList) todoListsList.getItemAtPosition(itemInfo.position);
+        String titleName = selectedList.getName();
+        //Set the header title
+        menu.setHeaderTitle(titleName);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        switch(item.getItemId()) {
+
+            case R.id.deleteTodoList:
+                showDeleteListDialog(MainMenuActivity.this,
+                        (TodoList) todoListsList.getItemAtPosition(info.position));
+                return true;
+            case R.id.EditTodoList:
+                showEditListDialog(MainMenuActivity.this,
+                        (TodoList) todoListsList.getItemAtPosition(info.position));
+                return true;
+            default:
+                return super.onContextItemSelected(item);
+        }
+    }
+
+    private void loadItemsFromServer() {
+        progressDialog.setMessage("Loading data...");
+        showDialog();
 
         adapter = new TodoListAdapter(this, todoLists);
 
@@ -139,57 +223,125 @@ public class MainMenuActivity extends AppCompatActivity {
         );
 
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(getRequest, "retrieve_list");
+    }
 
+    private void loadItems() {
+        todoLists.clear();
+        Cursor cursor = db.getItem();
+        if (cursor.moveToFirst()) {
+            do {
+                TodoList todoList = new TodoList(
+                        String.valueOf(cursor.getInt(cursor.getColumnIndex(DatabaseHelper.COLUMN_LIST_ID))),
+                        cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LIST_NAME))
+                );
+                todoLists.add(todoList);
+            } while (cursor.moveToNext());
+        }
 
-        View layout = getLayoutInflater().inflate(R.layout.main_menu_create_list_btn, null);
-        todoListsList.addFooterView(layout);
+        adapter = new TodoListAdapter(this, todoLists);
+        todoListsList.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
 
-
-        Button newListBtn = (Button) findViewById(R.id.add_list_btn);
-        newListBtn.setOnClickListener(new View.OnClickListener() {
+        todoListsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onClick(View view) {
-                showAddListDialog(MainMenuActivity.this);
+            public void onItemClick(AdapterView parent, View view, int position, long id) {
+                //Initialize the Intent
+                Intent todolistIntent = new Intent(getApplicationContext(), ListMenuActivity.class);
+
+                //Get selected Todolist object
+                TodoList clickedList = (TodoList) todoListsList.getItemAtPosition(position);
+                //and extract its name for the page title, and ID for reference.
+                todolistIntent.putExtra("TODO_LIST_ID", clickedList.getID());
+                todolistIntent.putExtra("TODO_LIST_NAME", clickedList.getName());
+
+                startActivity(todolistIntent);
+
             }
         });
 
-        //Lastly, register the specified ContextMenu to the Listview.
-        registerForContextMenu(todoListsList);
-
+        setEmptyTextVisibility(emptyTextView);
     }
 
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.todolistlists_context_menu, menu);
-
-        //Catch the ContextMenu.ContextMenuItem sent from parameter
-        //as AdapterView.AdapterContextMenuInfo to itemInfo variable.
-        AdapterView.AdapterContextMenuInfo itemInfo = (AdapterView.AdapterContextMenuInfo)menuInfo;
-        //Get the Item at the specified position, and get the value.
-        TodoList selectedList  = (TodoList) todoListsList.getItemAtPosition(itemInfo.position);
-        String titleName = selectedList.getName();
-        //Set the header title
-        menu.setHeaderTitle(titleName);
+    private void saveItemToLocalStorage(int listID, String listName, int status) {
+        db.addItem(listID, listName, status);
+        TodoList todoList = new TodoList(String.valueOf(listID), listName);
+        todoLists.add(todoList);
+        adapter.notifyDataSetChanged();
     }
 
-    @Override
-    public boolean onContextItemSelected(MenuItem item) {
-        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        switch(item.getItemId()) {
+    private void saveItemToServer(final String newListName) {
+        progressDialog.setMessage("Saving data...");
+        showDialog();
 
-            case R.id.deleteTodoList:
-                showDeleteListDialog(MainMenuActivity.this,
-                        (TodoList) todoListsList.getItemAtPosition(info.position));
-                return true;
-            case R.id.EditTodoList:
-                showEditListDialog(MainMenuActivity.this,
-                        (TodoList) todoListsList.getItemAtPosition(info.position));
-                return true;
-            default:
-                return super.onContextItemSelected(item);
-        }
+        StringRequest addRequest = new StringRequest(Request.Method.POST, endpoint,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.e("RESPONSE", response);
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            int status = jsonObject.getInt("status");
+                            if (status == 0) {
+                                String newListID = jsonObject.getString("list_id");
+                                String newListName = jsonObject.getString("list_name");
+                                adapter.add(new TodoList(newListID, newListName));
+                                adapter.notifyDataSetChanged();
+                                //saveItemToLocalStorage(Integer.parseInt(newListID), newListName, SYNCHED);
+                                setEmptyTextVisibility(emptyTextView);
+                                Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
+                            } else if (status == 1)
+                                Toast.makeText(getApplicationContext(), "Insert list failed!", Toast.LENGTH_LONG).show();
+                            else if (status == 2)
+                                Toast.makeText(getApplicationContext(), "Insert access failed!", Toast.LENGTH_LONG).show();
+                            else if (status == -1)
+                                Toast.makeText(getApplicationContext(), "Unknown attempt!", Toast.LENGTH_LONG).show();
+                            else {
+                                Log.e("RESPONSE_UNSYNCHED", response);
+                                saveItemToLocalStorage((int) Math.random(), newListName, UNSYNCHED);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            String msg = e.getMessage();
+                            if (msg != null) {
+                                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG);
+                                Log.e("JSONException", msg);
+                            }
+                        }
+
+                        hideDialog();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String msg = error.getMessage();
+                        if (msg != null)
+                            Log.e("ADD_ERROR", error.getMessage());
+                        saveItemToLocalStorage((int) Math.random(), newListName, UNSYNCHED);
+                        hideDialog();
+                    }
+                }
+        ) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "insert_todo_list");
+                params.put("list_name", newListName);
+                params.put("user_id", userData.get("user_id"));
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "insert_todo_list");
+                params.put("list_name", newListName);
+                params.put("user_id", userData.get("user_id"));
+                return params;
+            }
+        };
+
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(addRequest, "add_list");
     }
 
     private void showDeleteListDialog(Context context,final TodoList todolist){
@@ -450,7 +602,8 @@ public class MainMenuActivity extends AppCompatActivity {
                 //Explicitly call findViewById from addListDialogView to access the EditText from dialog.
                 EditText newListText = (EditText) addListDialogView.findViewById(R.id.newListTitleText);
                 //Call the activity's addNewList function using user's string.
-                addNewList(newListText.getText().toString());
+                //addNewList(newListText.getText().toString());
+                saveItemToServer(newListText.getText().toString());
             }
         });
         //Add the "Negative" (Left button) logic
