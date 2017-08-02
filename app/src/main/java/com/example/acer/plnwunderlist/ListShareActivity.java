@@ -1,10 +1,17 @@
 package com.example.acer.plnwunderlist;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.provider.Settings;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,6 +44,8 @@ public class ListShareActivity extends AppCompatActivity {
     private String listID;
     private String endpoint;
 
+    private static final int SHARE_LIST_NOTIFICATION_ID = 69;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,6 +74,7 @@ public class ListShareActivity extends AppCompatActivity {
         });
 
         retrieveMembers();
+        showNotification();
     }
 
     private void retrieveMembers() {
@@ -100,6 +110,30 @@ public class ListShareActivity extends AppCompatActivity {
                 });
 
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(getMembersRequest, "GET_LIST_MEMBERS");
+    }
+
+    private void showNotification() {
+        NotificationCompat.Builder mBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_add_white_24dp)
+                        .setContentTitle("Garok invited you to his list!")
+                        .setContentText("See what task mhamanx has assigned you to")
+                        .setDefaults(Notification.DEFAULT_VIBRATE)
+                        .setPriority(Notification.PRIORITY_HIGH)
+                        .setVibrate(new long[] {1000, 1000})
+                        .setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+        Intent shareNotificationIntent = new Intent(ListShareActivity.this, MainGatewayActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addParentStack(MainGatewayActivity.class);
+        stackBuilder.addNextIntent(shareNotificationIntent);
+        PendingIntent shareNotificationPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(shareNotificationPendingIntent);
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(SHARE_LIST_NOTIFICATION_ID, mBuilder.build());
     }
 
     private void showInviteDialog(Context context) {
