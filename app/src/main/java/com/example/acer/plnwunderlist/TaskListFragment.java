@@ -147,8 +147,17 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
             @Override
             public void onItemClick(AdapterView parent, View view, int position, long id) {
 
-                TodoItem todoItem= (TodoItem) taskList.get(position);
-                adapter.notifyDataSetChanged();
+                //Initialize the Intent
+                Intent taskDetailsIntent = new Intent(getActivity().getApplicationContext(), TaskDetailsActivity.class);
+
+                //Get selected TodoItem object
+                TodoItem clickedTask = (TodoItem) listView.getItemAtPosition(position);
+                //parcel the TodoItem
+                taskDetailsIntent.putExtra("TODO_OBJECT",clickedTask);
+                //and extract its name for the page title, and ID for reference.
+
+                startActivity(taskDetailsIntent);
+
             }
         });
 

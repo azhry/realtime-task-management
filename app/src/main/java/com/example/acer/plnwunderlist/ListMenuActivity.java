@@ -228,8 +228,7 @@ public class ListMenuActivity extends AppCompatActivity implements
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
-                                TodoItem test = TodoItem.newInstance(jsonObject);
-                                //Log.d("TODO","Itest.getDescription());
+                                //TODO: Add all variables to the JSON response. Currently below code is broken.
                                 onGoingFragment.addTask(TodoItem.newInstance(jsonObject));
                                 Toast.makeText(ListMenuActivity.this, name + " added!", Toast.LENGTH_LONG).show();
                             } else if (status == 1) {
@@ -326,6 +325,7 @@ public class ListMenuActivity extends AppCompatActivity implements
             switch (position) {
                 case 0: return "Ongoing";
                 case 1: return "Completed";
+                // This should never happen. Always account for each position above
                 default: return "undefined";
             }
         }

@@ -1,10 +1,13 @@
 package com.example.acer.plnwunderlist;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -16,7 +19,7 @@ import java.text.SimpleDateFormat;
  * Custom class to display TodoItem in ListView with ArrayAdapter
  */
 
-public class TodoItem {
+public class TodoItem implements Parcelable {
 
     //JSON object keys
     private static final String TODO_ID_TAG = "TODO_ID";
@@ -43,6 +46,41 @@ public class TodoItem {
         this.note = note;
         this.dueDate = dueDate;
         this.completed = false;
+    }
+
+    TodoItem(Parcel in){
+        this.ID =  in.readInt();
+        this.listID = in.readInt();
+        this.description = in.readString();
+        this.note = in.readString();
+        //completed == true if readByte != 0, conforming to the parcelling (?) method.
+        this.completed = in.readByte() != 0;
+        //Because the date can be null (which was indicated as -1 in writeToParcel),
+        //first read the long in a temporary value.
+        long tempDate = in.readLong();
+
+        if(tempDate != -1){
+            this.dueDate = new Date(tempDate);
+        } else {
+            this.dueDate = null;
+        }
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(this.ID);
+        parcel.writeInt(this.listID);
+        parcel.writeString(this.description);
+        parcel.writeString(this.note);
+        //Because boolean is not natively supported, parcel completed as byte instead.
+        parcel.writeByte((byte) (completed ? 1 : 0));
+        //Because java.util.Date is not natively supported, parcel its Long value instead.
+        parcel.writeLong(dueDate != null ? dueDate.getTime() : -1);
     }
 
     public static TodoItem newInstance(JSONObject param) {
@@ -98,6 +136,18 @@ public class TodoItem {
 
         return new TodoItem(newID, newListID, newDesc,newNote, newDate);
     }
+
+    public static final Creator<TodoItem> CREATOR = new Creator<TodoItem>() {
+        @Override
+        public TodoItem[] newArray(int size) {
+            return new TodoItem[size];
+        }
+
+        @Override
+        public TodoItem createFromParcel(Parcel source) {
+            return new TodoItem(source);
+        }
+    };
 
     /**
      * This method is used to get this item id
