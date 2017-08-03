@@ -228,7 +228,6 @@ public class ListMenuActivity extends AppCompatActivity implements
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
-                                //TODO: Add all variables to the JSON response. Currently below code is broken.
                                 onGoingFragment.addTask(TodoItem.newInstance(jsonObject));
                                 Toast.makeText(ListMenuActivity.this, name + " added!", Toast.LENGTH_LONG).show();
                             } else if (status == 1) {
