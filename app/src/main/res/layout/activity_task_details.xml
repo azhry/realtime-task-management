@@ -21,6 +21,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/app_default_left_margin"
+            android:layout_marginRight="12dp"
             android:ems="10"
             android:inputType="textEmailAddress" />
 
@@ -65,6 +66,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@android:color/holo_red_light"
+                android:minHeight="36dp"
                 android:text="@string/task_details_delete_date_btn_label"
                 android:textColor="@android:color/white"
                 android:visibility="gone" />
@@ -84,10 +86,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/app_default_left_margin"
+            android:layout_marginRight="12dp"
             android:ems="10"
             android:inputType="textMultiLine" />
 
-        <View style="@style/Divider" />
+        <View
+            android:id="@+id/fileDivider"
+            style="@style/Divider" />
 
         <TextView
             style="@style/TaskDetailsLabel"
@@ -103,6 +108,7 @@
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/uploadBtnParent"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
             android:orientation="horizontal">

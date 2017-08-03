@@ -89,7 +89,6 @@ public class TodoItem implements Parcelable {
         Integer newListID = null;
         String newDesc = null;
         String newNote = null;
-        String rawDate = null;
         Date newDate = null;
 
         try {
@@ -118,13 +117,16 @@ public class TodoItem implements Parcelable {
             }
 
             //Grab all the extras
-            newNote = param.getString(TODO_NOTE_TAG);
-            rawDate = param.getString(TODO_DATE_TAG);
+
+            //Retrieve the object temporarily at first, and set newNote as null.
+            if(!param.isNull(TODO_NOTE_TAG)){
+                newNote = param.getString(TODO_NOTE_TAG);
+            }
 
             SimpleDateFormat SQLDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-            if(rawDate != null){
-                newDate = SQLDateFormat.parse(rawDate);
+            if(!param.isNull(TODO_DATE_TAG)){
+                newDate = SQLDateFormat.parse(param.getString(TODO_DATE_TAG));
             } else {
                 newDate = null;
             }

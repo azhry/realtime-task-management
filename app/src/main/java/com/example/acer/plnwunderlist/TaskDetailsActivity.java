@@ -6,7 +6,6 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -15,27 +14,21 @@ import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.Layout;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,12 +39,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -72,7 +63,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private String selectedFilePath;
 
     //Updateable views
-    private TodoItem item;
     private Button addEditDueDateBtn;
     private Button deleteDueDateBtn;
     private Button addTaskBtn;
@@ -81,6 +71,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private EditText taskNameInput, noteInput;
     private TextView dueDateInput;
 
+    //Extra state-changeable views
+    private View fileDivider;
+    private TextView fileLabel;
+    private LinearLayout fileListLayout;
+    private LinearLayout fileBtns;
+
+    private TodoItem item;
     private Date tempDate;
 
     @Override
@@ -105,6 +102,12 @@ public class TaskDetailsActivity extends AppCompatActivity {
         noteInput = (EditText) findViewById(R.id.editTaskNote);
         dueDateInput = (TextView) findViewById(R.id.taskDueDateEdit);
 
+        //Initialize extra views
+        fileDivider = findViewById(R.id.fileDivider);
+        fileLabel = (TextView) findViewById(R.id.taskFileLabel);
+        fileListLayout = (LinearLayout) findViewById(R.id.fileListView);
+        fileBtns = (LinearLayout) findViewById(R.id.uploadBtnParent);
+
         //Initialize TodoItem and temporary values
         item = null;
         tempDate = null;
@@ -112,6 +115,11 @@ public class TaskDetailsActivity extends AppCompatActivity {
         if (getIntent().hasExtra("TODO_OBJECT")) {
             item = getIntent().getParcelableExtra("TODO_OBJECT");
             setupInputFields(item);
+        } else {
+            fileDivider.setVisibility(View.GONE);
+            fileLabel.setVisibility(View.GONE);
+            fileListLayout.setVisibility(View.GONE);
+            fileBtns.setVisibility(View.GONE);
         }
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -171,16 +179,16 @@ public class TaskDetailsActivity extends AppCompatActivity {
         addTaskBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String taskName = taskNameInput.getText().toString();
-                String note = noteInput.getText().toString();
-                String dueDateString = dueDateInput.getText().toString();
+                String taskName = getNewDesc();
 
-                String[] dueDateDummySringArray = dueDateString.split(" ");
-                String[] dueDateStringArray = dueDateDummySringArray[1].split("/");
+                if(!isDescriptionValid(taskName)){
+                    return;
+                }
 
-                String dueDate = dueDateStringArray[0] + "-"
-                        + dueDateStringArray[1] + "-"
-                        + dueDateStringArray[2];
+                String note = getNewNote();
+
+                SimpleDateFormat sqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String dueDate = sqlDateFormat.format(tempDate);
 
                 Map<String, String> data = new HashMap<String, String>();
                 data.put("task_name", taskName);
@@ -215,36 +223,34 @@ public class TaskDetailsActivity extends AppCompatActivity {
         }
     }
 
-    private void showEditConfirmationDialog(Context context, final TodoList todolist) {
+    private String checkNullable(String str) {
+        if (str.isEmpty()) {
+            return null;
+        }
+        return str;
+    }
 
-        String
-        String newTaskDesc = taskNameInput.getText().toString();
-        String newTaskNote = noteInput.getText().toString();
-        boolean isChanged  = false;
+    private String getNewDesc() {
+        return checkNullable(taskNameInput.getText().toString());
+    }
 
+    private String getNewNote() {
+        return checkNullable(noteInput.getText().toString());
+    }
 
+    private Boolean isDescriptionValid(String desc){
         //------------------------------------------------------------------------------------------
         //START AlertDialog Definition
-        final AlertDialog.Builder deleteListBuilder = new AlertDialog.Builder(context);
+        final AlertDialog.Builder invalidDescriptionDialog = new AlertDialog.Builder(this);
 
         //Set its title and view
-        String dialogMsg = getString(R.string.delete_dialog_start).
-                concat(" ").concat(todolist.getName()).
-                concat(" ").concat(getString(R.string.delete_dialog_end));
+        String dialogMsg = "Task name is empty. Task must have a name.";
 
         //Set title and message
-        deleteListBuilder.setTitle(R.string.delete_dialog_title).setMessage(dialogMsg);
+        invalidDescriptionDialog.setTitle("Error").setMessage(dialogMsg);
 
         //Add the "Positive" (Right button) logic
-        deleteListBuilder.setPositiveButton(R.string.dialog_default_positive_labeal, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                //Call the delete function
-                deleteList(todolist);
-            }
-        });
-        //Add the "Negative" (Left button) logic
-        deleteListBuilder.setNegativeButton(R.string.dialog_default_negative_label, new DialogInterface.OnClickListener() {
+        invalidDescriptionDialog.setPositiveButton(getString(R.string.dialog_default_positive_labeal), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
             }
@@ -253,10 +259,173 @@ public class TaskDetailsActivity extends AppCompatActivity {
         //END AlertDialog Definition
         //------------------------------------------------------------------------------------------
 
-        AlertDialog newList = deleteListBuilder.create();
-        newList.show();
+        if(desc == null){
+            invalidDescriptionDialog.show();
+        }
+
+        return desc != null;
     }
 
+    private void startBackProcedure() {
+
+        String changedItems = new String();
+        boolean commaFlag = false;
+        String newTaskDesc = getNewDesc();
+        String newTaskNote = getNewNote();
+
+        boolean isChanged = false;
+        boolean isCreateNew = false;
+
+        //If there's no existing item, flag the activity as Create New
+        if (item == null) {
+            isCreateNew = true;
+        }
+        //Else check for changes
+        else {
+            //Check for description change
+            if (!item.getDescription().equals(newTaskDesc)) {
+                changedItems = changedItems.concat("task name");
+                isChanged = true;
+                commaFlag = true;
+            }
+
+            //Check for due date change
+            //first check for when the Date is unset (NULL)
+            if (item.getDueDate() == null) {
+                if (tempDate != null) {
+                    changedItems = changedItems.concat(commaFlag ? ", due date" : "due date");
+                    isChanged = true;
+                    commaFlag = true;
+                }
+            } else if (!item.getDueDate().equals(tempDate)) {
+                changedItems = changedItems.concat(commaFlag ? ", due date" : "due date");
+                isChanged = true;
+                commaFlag = true;
+            }
+
+            //Check for notes change
+            if (item.getNote() == null) {
+                if (newTaskNote != null) {
+                    changedItems = changedItems.concat(commaFlag ? ", note" : "note");
+                    isChanged = true;
+                }
+            } else if (!item.getNote().equals(newTaskNote)) {
+                changedItems = changedItems.concat(commaFlag ? ", note" : "note");
+                isChanged = true;
+            }
+        }
+
+        if (!isCreateNew) {
+            if (!isChanged) {
+                finish();
+            } else {
+                showEditConfirmationDialog(changedItems, newTaskDesc, tempDate, newTaskNote);
+            }
+        } else {
+            //showAddConfirmationDialog();
+            finish();
+        }
+
+    }
+
+    private void showAddConfirmationDialog(final String newDesc,
+                                           final Date newDate, final String newNote) {
+
+        //------------------------------------------------------------------------------------------
+        //START AlertDialog Definition
+        final AlertDialog.Builder confirmationDialogBuilder = new AlertDialog.Builder(this);
+
+        //Set its title and view
+        String dialogMsg = getString(R.string.add_dialog);
+
+        //Set title and message
+        confirmationDialogBuilder.setTitle("Quit").setMessage(dialogMsg);
+
+        //Add the "Positive" (Right button) logic
+        confirmationDialogBuilder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //Call the update function
+                //addTask(newDesc, newDate, newNote);
+            }
+        });
+        //Add the "Negative" (Left button) logic
+        confirmationDialogBuilder.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        //Add the "Neutral" button logic
+        confirmationDialogBuilder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+
+        //END AlertDialog Definition
+        //------------------------------------------------------------------------------------------
+
+        AlertDialog quitConfirmation = confirmationDialogBuilder.create();
+        quitConfirmation.show();
+
+    }
+
+    private void showEditConfirmationDialog(String changedItems, final String newDesc,
+                                            final Date newDate, final String newNote) {
+
+        //------------------------------------------------------------------------------------------
+        //START AlertDialog Definition
+        final AlertDialog.Builder confirmationDialogBuilder = new AlertDialog.Builder(this);
+
+        //Set its title and view
+        String dialogMsg = getString(R.string.edit_dialog_start).
+                concat(changedItems).concat(getString(R.string.edit_dialog_end));
+
+        //Set title and message
+        confirmationDialogBuilder.setTitle("Quit").setMessage(dialogMsg);
+
+        //Add the "Positive" (Right button) logic
+        confirmationDialogBuilder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //Call the update function
+                updateTaskDetails(newDesc, newDate, newNote);
+            }
+        });
+        //Add the "Negative" (Left button) logic
+        confirmationDialogBuilder.setNegativeButton("Discard", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        //Add the "Neutral" button logic
+        confirmationDialogBuilder.setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+
+        //END AlertDialog Definition
+        //------------------------------------------------------------------------------------------
+
+        AlertDialog quitConfirmation = confirmationDialogBuilder.create();
+        quitConfirmation.show();
+
+    }
+
+    private void updateTaskDetails(String newDesc, Date newDate, String newNote) {
+        TodoItem oldItem = this.item;
+
+        if(!isDescriptionValid(newDesc)){
+            return;
+        }
+
+        //TODO Lajukela az update
+    }
 
     public void updateDueDateInput(java.util.Date d) {
         if (d == null) {
@@ -272,6 +441,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
     public void updateDueDateInput(Calendar c) {
         if (c == null) {
             dueDateInput.setText(R.string.null_due_date_label);
+            tempDate = null;
             this.setDateBtnsVisibility(false);
             return;
         }
@@ -310,11 +480,11 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        showEditConfirmationDialog();
+        startBackProcedure();
     }
 
     private void addTask(final Map<String, String> data) {
+
         progressDialog.setMessage("Processing...");
         showDialog();
 
@@ -369,7 +539,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        finish();
+        startBackProcedure();
         return true;
     }
 

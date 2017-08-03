@@ -152,6 +152,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
 
                 //Get selected TodoItem object
                 TodoItem clickedTask = (TodoItem) listView.getItemAtPosition(position);
+                Log.d("PARCEL FRAGMENT",String.valueOf(clickedTask.getNote() == null));
                 //parcel the TodoItem
                 taskDetailsIntent.putExtra("TODO_OBJECT",clickedTask);
                 //and extract its name for the page title, and ID for reference.
@@ -195,6 +196,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                             try {
                                 JSONObject item = todoItems.getJSONObject(i);
                                 boolean is_completed = item.getInt("IS_COMPLETED") == 1 ? true : false;
+
                                 TodoItem temp = TodoItem.newInstance(item);
 
                                 if (is_completed == mIsStrikethrough) {
