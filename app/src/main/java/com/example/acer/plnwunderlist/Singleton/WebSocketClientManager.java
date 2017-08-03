@@ -148,7 +148,7 @@ public class WebSocketClientManager {
         NotificationCompat.Builder mBuilder =
                 (NotificationCompat.Builder) new NotificationCompat.Builder(mContext)
                         .setSmallIcon(R.drawable.ic_add_white_24dp)
-                        .setContentTitle("PLN-Comm")
+                        .setContentTitle("Invitation")
                         .setContentText("You've been invited to " + listName + " list")
                         .setDefaults(Notification.DEFAULT_VIBRATE)
                         .setPriority(Notification.PRIORITY_HIGH)

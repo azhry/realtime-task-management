@@ -81,7 +81,7 @@ public class ListShareActivity extends AppCompatActivity {
         });
 
         retrieveMembers();
-        showNotification();
+        //showNotification();
     }
 
     private void retrieveMembers() {
@@ -199,12 +199,12 @@ public class ListShareActivity extends AppCompatActivity {
                                 Toast.makeText(ListShareActivity.this, "Invite failed", Toast.LENGTH_SHORT).show();
                             } else {
                                 Toast.makeText(ListShareActivity.this, "Unknown response", Toast.LENGTH_SHORT).show();
-                                Log.e(REQUEST_TAG, response);
+                                Log.e(REQUEST_TAG, response + "Unknown response");
                             }
                         } catch (JSONException e) {
                             String msg = e.getMessage();
                             if (msg != null) {
-                                Log.e(REQUEST_TAG, msg);
+                                Log.e(REQUEST_TAG, msg + "Exception");
                             }
                         }
                     }
@@ -215,7 +215,7 @@ public class ListShareActivity extends AppCompatActivity {
                         hideDialog();
                         String msg = error.getMessage();
                         if (msg != null) {
-                            Log.e(REQUEST_TAG, msg);
+                            Log.e(REQUEST_TAG, msg + "ErrorListener");
                         }
                     }
                 }) {
