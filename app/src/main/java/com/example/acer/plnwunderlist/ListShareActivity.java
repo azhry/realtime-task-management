@@ -27,6 +27,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
+import com.example.acer.plnwunderlist.Singleton.WebSocketClientManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -182,6 +183,12 @@ public class ListShareActivity extends AppCompatActivity {
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
+                                Map<String, String> msg = new HashMap<>();
+                                msg.put("type", "invite_notification");
+                                msg.put("email", email);
+                                msg.put("list_id", listID);
+                                JSONObject msgObj = new JSONObject(msg);
+                                WebSocketClientManager.getInstance().send(msgObj.toString());
                                 memberAdapter.add(new User(jsonObject.getInt("USER_ID"), jsonObject.getString("EMAIL"),
                                         jsonObject.getString("NAME")));
                             } else if (status == 1) {

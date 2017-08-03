@@ -1,10 +1,20 @@
 package com.example.acer.plnwunderlist.Singleton;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.provider.Settings;
+import android.support.v4.app.TaskStackBuilder;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
+import com.example.acer.plnwunderlist.ListShareActivity;
+import com.example.acer.plnwunderlist.MainGatewayActivity;
+import com.example.acer.plnwunderlist.R;
 import com.example.acer.plnwunderlist.SessionManager;
 
 import org.json.JSONException;
@@ -92,6 +102,11 @@ public class WebSocketClientManager {
                         if (action.equals("connection_status")) {
                             isConnected = false;
                             Log.e("ConnectionStatus", "Disconnect");
+                        } else if (action.equals("invite_notification")) {
+                            String listName = response.getString("LIST_NAME");
+                            int listID = response.getInt("LIST_ID");
+                            showInviteNotification(listID, listName);
+                            Log.e("InvitationStatus", "Success");
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
@@ -127,5 +142,29 @@ public class WebSocketClientManager {
                 }
             };
         return mWebSocketClient;
+    }
+
+    private static void showInviteNotification(int notificationID, String listName) {
+        NotificationCompat.Builder mBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(mContext)
+                        .setSmallIcon(R.drawable.ic_add_white_24dp)
+                        .setContentTitle("PLN-Comm")
+                        .setContentText("You've been invited to " + listName + " list")
+                        .setDefaults(Notification.DEFAULT_VIBRATE)
+                        .setPriority(Notification.PRIORITY_HIGH)
+                        .setVibrate(new long[] {1000, 1000})
+                        .setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
+        Intent shareNotificationIntent = new Intent(mContext, MainGatewayActivity.class);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(mContext);
+        stackBuilder.addParentStack(MainGatewayActivity.class);
+        stackBuilder.addNextIntent(shareNotificationIntent);
+        PendingIntent shareNotificationPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+        mBuilder.setContentIntent(shareNotificationPendingIntent);
+        NotificationManager mNotificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(notificationID, mBuilder.build());
     }
 }
