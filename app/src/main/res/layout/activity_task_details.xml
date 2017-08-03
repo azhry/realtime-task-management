@@ -79,6 +79,8 @@
 
         <EditText
             android:id="@+id/editTaskNote"
+            android:minLines="3"
+            android:hint="Add a note..."
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/app_default_left_margin"

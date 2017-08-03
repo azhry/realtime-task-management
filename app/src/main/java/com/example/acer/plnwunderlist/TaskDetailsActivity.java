@@ -6,10 +6,13 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Layout;
@@ -47,42 +50,38 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 public class TaskDetailsActivity extends AppCompatActivity {
 
+    private static final int PICK_FILE_REQUEST = 1;
+
+    private FileListPseudoAdapter fileListPseudoAdapter;
+    private LinearLayout fileList;
+    private ProgressDialog progressDialog;
+
+    private String endpoint;
+    private String listID;
+    private String listName;
+    private String selectedFilePath;
+
+    //Updateable views
+    private TodoItem item;
     private Button addEditDueDateBtn;
     private Button deleteDueDateBtn;
     private Button addTaskBtn;
     private Button addFileBtn;
     private Button uploadFileBtn;
-    private FileListPseudoAdapter fileListPseudoAdapter;
-    private LinearLayout fileList;
-    private String endpoint;
-
-    private ProgressDialog progressDialog;
     private EditText taskNameInput, noteInput;
     private TextView dueDateInput;
-    private String listID;
-    private String listName;
 
-    private String selectedFilePath;
-
-    private static final int PICK_FILE_REQUEST = 1;
-
-    public void setDateBtnsVisibility(boolean isDateSet) {
-        if (isDateSet) {
-            deleteDueDateBtn.setVisibility(View.VISIBLE);
-            addEditDueDateBtn.setText("Edit Due Date");
-        } else {
-            addEditDueDateBtn.setText("Set Due Date");
-            deleteDueDateBtn.setVisibility(View.GONE);
-        }
-    }
+    private Date tempDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,27 +94,25 @@ public class TaskDetailsActivity extends AppCompatActivity {
         endpoint = getString(R.string.uri_endpoint);
 
         //Initialize Button values
-        addEditDueDateBtn   = (Button) findViewById(R.id.addEditDueDateBtn);
-        deleteDueDateBtn    = (Button) findViewById(R.id.deleteDueDateBtn);
-        addTaskBtn          = (Button) findViewById(R.id.addTask);
-        addFileBtn          = (Button) findViewById(R.id.addFileBtn);
-        uploadFileBtn       = (Button) findViewById(R.id.uploadFileBtn);
+        addEditDueDateBtn = (Button) findViewById(R.id.addEditDueDateBtn);
+        deleteDueDateBtn = (Button) findViewById(R.id.deleteDueDateBtn);
+        addTaskBtn = (Button) findViewById(R.id.addTask);
+        addFileBtn = (Button) findViewById(R.id.addFileBtn);
+        uploadFileBtn = (Button) findViewById(R.id.uploadFileBtn);
 
         //Initialize EditText values
-        taskNameInput   = (EditText) findViewById(R.id.taskNameEdit);
-        noteInput       = (EditText) findViewById(R.id.editTaskNote);
-        dueDateInput    = (TextView) findViewById(R.id.taskDueDateEdit);
+        taskNameInput = (EditText) findViewById(R.id.taskNameEdit);
+        noteInput = (EditText) findViewById(R.id.editTaskNote);
+        dueDateInput = (TextView) findViewById(R.id.taskDueDateEdit);
 
+        //Initialize TodoItem and temporary values
+        item = null;
+        tempDate = null;
 
-        if(getIntent().hasExtra("TODO_OBJECT")){
-            TodoItem sentItem = getIntent().getParcelableExtra("TODO_OBJECT");
-
-            taskNameInput.setText(sentItem.getDescription());
-
+        if (getIntent().hasExtra("TODO_OBJECT")) {
+            item = getIntent().getParcelableExtra("TODO_OBJECT");
+            setupInputFields(item);
         }
-
-
-        noteInput.setMinLines(3);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -135,9 +132,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         deleteDueDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TextView dateTextView = (TextView) findViewById(R.id.taskDueDateEdit);
-                dateTextView.setText("No Due Date Set");
-                setDateBtnsVisibility(false);
+                updateDueDateInput((Calendar) null);
             }
         });
 
@@ -176,14 +171,14 @@ public class TaskDetailsActivity extends AppCompatActivity {
         addTaskBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String taskName         = taskNameInput.getText().toString();
-                String note             = noteInput.getText().toString();
-                String dueDateString    = dueDateInput.getText().toString();
+                String taskName = taskNameInput.getText().toString();
+                String note = noteInput.getText().toString();
+                String dueDateString = dueDateInput.getText().toString();
 
                 String[] dueDateDummySringArray = dueDateString.split(" ");
-                String[] dueDateStringArray     = dueDateDummySringArray[1].split("/");
+                String[] dueDateStringArray = dueDateDummySringArray[1].split("/");
 
-                String dueDate          = dueDateStringArray[0] + "-"
+                String dueDate = dueDateStringArray[0] + "-"
                         + dueDateStringArray[1] + "-"
                         + dueDateStringArray[2];
 
@@ -196,6 +191,101 @@ public class TaskDetailsActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void setDateBtnsVisibility(boolean isDateSet) {
+        if (isDateSet) {
+            deleteDueDateBtn.setVisibility(View.VISIBLE);
+            addEditDueDateBtn.setText("Edit Due Date");
+        } else {
+            addEditDueDateBtn.setText("Set Due Date");
+            deleteDueDateBtn.setVisibility(View.GONE);
+        }
+    }
+
+    private void setupInputFields(TodoItem item) {
+        taskNameInput.setText(item.getDescription());
+
+        if (item.getDueDate() != null) {
+            this.tempDate = item.getDueDate();
+            this.updateDueDateInput(item.getDueDate());
+        }
+
+        if (item.getNote() != null) {
+            this.noteInput.setText(item.getNote());
+        }
+    }
+
+    private void showEditConfirmationDialog(Context context, final TodoList todolist) {
+
+        String
+        String newTaskDesc = taskNameInput.getText().toString();
+        String newTaskNote = noteInput.getText().toString();
+        boolean isChanged  = false;
+
+
+        //------------------------------------------------------------------------------------------
+        //START AlertDialog Definition
+        final AlertDialog.Builder deleteListBuilder = new AlertDialog.Builder(context);
+
+        //Set its title and view
+        String dialogMsg = getString(R.string.delete_dialog_start).
+                concat(" ").concat(todolist.getName()).
+                concat(" ").concat(getString(R.string.delete_dialog_end));
+
+        //Set title and message
+        deleteListBuilder.setTitle(R.string.delete_dialog_title).setMessage(dialogMsg);
+
+        //Add the "Positive" (Right button) logic
+        deleteListBuilder.setPositiveButton(R.string.dialog_default_positive_labeal, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //Call the delete function
+                deleteList(todolist);
+            }
+        });
+        //Add the "Negative" (Left button) logic
+        deleteListBuilder.setNegativeButton(R.string.dialog_default_negative_label, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        });
+
+        //END AlertDialog Definition
+        //------------------------------------------------------------------------------------------
+
+        AlertDialog newList = deleteListBuilder.create();
+        newList.show();
+    }
+
+
+    public void updateDueDateInput(java.util.Date d) {
+        if (d == null) {
+            updateDueDateInput((Calendar) null);
+            return;
+        }
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(d);
+        updateDueDateInput(cal);
+    }
+
+    public void updateDueDateInput(Calendar c) {
+        if (c == null) {
+            dueDateInput.setText(R.string.null_due_date_label);
+            this.setDateBtnsVisibility(false);
+            return;
+        }
+
+        String dayofweek = c.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.US);
+        SimpleDateFormat dateString = new SimpleDateFormat("dd-MM-yyyy");
+
+        //Update label and temporary values accordingly.
+        dueDateInput.setText(dayofweek + ", " + dateString.format(c.getTime()));
+        tempDate = c.getTime();
+
+        this.setDateBtnsVisibility(true);
+    }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -218,6 +308,12 @@ public class TaskDetailsActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        showEditConfirmationDialog();
+    }
+
     private void addTask(final Map<String, String> data) {
         progressDialog.setMessage("Processing...");
         showDialog();
@@ -226,7 +322,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         data.put("action", REQUEST_TAG);
         data.put("insert_type", "regular_add");
         StringRequest stringRequest = new StringRequest(Request.Method.POST, endpoint,
-                new Response.Listener<String>(){
+                new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         try {
@@ -254,7 +350,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
                         }
                     }
                 },
-                new Response.ErrorListener(){
+                new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         String msg = error.getMessage();
@@ -272,7 +368,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onSupportNavigateUp(){
+    public boolean onSupportNavigateUp() {
         finish();
         return true;
     }
@@ -433,12 +529,10 @@ public class TaskDetailsActivity extends AppCompatActivity {
         }
 
         public void onDateSet(DatePicker view, int year, int month, int day) {
-            TextView dateTextView = (TextView) getActivity().findViewById(R.id.taskDueDateEdit);
             Calendar selectedDay = Calendar.getInstance();
             selectedDay.set(year, month, day);
-            String test = selectedDay.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.US);
-            dateTextView.setText(test + ", " + String.valueOf(year) + "/" + String.valueOf(month) + "/" + String.valueOf(day));
-            ((TaskDetailsActivity) getActivity()).setDateBtnsVisibility(true);
+
+            ((TaskDetailsActivity) getActivity()).updateDueDateInput(selectedDay);
         }
     }
 }
