@@ -177,12 +177,43 @@ public class ListMenuActivity extends AppCompatActivity implements
         //false means the calling fragment is completedFragment.
 
         if(isOngoingFragment){
+            //TODO change isComplete to 1
+            updateItemStatus(1, data);
             completedFragment.addTask(data);
         } else {
+            //TODO change isComplete to 0
+            updateItemStatus(0, data);
             onGoingFragment.addTask(data);
         }
 
         return true;
+    }
+
+    private void updateItemStatus(final int flag, final TodoItem item) {
+        final String REQUEST_TAG = "update_item_status";
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, endpoint,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", REQUEST_TAG);
+                params.put("is_completed", String.valueOf(flag));
+                params.put("todo_id", String.valueOf(item.getID()));
+                return params;
+            }
+        };
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest, REQUEST_TAG);
     }
 
     //OnClickListener for "Quick Add" FloatingActionButton.
