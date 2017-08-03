@@ -3,6 +3,7 @@ package com.example.acer.plnwunderlist;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.Response;
@@ -44,6 +46,8 @@ public class ListShareActivity extends AppCompatActivity {
     private String listID;
     private String endpoint;
 
+    private ProgressDialog progressDialog;
+
     private static final int SHARE_LIST_NOTIFICATION_ID = 69;
 
     @Override
@@ -52,6 +56,8 @@ public class ListShareActivity extends AppCompatActivity {
         setContentView(R.layout.activity_list_menu_share);
 
         endpoint = getString(R.string.uri_endpoint);
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(false);
 
         //get textview
         TextView listTitle = (TextView) findViewById(R.id.share_list_title);
@@ -139,15 +145,16 @@ public class ListShareActivity extends AppCompatActivity {
     private void showInviteDialog(Context context) {
         LayoutInflater inflater = LayoutInflater.from(context);
         final View inviteDialogView = inflater.inflate(R.layout.main_menu_create_list_dialog, null);
-        EditText dialog = (EditText) inviteDialogView.findViewById(R.id.newListTitleText);
-        dialog.setHint("Email");
+        final EditText editTextDialog = (EditText) inviteDialogView.findViewById(R.id.newListTitleText);
+        editTextDialog.setHint("Email");
         final AlertDialog.Builder inviteBuilder = new AlertDialog.Builder(context);
         inviteBuilder.setTitle("Invite new member");
         inviteBuilder.setView(inviteDialogView);
         inviteBuilder.setPositiveButton("INVITE", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
+                inviteUser(editTextDialog.getText().toString());
+                memberAdapter.notifyDataSetChanged();
             }
         });
         inviteBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
@@ -158,5 +165,74 @@ public class ListShareActivity extends AppCompatActivity {
         });
         AlertDialog invite = inviteBuilder.create();
         invite.show();
+    }
+
+    private void inviteUser(final String email) {
+        progressDialog.setMessage("Processing...");
+        showDialog();
+
+        final String REQUEST_TAG = "invite_request";
+        StringRequest inviteRequest = new StringRequest(Request.Method.POST, endpoint,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        hideDialog();
+
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            int status = jsonObject.getInt("status");
+                            if (status == 0) {
+                                memberAdapter.add(new User(jsonObject.getInt("USER_ID"), jsonObject.getString("EMAIL"),
+                                        jsonObject.getString("NAME")));
+                            } else if (status == 1) {
+                                Toast.makeText(ListShareActivity.this, "User not found", Toast.LENGTH_SHORT).show();
+                            } else if (status == 2) {
+                                Toast.makeText(ListShareActivity.this, "This user is already a member of this list", Toast.LENGTH_SHORT).show();
+                            } else if (status == 3) {
+                                Toast.makeText(ListShareActivity.this, "Invite failed", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(ListShareActivity.this, "Unknown response", Toast.LENGTH_SHORT).show();
+                                Log.e(REQUEST_TAG, response);
+                            }
+                        } catch (JSONException e) {
+                            String msg = e.getMessage();
+                            if (msg != null) {
+                                Log.e(REQUEST_TAG, msg);
+                            }
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        hideDialog();
+                        String msg = error.getMessage();
+                        if (msg != null) {
+                            Log.e(REQUEST_TAG, msg);
+                        }
+                    }
+                }) {
+
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "share_todo_list");
+                params.put("email", email);
+                params.put("list_id", listID);
+                return params;
+            }
+        };
+
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(inviteRequest, REQUEST_TAG);
+    }
+
+    private void showDialog() {
+        if (!progressDialog.isShowing())
+            progressDialog.show();
+    }
+
+    private void hideDialog() {
+        if (progressDialog.isShowing())
+            progressDialog.dismiss();
     }
 }
