@@ -92,13 +92,38 @@ public class TaskDetailsActivity extends AppCompatActivity {
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
 
+        endpoint = getString(R.string.uri_endpoint);
+
+        //Initialize Button values
         addEditDueDateBtn   = (Button) findViewById(R.id.addEditDueDateBtn);
         deleteDueDateBtn    = (Button) findViewById(R.id.deleteDueDateBtn);
         addTaskBtn          = (Button) findViewById(R.id.addTask);
         addFileBtn          = (Button) findViewById(R.id.addFileBtn);
         uploadFileBtn       = (Button) findViewById(R.id.uploadFileBtn);
 
-        endpoint = getString(R.string.uri_endpoint);
+        //Initialize EditText values
+        taskNameInput   = (EditText) findViewById(R.id.taskNameEdit);
+        noteInput       = (EditText) findViewById(R.id.editTaskNote);
+        dueDateInput    = (TextView) findViewById(R.id.taskDueDateEdit);
+
+
+        if(getIntent().hasExtra("TODO_OBJECT")){
+            TodoItem sentItem = getIntent().getParcelableExtra("TODO_OBJECT");
+
+            taskNameInput.setText(sentItem.getDescription());
+
+        }
+
+
+        noteInput.setMinLines(3);
+
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        fileList = (LinearLayout) findViewById(R.id.fileListView);
+        fileListPseudoAdapter = new FileListPseudoAdapter(fileList, this);
+
+        fileListPseudoAdapter.add("Data Azhary");
+        fileListPseudoAdapter.add("Data Ryan");
 
         addEditDueDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,55 +141,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
             }
         });
 
-        if (getIntent().hasExtra("TODO_LIST_ID")) {
-            listID = getIntent().getStringExtra("TODO_LIST_ID");
-        }
-
-        if (getIntent().hasExtra("TODO_LIST_NAME")) {
-            listName = getIntent().getStringExtra("TODO_LIST_NAME");
-        }
-
-        taskNameInput   = (EditText) findViewById(R.id.taskNameEdit);
-        noteInput       = (EditText) findViewById(R.id.editTaskNote);
-        dueDateInput    = (TextView) findViewById(R.id.taskDueDateEdit);
-
-        addTaskBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String taskName         = taskNameInput.getText().toString();
-                String note             = noteInput.getText().toString();
-                String dueDateString    = dueDateInput.getText().toString();
-
-                String[] dueDateDummySringArray = dueDateString.split(" ");
-                String[] dueDateStringArray     = dueDateDummySringArray[1].split("/");
-
-                String dueDate          = dueDateStringArray[0] + "-"
-                        + dueDateStringArray[1] + "-"
-                        + dueDateStringArray[2];
-
-                Map<String, String> data = new HashMap<String, String>();
-                data.put("task_name", taskName);
-                data.put("list_id", listID);
-                data.put("due_date", dueDate);
-                data.put("note", note);
-                addTask(data);
-            }
-        });
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        fileList = (LinearLayout) findViewById(R.id.fileListView);
-        fileListPseudoAdapter = new FileListPseudoAdapter(fileList, this);
-
-        fileListPseudoAdapter.add("Data Azhary");
-        fileListPseudoAdapter.add("Data Ryan");
-
         addFileBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showFileChooser();
             }
         });
+
         uploadFileBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -187,6 +170,29 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 } else {
                     Log.e("UPLOAD", "Please choose a file first");
                 }
+            }
+        });
+
+        addTaskBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String taskName         = taskNameInput.getText().toString();
+                String note             = noteInput.getText().toString();
+                String dueDateString    = dueDateInput.getText().toString();
+
+                String[] dueDateDummySringArray = dueDateString.split(" ");
+                String[] dueDateStringArray     = dueDateDummySringArray[1].split("/");
+
+                String dueDate          = dueDateStringArray[0] + "-"
+                        + dueDateStringArray[1] + "-"
+                        + dueDateStringArray[2];
+
+                Map<String, String> data = new HashMap<String, String>();
+                data.put("task_name", taskName);
+                data.put("list_id", listID);
+                data.put("due_date", dueDate);
+                data.put("note", note);
+                addTask(data);
             }
         });
     }
