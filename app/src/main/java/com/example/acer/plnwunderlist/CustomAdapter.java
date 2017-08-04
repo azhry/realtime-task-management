@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +29,9 @@ public class CustomAdapter extends ArrayAdapter{
     // View lookup cache
     private static class ViewHolder {
         TextView txtName;
+        TextView txtDate;
         CheckBox checkBox;
+        ImageView noteIcon;
     }
 
     public interface OnCheckboxClickedListener {
@@ -67,7 +70,9 @@ public class CustomAdapter extends ArrayAdapter{
             viewHolder = new ViewHolder();
             convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_menu_list, parent, false);
             viewHolder.txtName = (TextView) convertView.findViewById(R.id.txtName);
+            viewHolder.txtDate = (TextView) convertView.findViewById(R.id.txtDate);
             viewHolder.checkBox = (CheckBox) convertView.findViewById(R.id.checkBox);
+            viewHolder.noteIcon = (ImageView) convertView.findViewById(R.id.noteIcon);
 
             if(isStrikethrough){
                 viewHolder.txtName.setPaintFlags(viewHolder.txtName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
@@ -84,7 +89,24 @@ public class CustomAdapter extends ArrayAdapter{
         TodoItem item = getItem(position);
 
         viewHolder.txtName.setText(item.getDescription());
-        //viewHolder.checkBox.setChecked(item.checked);
+
+        //Check if there's due date set
+        if(item.getDueDate() != null){
+            viewHolder.txtDate.setText("Due " + AppHelper.formatDate(item.getDueDate(), false));
+            viewHolder.txtDate.setVisibility(View.VISIBLE);
+        } else {
+            viewHolder.txtDate.setText("");
+            viewHolder.txtDate.setVisibility(View.GONE);
+        }
+
+        //Check if there's note attached
+        if(item.getNote() != null){
+            viewHolder.noteIcon.setVisibility(View.VISIBLE);
+        } else {
+
+            viewHolder.noteIcon.setVisibility(View.GONE);
+        }
+
         itemCheckBox = (CheckBox) result.findViewById(R.id.checkBox);
         itemCheckBox.setOnClickListener(new View.OnClickListener() {
             @Override

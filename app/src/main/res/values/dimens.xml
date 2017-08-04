@@ -2,5 +2,6 @@
     <dimen name="normal_btn_margin">12dp</dimen>
     <dimen name="font_normal">16sp</dimen>
     <dimen name="img_list_default">19dp</dimen>
+    <dimen name="icon_notifier_default">24dp</dimen>
     <dimen name="app_default_left_margin">12dp</dimen>
 </resources>

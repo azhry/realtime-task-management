@@ -166,6 +166,13 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        // Check should we need to refresh the fragment
+        refreshList();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
     }

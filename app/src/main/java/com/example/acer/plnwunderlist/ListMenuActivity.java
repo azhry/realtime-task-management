@@ -106,7 +106,10 @@ public class ListMenuActivity extends AppCompatActivity implements
         return true;
     }
 
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
