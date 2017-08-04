@@ -2,6 +2,7 @@
     <string name="app_name">PLN-Comm</string>
     <string name="create_new_list_label">+ Create New List</string>
     <string name="uri_websocket">ws://192.168.43.144:2000/PLN</string>
+    <string name="uri_server">http://192.168.43.144/PLN</string>
     <string name="emptyList_Text">You don\'t have any lists.\n Create one using the button below!</string>
     <string name="uri_endpoint">http://192.168.43.144/PLN/endpoint.php</string>
     <string name="list_default_value">DEFAULT TITLE</string>

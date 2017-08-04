@@ -11,11 +11,26 @@
         android:layout_height="wrap_content"
         android:text="File" />
 
-    <TextView
-        android:id="@+id/removeLabel"
-        android:layout_weight="3"
-        android:layout_gravity="center_horizontal"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Remove" />
+        android:orientation="horizontal"
+        android:layout_weight="3">
+
+        <ImageView
+            android:id="@+id/downloadFileBtn"
+            android:src="@drawable/ic_file_download_black_24dp"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"/>
+
+        <ImageView
+            android:id="@+id/deleteFileBtn"
+            android:src="@drawable/ic_delete_forever_black_24dp"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_weight="1"/>
+
+    </LinearLayout>
+
 </LinearLayout>
