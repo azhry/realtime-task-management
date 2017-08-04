@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import tech.gusavila92.websocketclient.WebSocketClient;
@@ -76,6 +77,41 @@ public class WebSocketClientManager {
         mWebSocketClient.close();
         isConnected = false;
     }
+
+    public static Map<String, String> validateJSONMap(Map<String, String> map) {
+        Iterator<Map.Entry<String, String>> it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, String> pairs = it.next();
+            if (pairs.getValue() == null) {
+                map.put(pairs.getKey(), "");
+            }
+        }
+        return map;
+    }
+
+    public static JSONObject validateJSONNull(JSONObject param) {
+        Iterator<?> it = param.keys();
+        Object value = null;
+        JSONObject jsonResult = new JSONObject();
+        while (it.hasNext()) {
+            String key = (String) it.next();
+            try{
+                value = param.get(key);
+
+                if(value instanceof String && value == ""){
+                    jsonResult.put(key, JSONObject.NULL);
+                } else {
+                    jsonResult.put(key, value);
+                }
+
+            } catch(JSONException e){
+                Log.e("JSON_VALIDATE", "Key " + key + ": " + e);
+            }
+        }
+        return jsonResult;
+    }
+
+
 
     public static WebSocketClient getInstance() {
         if (mWebSocketClient == null)

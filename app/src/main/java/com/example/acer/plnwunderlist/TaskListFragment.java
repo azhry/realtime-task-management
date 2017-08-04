@@ -197,8 +197,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                                 JSONObject item = todoItems.getJSONObject(i);
                                 boolean is_completed = item.getInt("IS_COMPLETED") == 1 ? true : false;
 
-                                TodoItem temp = TodoItem.newInstance(item);
-
                                 if (is_completed == mIsStrikethrough) {
                                     adapter.add(TodoItem.newInstance(item));
                                 }
