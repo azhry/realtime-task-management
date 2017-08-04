@@ -28,6 +28,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
+import com.example.acer.plnwunderlist.Singleton.WebSocketClientManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,6 +53,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private String listID;
     private String listName;
     private String selectedFilePath;
+    private boolean isUpdate;
 
     //Updateable views
     private Button addEditDueDateBtn;
@@ -105,10 +107,16 @@ public class TaskDetailsActivity extends AppCompatActivity {
         //Initialize TodoItem and temporary values
         item = null;
         tempDate = null;
+        isUpdate = false;
+
+        if (getIntent().hasExtra("TODO_LIST_ID")) {
+            listID = getIntent().getStringExtra("TODO_LIST_ID");
+        }
 
         if (getIntent().hasExtra("TODO_OBJECT")) {
             item = getIntent().getParcelableExtra("TODO_OBJECT");
             setupInputFields(item);
+            isUpdate = true;
         } else {
             fileDivider.setVisibility(View.GONE);
             fileLabel.setVisibility(View.GONE);
@@ -196,22 +204,33 @@ public class TaskDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String taskName = getNewDesc();
+                String note = getNewNote();
+                String dueDate = null;
 
-                if(!isDescriptionValid(taskName)){
+                if (!isDescriptionValid(taskName)) {
                     return;
                 }
 
-                String note = getNewNote();
-
                 SimpleDateFormat sqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                String dueDate = sqlDateFormat.format(tempDate);
+
+                if (tempDate != null) {
+                    dueDate = sqlDateFormat.format(tempDate);
+                }
 
                 Map<String, String> data = new HashMap<String, String>();
+                if (isUpdate) {
+                    data.put("todo_id", String.valueOf(item.getID()));
+
+                    //If the item is completed, set the value as 1. Otherwise set as 0.
+                    data.put("is_completed",
+                            String.valueOf(item.isCompleted() ? 1 : 0));
+                }
+
                 data.put("task_name", taskName);
                 data.put("list_id", listID);
                 data.put("due_date", dueDate);
                 data.put("note", note);
-                addTask(data);
+                updateTask(data);
             }
         });
     }
@@ -254,7 +273,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         return checkNullable(noteInput.getText().toString());
     }
 
-    private Boolean isDescriptionValid(String desc){
+    private Boolean isDescriptionValid(String desc) {
         //------------------------------------------------------------------------------------------
         //START AlertDialog Definition
         final AlertDialog.Builder invalidDescriptionDialog = new AlertDialog.Builder(this);
@@ -275,11 +294,43 @@ public class TaskDetailsActivity extends AppCompatActivity {
         //END AlertDialog Definition
         //------------------------------------------------------------------------------------------
 
-        if(desc == null){
+        if (desc == null) {
             invalidDescriptionDialog.show();
         }
 
         return desc != null;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == PICK_FILE_REQUEST) {
+                if (data == null) {
+                    return;
+                }
+
+                Uri selectedFileUri = data.getData();
+                selectedFilePath = FilePath.getPath(this, selectedFileUri);
+                Log.e("ON_ACTIVITY_RESULT", "Selected file path: " + selectedFilePath);
+                if (selectedFilePath != null && !selectedFilePath.equals("")) {
+                    Log.e("ON_ACTVT_RESULT_SUCCESS", "Selected file path: " + selectedFilePath);
+                } else {
+                    Log.e("ON_ACTIVITY_RESULT", "Cannot upload file to server");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        startBackProcedure();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        startBackProcedure();
+        return true;
     }
 
     private void startBackProcedure() {
@@ -335,17 +386,48 @@ public class TaskDetailsActivity extends AppCompatActivity {
             if (!isChanged) {
                 finish();
             } else {
-                showEditConfirmationDialog(changedItems, newTaskDesc, tempDate, newTaskNote);
+                showEditConfirmationDialog(changedItems);
             }
         } else {
-            //showAddConfirmationDialog();
+            showAddConfirmationDialog();
             finish();
         }
 
     }
 
-    private void showAddConfirmationDialog(final String newDesc,
-                                           final Date newDate, final String newNote) {
+    private void startUpdateProcedure() {
+        String taskName = getNewDesc();
+        String note = getNewNote();
+        String dueDate = null;
+
+        Log.e("UPDT", "Update procedure called!");
+        if (!isDescriptionValid(taskName)) {
+            return;
+        }
+
+        SimpleDateFormat sqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+        if (tempDate != null) {
+            dueDate = sqlDateFormat.format(tempDate);
+        }
+
+        Map<String, String> data = new HashMap<String, String>();
+        if (isUpdate) {
+            data.put("todo_id", String.valueOf(item.getID()));
+
+            //If the item is completed, set the value as 1. Otherwise set as 0.
+            data.put("is_completed",
+                    String.valueOf(item.isCompleted() ? 1 : 0));
+        }
+
+        data.put("task_name", taskName);
+        data.put("list_id", listID);
+        data.put("due_date", dueDate);
+        data.put("note", note);
+        updateTask(data);
+    }
+
+    private void showAddConfirmationDialog() {
 
         //------------------------------------------------------------------------------------------
         //START AlertDialog Definition
@@ -362,7 +444,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 //Call the update function
-                //addTask(newDesc, newDate, newNote);
+                startUpdateProcedure();
             }
         });
         //Add the "Negative" (Left button) logic
@@ -388,8 +470,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     }
 
-    private void showEditConfirmationDialog(String changedItems, final String newDesc,
-                                            final Date newDate, final String newNote) {
+    private void showEditConfirmationDialog(String changedItems) {
 
         //------------------------------------------------------------------------------------------
         //START AlertDialog Definition
@@ -407,7 +488,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 //Call the update function
-                updateTaskDetails(newDesc, newDate, newNote);
+                startUpdateProcedure();
             }
         });
         //Add the "Negative" (Left button) logic
@@ -433,15 +514,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     }
 
-    private void updateTaskDetails(String newDesc, Date newDate, String newNote) {
-        TodoItem oldItem = this.item;
-
-        if(!isDescriptionValid(newDesc)){
-            return;
-        }
-
-        //TODO Lajukela az update
-    }
 
     public void updateDueDateInput(java.util.Date d) {
         if (d == null) {
@@ -472,74 +544,54 @@ public class TaskDetailsActivity extends AppCompatActivity {
         this.setDateBtnsVisibility(true);
     }
 
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == PICK_FILE_REQUEST) {
-                if (data == null) {
-                    return;
-                }
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                        checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PICK_FILE_REQUEST);
-                    Log.e("REQUEST_PERMISSION", "TRUE");
-                }
-
-                Uri selectedFileUri = data.getData();
-                selectedFilePath = FilePath.getPath(this, selectedFileUri);
-                Log.e("ON_ACTIVITY_RESULT", "Selected file path: " + selectedFilePath);
-                if (selectedFilePath != null && !selectedFilePath.equals("")) {
-                    Log.e("ON_ACTVT_RESULT_SUCCESS", "Selected file path: " + selectedFilePath);
-                } else {
-                    Log.e("ON_ACTIVITY_RESULT", "Cannot upload file to server");
-                }
-            }
-        }
-    }
-
-    @Override
-    public void onBackPressed() {
-        startBackProcedure();
-    }
-
-    private void addTask(final Map<String, String> data) {
+    private void updateTask(final Map<String, String> paramData) {
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
+
+        final String updateMode;
+
         progressDialog.setMessage("Processing...");
         progressDialog.show();
 
-        final String REQUEST_TAG = "insert_todo_item";
-        data.put("action", REQUEST_TAG);
-        data.put("insert_type", "regular_add");
+        final String INSERT_TAG = "insert_todo_item";
+        final String UPDATE_TAG = "update_todo_item";
+
+        if (paramData.containsKey("todo_id")) {
+            paramData.put("action", UPDATE_TAG);
+            updateMode = UPDATE_TAG;
+        } else {
+            paramData.put("action", INSERT_TAG);
+            updateMode = INSERT_TAG;
+            paramData.put("insert_type", "regular_add");
+        }
+
+        final Map<String, String> data = WebSocketClientManager.validateJSONMap(paramData);
+
         StringRequest stringRequest = new StringRequest(Request.Method.POST, endpoint,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         try {
+                            Log.e(updateMode + "_EXCEPTION", response);
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
                                 progressDialog.dismiss();
-                                Intent listMenuIntent = new Intent(TaskDetailsActivity.this, ListMenuActivity.class);
-                                listMenuIntent.putExtra("TODO_LIST_ID", listID);
-                                listMenuIntent.putExtra("TODO_LIST_NAME", listName);
-                                startActivity(listMenuIntent);
                                 finish();
                             } else if (status == 1) {
                                 Toast.makeText(TaskDetailsActivity.this, "Insert task failed!", Toast.LENGTH_LONG).show();
                                 progressDialog.dismiss();
                             } else {
-                                Log.e(REQUEST_TAG, response);
+                                Log.e(updateMode, "Error: " + response);
                                 progressDialog.dismiss();
                             }
                         } catch (JSONException e) {
                             String msg = e.getMessage();
-                            if (msg != null)
-                                Log.e(REQUEST_TAG + "_EXCEPTION", msg);
-                            progressDialog.dismiss();
+                            if (msg != null) {
+                                Log.e(updateMode + "_EXCEPTION", msg);
+
+                                progressDialog.dismiss();
+                            }
                         }
                     }
                 },
@@ -547,8 +599,10 @@ public class TaskDetailsActivity extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         String msg = error.getMessage();
-                        if (msg != null)
-                            Log.e(REQUEST_TAG + "_ERROR", msg);
+                        if (msg != null) {
+                            Log.e(updateMode + "_ERROR", msg);
+                        }
+
                         progressDialog.dismiss();
                     }
                 }) {
@@ -557,14 +611,9 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 return data;
             }
         };
-        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest, REQUEST_TAG);
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest, updateMode);
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        startBackProcedure();
-        return true;
-    }
 
     private void showFileChooser() {
         Intent intent = new Intent();
