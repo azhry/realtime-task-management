@@ -9,9 +9,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-/**
- * Created by Ryan Fadholi on 28/07/2017.
- */
 
 public class FileListPseudoAdapter {
 
@@ -42,12 +39,12 @@ public class FileListPseudoAdapter {
         fileTitle.setText(data);
         ImageView downloadBtn = (ImageView) result.findViewById(R.id.downloadFileBtn);
 
-        final String url = mContext.getString(R.string.uri_server) + "/uploads/" + data;
+        final String url = mContext.getString(R.string.uri_server) + "/uploads/" + data.replace(" ", "%20");
 
         downloadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new FileDownloaderTask(url, data, mContext).execute();
+                new FileDownloaderTask(mContext, data).execute(url);
             }
         });
         ImageView deleteBtn = (ImageView) result.findViewById(R.id.deleteFileBtn);
