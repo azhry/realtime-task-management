@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,7 +20,7 @@ import java.util.ArrayList;
  * Created by Ryan Fadholi on 24/07/2017.
  */
 
-public class CustomAdapter extends ArrayAdapter{
+public class CustomAdapter extends ArrayAdapter {
 
     private ArrayList<TodoItem> dataSet;
     private OnCheckboxClickedListener mCallback;
@@ -32,6 +33,7 @@ public class CustomAdapter extends ArrayAdapter{
         TextView txtDate;
         CheckBox checkBox;
         ImageView noteIcon;
+        ImageView fileIcon;
     }
 
     public interface OnCheckboxClickedListener {
@@ -44,6 +46,7 @@ public class CustomAdapter extends ArrayAdapter{
         this.mContext = context;
         this.isStrikethrough = isStrikethrough;
     }
+
     @Override
     public int getCount() {
         return dataSet.size();
@@ -57,6 +60,7 @@ public class CustomAdapter extends ArrayAdapter{
     public void setOnCheckboxClickedListener(OnCheckboxClickedListener mCallback) {
         this.mCallback = mCallback;
     }
+
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 
@@ -73,17 +77,18 @@ public class CustomAdapter extends ArrayAdapter{
             viewHolder.txtDate = (TextView) convertView.findViewById(R.id.txtDate);
             viewHolder.checkBox = (CheckBox) convertView.findViewById(R.id.checkBox);
             viewHolder.noteIcon = (ImageView) convertView.findViewById(R.id.noteIcon);
+            viewHolder.fileIcon = (ImageView) convertView.findViewById(R.id.fileIcon);
 
-            if(isStrikethrough){
+            if (isStrikethrough) {
                 viewHolder.txtName.setPaintFlags(viewHolder.txtName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             }
 
-            result=convertView;
+            result = convertView;
             convertView.setTag(viewHolder);
 
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
-            result=convertView;
+            result = convertView;
         }
 
         TodoItem item = getItem(position);
@@ -91,7 +96,7 @@ public class CustomAdapter extends ArrayAdapter{
         viewHolder.txtName.setText(item.getDescription());
 
         //Check if there's due date set
-        if(item.getDueDate() != null){
+        if (item.getDueDate() != null) {
             viewHolder.txtDate.setText("Due " + AppHelper.formatDate(item.getDueDate(), false));
             viewHolder.txtDate.setVisibility(View.VISIBLE);
         } else {
@@ -99,13 +104,32 @@ public class CustomAdapter extends ArrayAdapter{
             viewHolder.txtDate.setVisibility(View.GONE);
         }
 
+        //Check if there's file attached
+        if (true) { //TODO: write logic here
+            viewHolder.fileIcon.setVisibility(View.VISIBLE);
+        } else {
+            viewHolder.fileIcon.setVisibility(View.GONE);
+        }
+
+
         //Check if there's note attached
-        if(item.getNote() != null){
+        if (item.getNote() != null) {
+            //If the file icon is visible, move the note to the left of file icon.
+            android.widget.RelativeLayout.LayoutParams params =
+                    (RelativeLayout.LayoutParams) viewHolder.noteIcon.getLayoutParams();
+            if(viewHolder.fileIcon.getVisibility() == View.VISIBLE){
+                params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+                params.addRule(RelativeLayout.LEFT_OF, R.id.fileIcon);
+            } else {
+                params.removeRule(RelativeLayout.LEFT_OF);
+                params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            }
+            
             viewHolder.noteIcon.setVisibility(View.VISIBLE);
         } else {
-
             viewHolder.noteIcon.setVisibility(View.GONE);
         }
+
 
         itemCheckBox = (CheckBox) result.findViewById(R.id.checkBox);
         itemCheckBox.setOnClickListener(new View.OnClickListener() {

@@ -41,7 +41,7 @@
         android:layout_alignParentRight="true"
         android:layout_width="@dimen/icon_notifier_default"
         android:layout_height="@dimen/icon_notifier_default"
-        android:layout_toLeftOf="@id/fileIcon"
+        android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:src="@drawable/ic_insert_drive_file_black_24dp"
         android:tint="@android:color/darker_gray"
