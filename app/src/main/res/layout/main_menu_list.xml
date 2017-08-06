@@ -24,13 +24,4 @@
         android:text="@string/list_default_value"
         android:textSize="@dimen/font_normal" />
 
-    <ImageView
-        android:id="@+id/shareIcon"
-        android:layout_alignParentRight="true"
-        android:layout_width="@dimen/img_list_default"
-        android:layout_height="@dimen/img_list_default"
-        android:layout_gravity="center_vertical"
-        android:src="@drawable/ic_people_black_24dp"
-        android:tint="@android:color/darker_gray" />
-
 </RelativeLayout>

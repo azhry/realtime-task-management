@@ -28,7 +28,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
-import com.example.acer.plnwunderlist.Singleton.WebSocketClientManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class TaskDetailsActivity extends AppCompatActivity {
 
@@ -54,7 +54,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private String listName;
     private String selectedFilePath;
     private boolean isUpdate;
-
     //Updateable views
     private Button addEditDueDateBtn;
     private Button deleteDueDateBtn;
@@ -534,11 +533,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        String dayofweek = c.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.US);
-        SimpleDateFormat dateString = new SimpleDateFormat("dd-MM-yyyy");
-
-        //Update label and temporary values accordingly.
-        dueDateInput.setText(dayofweek + ", " + dateString.format(c.getTime()));
+        dueDateInput.setText(AppHelper.formatDate(c, true));
         tempDate = c.getTime();
 
         this.setDateBtnsVisibility(true);
@@ -565,7 +560,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
             paramData.put("insert_type", "regular_add");
         }
 
-        final Map<String, String> data = WebSocketClientManager.validateJSONMap(paramData);
+        final Map<String, String> data = AppHelper.validateJSONMap(paramData);
 
         StringRequest stringRequest = new StringRequest(Request.Method.POST, endpoint,
                 new Response.Listener<String>() {
