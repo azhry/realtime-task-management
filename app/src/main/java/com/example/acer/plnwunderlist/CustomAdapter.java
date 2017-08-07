@@ -124,7 +124,7 @@ public class CustomAdapter extends ArrayAdapter {
                 params.removeRule(RelativeLayout.LEFT_OF);
                 params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             }
-            
+
             viewHolder.noteIcon.setVisibility(View.VISIBLE);
         } else {
             viewHolder.noteIcon.setVisibility(View.GONE);
