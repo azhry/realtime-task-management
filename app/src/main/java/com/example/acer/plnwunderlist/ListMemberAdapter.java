@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -18,6 +19,8 @@ import java.util.List;
  */
 
 public class ListMemberAdapter extends ArrayAdapter<User> {
+
+    private String listOwnerID;
 
     public ListMemberAdapter(@NonNull Context context, @NonNull List<User> objects) {
         super(context, 0, objects);
@@ -35,6 +38,7 @@ public class ListMemberAdapter extends ArrayAdapter<User> {
 
         // Get the {@link Word} object located at this position in the list
         User currentUser = getItem(position);
+        String currentUserID = String.valueOf(currentUser.getUserID());
         String currentUserName = currentUser.getName();
         String currentEmail = currentUser.getEmail();
 
@@ -45,6 +49,14 @@ public class ListMemberAdapter extends ArrayAdapter<User> {
         // set this text on the name TextView
         nameTextView.setText(currentUserName);
         emailTextView.setText(currentEmail);
+
+        if(this.listOwnerID != null){
+            if(currentUserID.equals(this.listOwnerID)){
+                ImageView userIcon = (ImageView) listItemView.findViewById(R.id.userTypeIcon);
+                userIcon.setImageDrawable(
+                        getContext().getDrawable(R.drawable.ic_stars_black_24dp));
+            }
+        }
 
         // Return the whole list item layout (containing an ImageView and a TextView)
         // so that it can be shown in the ListView
