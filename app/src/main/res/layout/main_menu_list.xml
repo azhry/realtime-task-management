@@ -16,12 +16,15 @@
 
     <TextView
         android:id="@+id/listTitle"
+        android:ellipsize="end"
         android:layout_toEndOf="@id/listIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:paddingLeft="12dp"
+        android:maxLines="1"
         android:text="@string/list_default_value"
-        android:textSize="@dimen/font_normal" />
+        android:textSize="@dimen/font_normal"
+/>
 
 </RelativeLayout>

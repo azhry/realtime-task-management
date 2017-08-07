@@ -82,27 +82,10 @@ public class ListMenuActivity extends AppCompatActivity implements
         //Retrieve all Icons
         Drawable shareBtnIcon = shareBtn.getIcon();
         shareBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
+        //END Menu Icon Tinting
+        //------------------------------------------------------------------------------------------
 
-        shareBtn.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                switch(menuItem.getItemId()){
-                    case R.id.list_share_btn:
-                        //Initialize the Intent
-                        Intent shareIntent = new Intent(getApplicationContext(), ListShareActivity.class);
-                        //Setup data to pass w/ the intent
-                        shareIntent.putExtra("TODO_LIST_ID", listID);
-                        if(getIntent().hasExtra("TODO_LIST_NAME")){
-                            shareIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
-                        }
-                        startActivity(shareIntent);
-                        return true;
-                    default:
-                        break;
-                }
-                return false;
-            }
-        });
+
         return true;
     }
 
@@ -118,8 +101,17 @@ public class ListMenuActivity extends AppCompatActivity implements
                 NavUtils.navigateUpFromSameTask(this);
                 return true;
             case R.id.list_share_btn:
-                Log.d("MENUEXAMPLE","Yooo it works!");
+                //Initialize the Intent
+                Intent shareIntent = new Intent(getApplicationContext(), ListShareActivity.class);
+                //Setup data to pass w/ the intent
+                shareIntent.putExtra("TODO_LIST_ID", listID);
+                if(getIntent().hasExtra("TODO_LIST_NAME")){
+                    shareIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
+                }
+                startActivity(shareIntent);
                 return true;
+            default:
+                break;
         }
 
         return true;

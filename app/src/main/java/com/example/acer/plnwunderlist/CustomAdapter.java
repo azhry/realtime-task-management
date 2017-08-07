@@ -88,6 +88,8 @@ public class CustomAdapter extends ArrayAdapter {
 
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
+            viewHolder.noteIcon = (ImageView) convertView.findViewById(R.id.noteIcon);
+            viewHolder.fileIcon = (ImageView) convertView.findViewById(R.id.fileIcon);
             result = convertView;
         }
 
@@ -118,8 +120,8 @@ public class CustomAdapter extends ArrayAdapter {
             android.widget.RelativeLayout.LayoutParams params =
                     (RelativeLayout.LayoutParams) viewHolder.noteIcon.getLayoutParams();
             if(viewHolder.fileIcon.getVisibility() == View.VISIBLE){
-                params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
                 params.addRule(RelativeLayout.LEFT_OF, R.id.fileIcon);
+                params.removeRule(RelativeLayout.ALIGN_PARENT_RIGHT);
             } else {
                 params.removeRule(RelativeLayout.LEFT_OF);
                 params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);

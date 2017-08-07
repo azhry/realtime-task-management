@@ -1,21 +1,23 @@
 package com.example.acer.plnwunderlist;
 
-import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
-import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,6 +36,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
+import com.example.acer.plnwunderlist.Singleton.WebSocketClientManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,6 +53,11 @@ import java.util.Map;
 
 public class MainMenuActivity extends AppCompatActivity {
 
+    public static final int LIST_TITLE_MAX_LENGTH = 100;
+    public static final int SYNCHED = 1;
+    public static final int UNSYNCHED = 0;
+    public static final String DATA_SAVED_BROADCAST = "DATASAVED";
+    public final static int PERMISSIONS_REQUEST_READ_PHONE_STATE = 11;
     //Statics
     private static final String TAG = "MainMenuActivity";
     ProgressDialog progressDialog;      //'nuff said.
@@ -62,15 +70,8 @@ public class MainMenuActivity extends AppCompatActivity {
     private TodoListAdapter adapter;    //Used to bridge todoLists and todoListsList
     private ListView todoListsList;     //The RecyclerView.
     private View emptyTextView;         //Header that pops up when the list is empty.
-
     private DatabaseHelper db;
     private BroadcastReceiver broadcastReceiver;
-
-    public static final int SYNCHED = 1;
-    public static final int UNSYNCHED = 0;
-    public static final String DATA_SAVED_BROADCAST = "DATASAVED";
-    public final static int PERMISSIONS_REQUEST_READ_PHONE_STATE = 11;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +97,7 @@ public class MainMenuActivity extends AppCompatActivity {
         SessionManager sessionManager = new SessionManager(this);
         userData = sessionManager.getUserDetails();
 
+        setTitle(userData.get("name"));
         //loadItems();
 
         broadcastReceiver = new BroadcastReceiver() {
@@ -117,7 +119,7 @@ public class MainMenuActivity extends AppCompatActivity {
         newListBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showAddListDialog(MainMenuActivity.this);
+                showAddListDialog(MainMenuActivity.this, null);
             }
         });
 
@@ -134,18 +136,63 @@ public class MainMenuActivity extends AppCompatActivity {
 
         //Catch the ContextMenu.ContextMenuItem sent from parameter
         //as AdapterView.AdapterContextMenuInfo to itemInfo variable.
-        AdapterView.AdapterContextMenuInfo itemInfo = (AdapterView.AdapterContextMenuInfo)menuInfo;
+        AdapterView.AdapterContextMenuInfo itemInfo = (AdapterView.AdapterContextMenuInfo) menuInfo;
         //Get the Item at the specified position, and get the value.
-        TodoList selectedList  = (TodoList) todoListsList.getItemAtPosition(itemInfo.position);
+        TodoList selectedList = (TodoList) todoListsList.getItemAtPosition(itemInfo.position);
         String titleName = selectedList.getName();
         //Set the header title
         menu.setHeaderTitle(titleName);
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = this.getMenuInflater();
+        inflater.inflate(R.menu.main_menu_actionbar_menu, menu);
+
+        //------------------------------------------------------------------------------------------
+        //START Menu Icon Tinting
+
+        //Retrieve all Menu Items
+        final MenuItem accountBtn = menu.findItem(R.id.account_btn);
+        final MenuItem logoutBtn = menu.findItem(R.id.logout_btn);
+
+        //Retrieve all Icons
+        Drawable accountBtnIcon = accountBtn.getIcon();
+        Drawable logoutBtnIcon = logoutBtn.getIcon();
+
+        //Tint the shit out
+        accountBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
+        logoutBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
+
+        //END Menu Icon Tinting
+        //------------------------------------------------------------------------------------------
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+            case R.id.logout_btn:
+                SessionManager sessionManager = new SessionManager(getApplicationContext());
+                sessionManager.logoutUser();
+                WebSocketClientManager.close();
+                finish();
+                return true;
+            default:
+                break;
+        }
+
+        return true;
+    }
+
+    @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
-        switch(item.getItemId()) {
+        switch (item.getItemId()) {
 
             case R.id.deleteTodoList:
                 showDeleteListDialog(MainMenuActivity.this,
@@ -196,7 +243,8 @@ public class MainMenuActivity extends AppCompatActivity {
                                 JSONObject jsonObject = response.getJSONObject(i);
                                 String listID = jsonObject.getString("LIST_ID");
                                 String listName = jsonObject.getString("LIST_NAME");
-                                adapter.add(new TodoList(listID, listName));
+                                int accessType = jsonObject.getInt("ACCESS_TYPE");
+                                adapter.add(new TodoList(listID, listName, accessType));
                                 adapter.notifyDataSetChanged();
                             } catch (JSONException e) {
                                 Log.e("JSON_Exception", e.getMessage());
@@ -225,46 +273,46 @@ public class MainMenuActivity extends AppCompatActivity {
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(getRequest, "retrieve_list");
     }
 
-    private void loadItems() {
-        todoLists.clear();
-        Cursor cursor = db.getItem();
-        if (cursor.moveToFirst()) {
-            do {
-                TodoList todoList = new TodoList(
-                        String.valueOf(cursor.getInt(cursor.getColumnIndex(DatabaseHelper.COLUMN_LIST_ID))),
-                        cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LIST_NAME))
-                );
-                todoLists.add(todoList);
-            } while (cursor.moveToNext());
-        }
+//    private void loadItems() {
+//        todoLists.clear();
+//        Cursor cursor = db.getItem();
+//        if (cursor.moveToFirst()) {
+//            do {
+//                TodoList todoList = new TodoList(
+//                        String.valueOf(cursor.getInt(cursor.getColumnIndex(DatabaseHelper.COLUMN_LIST_ID))),
+//                        cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_LIST_NAME))
+//                );
+//                todoLists.add(todoList);
+//            } while (cursor.moveToNext());
+//        }
+//
+//        adapter = new TodoListAdapter(this, todoLists);
+//        todoListsList.setAdapter(adapter);
+//        adapter.notifyDataSetChanged();
+//
+//        todoListsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(AdapterView parent, View view, int position, long id) {
+//                //Initialize the Intent
+//                Intent todolistIntent = new Intent(getApplicationContext(), ListMenuActivity.class);
+//
+//                //Get selected Todolist object
+//                TodoList clickedList = (TodoList) todoListsList.getItemAtPosition(position);
+//                //and extract its name for the page title, and ID for reference.
+//                todolistIntent.putExtra("TODO_LIST_ID", clickedList.getID());
+//                todolistIntent.putExtra("TODO_LIST_NAME", clickedList.getName());
+//
+//                startActivity(todolistIntent);
+//
+//            }
+//        });
+//
+//        setEmptyTextVisibility(emptyTextView);
+//    }
 
-        adapter = new TodoListAdapter(this, todoLists);
-        todoListsList.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
-
-        todoListsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView parent, View view, int position, long id) {
-                //Initialize the Intent
-                Intent todolistIntent = new Intent(getApplicationContext(), ListMenuActivity.class);
-
-                //Get selected Todolist object
-                TodoList clickedList = (TodoList) todoListsList.getItemAtPosition(position);
-                //and extract its name for the page title, and ID for reference.
-                todolistIntent.putExtra("TODO_LIST_ID", clickedList.getID());
-                todolistIntent.putExtra("TODO_LIST_NAME", clickedList.getName());
-
-                startActivity(todolistIntent);
-
-            }
-        });
-
-        setEmptyTextVisibility(emptyTextView);
-    }
-
-    private void saveItemToLocalStorage(int listID, String listName, int status) {
+    private void saveItemToLocalStorage(int listID, String listName, int accessType, int status) {
         db.addItem(listID, listName, status);
-        TodoList todoList = new TodoList(String.valueOf(listID), listName);
+        TodoList todoList = new TodoList(String.valueOf(listID), listName, accessType);
         todoLists.add(todoList);
         adapter.notifyDataSetChanged();
     }
@@ -344,7 +392,7 @@ public class MainMenuActivity extends AppCompatActivity {
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(addRequest, "add_list");
     }
 
-    private void showDeleteListDialog(Context context,final TodoList todolist){
+    private void showDeleteListDialog(Context context, final TodoList todolist) {
 
         //------------------------------------------------------------------------------------------
         //START AlertDialog Definition
@@ -380,7 +428,7 @@ public class MainMenuActivity extends AppCompatActivity {
         newList.show();
     }
 
-    private void deleteList(final TodoList list){
+    private void deleteList(final TodoList list) {
         progressDialog.setMessage("Deleting...");
         showDialog();
         Response.Listener<String> responseListener = new Response.Listener<String>() {
@@ -416,7 +464,8 @@ public class MainMenuActivity extends AppCompatActivity {
                 String msg = error.getMessage();
                 if (msg != null)
                     Log.e("DELETE_REQUEST", msg);
-                else Log.e("DELETE_REQUEST", "An error occured but the error message is empty. You must chase the bug yourself, good luck!");
+                else
+                    Log.e("DELETE_REQUEST", "An error occured but the error message is empty. You must chase the bug yourself, good luck!");
                 hideDialog();
             }
         };
@@ -437,74 +486,74 @@ public class MainMenuActivity extends AppCompatActivity {
 
     }
 
-    private void addNewList(final String newListName) {
-        progressDialog.setMessage("Processing...");
-        showDialog();
-        StringRequest addRequest = new StringRequest(Request.Method.POST, endpoint,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Log.e("RESPONSE", response);
-                        try {
-                            JSONObject jsonObject = new JSONObject(response);
-                            int status = jsonObject.getInt("status");
-                            if (status == 0) {
-                                String newListID = jsonObject.getString("list_id");
-                                String newListName = jsonObject.getString("list_name");
-                                adapter.add(new TodoList(newListID, newListName));
-                                adapter.notifyDataSetChanged();
-                                setEmptyTextVisibility(emptyTextView);
-                                Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
-                            } else if (status == 1)
-                                Toast.makeText(getApplicationContext(), "Insert list failed!", Toast.LENGTH_LONG).show();
-                            else if (status == 2)
-                                Toast.makeText(getApplicationContext(), "Insert access failed!", Toast.LENGTH_LONG).show();
-                            else if (status == -1)
-                                Toast.makeText(getApplicationContext(), "Unknown attempt!", Toast.LENGTH_LONG).show();
-                            else Log.e("RESPONSE", response);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            String msg = e.getMessage();
-                            if (msg != null) {
-                                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG);
-                                Log.e("JSONException", msg);
-                            }
-                        }
-
-                        hideDialog();
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        String msg = error.getMessage();
-                        if (msg != null)
-                            Log.e("ADD_ERROR", error.getMessage());
-                        hideDialog();
-                    }
-                }
-        ) {
-            @Override
-            protected Map<String, String> getParams() {
-                Map<String, String> params = new HashMap<>();
-                params.put("action", "insert_todo_list");
-                params.put("list_name", newListName);
-                params.put("user_id", userData.get("user_id"));
-                return params;
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                params.put("action", "insert_todo_list");
-                params.put("list_name", newListName);
-                params.put("user_id", userData.get("user_id"));
-                return params;
-            }
-        };
-
-        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(addRequest, "add_list");
-    }
+//    private void addNewList(final String newListName) {
+//        progressDialog.setMessage("Processing...");
+//        showDialog();
+//        StringRequest addRequest = new StringRequest(Request.Method.POST, endpoint,
+//                new Response.Listener<String>() {
+//                    @Override
+//                    public void onResponse(String response) {
+//                        Log.e("RESPONSE", response);
+//                        try {
+//                            JSONObject jsonObject = new JSONObject(response);
+//                            int status = jsonObject.getInt("status");
+//                            if (status == 0) {
+//                                String newListID = jsonObject.getString("list_id");
+//                                String newListName = jsonObject.getString("list_name");
+//                                adapter.add(new TodoList(newListID, newListName));
+//                                adapter.notifyDataSetChanged();
+//                                setEmptyTextVisibility(emptyTextView);
+//                                Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
+//                            } else if (status == 1)
+//                                Toast.makeText(getApplicationContext(), "Insert list failed!", Toast.LENGTH_LONG).show();
+//                            else if (status == 2)
+//                                Toast.makeText(getApplicationContext(), "Insert access failed!", Toast.LENGTH_LONG).show();
+//                            else if (status == -1)
+//                                Toast.makeText(getApplicationContext(), "Unknown attempt!", Toast.LENGTH_LONG).show();
+//                            else Log.e("RESPONSE", response);
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                            String msg = e.getMessage();
+//                            if (msg != null) {
+//                                Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG);
+//                                Log.e("JSONException", msg);
+//                            }
+//                        }
+//
+//                        hideDialog();
+//                    }
+//                },
+//                new Response.ErrorListener() {
+//                    @Override
+//                    public void onErrorResponse(VolleyError error) {
+//                        String msg = error.getMessage();
+//                        if (msg != null)
+//                            Log.e("ADD_ERROR", error.getMessage());
+//                        hideDialog();
+//                    }
+//                }
+//        ) {
+//            @Override
+//            protected Map<String, String> getParams() {
+//                Map<String, String> params = new HashMap<>();
+//                params.put("action", "insert_todo_list");
+//                params.put("list_name", newListName);
+//                params.put("user_id", userData.get("user_id"));
+//                return params;
+//            }
+//
+//            @Override
+//            public Map<String, String> getHeaders() throws AuthFailureError {
+//                Map<String, String> params = new HashMap<>();
+//                params.put("action", "insert_todo_list");
+//                params.put("list_name", newListName);
+//                params.put("user_id", userData.get("user_id"));
+//                return params;
+//            }
+//        };
+//
+//        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(addRequest, "add_list");
+//    }
 
     private void editList(final String newListName, final TodoList list) {
         progressDialog.setMessage("Editing...");
@@ -543,7 +592,8 @@ public class MainMenuActivity extends AppCompatActivity {
                 String msg = error.getMessage();
                 if (msg != null)
                     Log.e("EDIT_REQUEST", msg);
-                else Log.e("EDIT_REQUEST", "An error occured but the error message is empty. You must chase the bugs yourself, good luck!");
+                else
+                    Log.e("EDIT_REQUEST", "An error occured but the error message is empty. You must chase the bugs yourself, good luck!");
                 hideDialog();
             }
         };
@@ -580,11 +630,67 @@ public class MainMenuActivity extends AppCompatActivity {
         }
     }
 
-    private void showAddListDialog(Context context) {
+    private boolean validateNewListTitle(final Context context, final String title) {
+
+        String dialogTitle = "Add List Error";
+        String dialogMessage = "";
+        boolean isStringValid = true;
+        int titleLength = title.length();
+
+        if (titleLength == 0) {
+            dialogMessage = "List title cannot be empty.";
+            isStringValid = false;
+        } else if (titleLength > LIST_TITLE_MAX_LENGTH) {
+            dialogMessage = "List title length cannot be more than " + LIST_TITLE_MAX_LENGTH +
+                    " character. Currently it's " + titleLength + " characters.";
+            isStringValid = false;
+        }
+
+        //------------------------------------------------------------------------------------------
+        //START titleErrorDialog Definition
+        final AlertDialog.Builder titleErrorDialog = new AlertDialog.Builder(context);
+
+        //Set its title and view
+        titleErrorDialog.setTitle(dialogTitle).setMessage(dialogMessage)
+                .setPositiveButton("Retry", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        showAddListDialog(context, title);
+                        //Call the activity's addNewList function using user's string.
+                        //addNewList(newListText.getText().toString());
+                    }
+                })
+                .setNegativeButton(R.string.dialog_default_negative_label, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+        ;
+
+        //END titleErrorDialog Definition
+        //------------------------------------------------------------------------------------------
+
+        if (!isStringValid) {
+            AlertDialog titleError = titleErrorDialog.create();
+            titleError.show();
+        }
+        return isStringValid;
+    }
+
+    private void showAddListDialog(final Context context, String prevText) {
 
         //Get inflater from current context
         LayoutInflater inflater = LayoutInflater.from(context);
         final View addListDialogView = inflater.inflate(R.layout.main_menu_create_list_dialog, null);
+
+        //Because the EditText is not from the activity's view,
+        //Explicitly call findViewById from addListDialogView to access the EditText from dialog.
+        final EditText newListText = (EditText) addListDialogView.findViewById(R.id.newListTitleText);
+
+        if (prevText != null) {
+            newListText.setText(prevText);
+        }
 
         //------------------------------------------------------------------------------------------
         //START AlertDialog Definition
@@ -598,12 +704,11 @@ public class MainMenuActivity extends AppCompatActivity {
         addListBuilder.setPositiveButton(R.string.dialog_default_positive_labeal, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                //Because the EditText is not from the activity's view,
-                //Explicitly call findViewById from addListDialogView to access the EditText from dialog.
-                EditText newListText = (EditText) addListDialogView.findViewById(R.id.newListTitleText);
+                boolean isValid = validateNewListTitle(context, newListText.getText().toString());
                 //Call the activity's addNewList function using user's string.
                 //addNewList(newListText.getText().toString());
-                saveItemToServer(newListText.getText().toString());
+                if(isValid)
+                    saveItemToServer(newListText.getText().toString());
             }
         });
         //Add the "Negative" (Left button) logic

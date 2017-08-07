@@ -28,7 +28,7 @@ public class ListMemberAdapter extends ArrayAdapter<User> {
         View listItemView = convertView;
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(
-                    R.layout.main_menu_list, parent, false);
+                    R.layout.list_share_list, parent, false);
         }
 
         // Get the {@link Word} object located at this position in the list
