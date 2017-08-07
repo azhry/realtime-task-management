@@ -45,6 +45,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 
 /**
@@ -54,10 +55,11 @@ import java.util.Map;
 public class MainMenuActivity extends AppCompatActivity {
 
     public static final int LIST_TITLE_MAX_LENGTH = 100;
-    public static final int SYNCHED = 1;
-    public static final int UNSYNCHED = 0;
-    public static final String DATA_SAVED_BROADCAST = "DATASAVED";
-    public final static int PERMISSIONS_REQUEST_READ_PHONE_STATE = 11;
+
+    public static final int TODOLIST_ACCESS_CODE_OWNER = 0;
+    public static final int TODOLIST_ACCESS_CODE_MEMBER = 1;
+    public static final int TODOLIST_TEMP_VALUE = 0;
+
     //Statics
     private static final String TAG = "MainMenuActivity";
     ProgressDialog progressDialog;      //'nuff said.
@@ -70,15 +72,21 @@ public class MainMenuActivity extends AppCompatActivity {
     private TodoListAdapter adapter;    //Used to bridge todoLists and todoListsList
     private ListView todoListsList;     //The RecyclerView.
     private View emptyTextView;         //Header that pops up when the list is empty.
-    private DatabaseHelper db;
-    private BroadcastReceiver broadcastReceiver;
+
+    private DBPLNHelper db;
+    private NetworkStateChecker networkStateReceiver;
+
+    public static final int SYNCHED = 1;
+    public static final int UNSYNCHED = 0;
+    public static final String DATA_SAVED_BROADCAST = "com.example.acer.plnwunderlist";
+    public final static int PERMISSIONS_REQUEST_READ_PHONE_STATE = 11;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        db = new DatabaseHelper(this);
+        db = new DBPLNHelper(this);
 
         //Initalize the pseudo-statics
         endpoint = getString(R.string.uri_endpoint);
@@ -97,20 +105,15 @@ public class MainMenuActivity extends AppCompatActivity {
         SessionManager sessionManager = new SessionManager(this);
         userData = sessionManager.getUserDetails();
 
+
         setTitle(userData.get("name"));
-        //loadItems();
+        loadLists();
 
-        broadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                //loadItems();
-            }
-        };
+        networkStateReceiver = new NetworkStateChecker();
 
-        loadItemsFromServer();
+        loadListsFromServer();
 
-        registerReceiver(broadcastReceiver, new IntentFilter(DATA_SAVED_BROADCAST));
-        registerReceiver(new NetworkStateChecker(), new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
+        registerReceiver(networkStateReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
 
         View layout = getLayoutInflater().inflate(R.layout.main_menu_create_list_btn, null);
         todoListsList.addFooterView(layout);
@@ -207,7 +210,14 @@ public class MainMenuActivity extends AppCompatActivity {
         }
     }
 
-    private void loadItemsFromServer() {
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(networkStateReceiver);
+        Log.e("FINISH", "DESTROYYYY");
+        super.onDestroy();
+    }
+
+    private void loadListsFromServer() {
         progressDialog.setMessage("Loading data...");
         showDialog();
 
@@ -238,13 +248,40 @@ public class MainMenuActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONArray response) {
                         //Log.e("JSON", response.toString());
+                        todoLists.clear();
                         for (int i = 0; i < response.length(); i++) {
                             try {
                                 JSONObject jsonObject = response.getJSONObject(i);
                                 String listID = jsonObject.getString("LIST_ID");
                                 String listName = jsonObject.getString("LIST_NAME");
                                 int accessType = jsonObject.getInt("ACCESS_TYPE");
-                                adapter.add(new TodoList(listID, listName, accessType));
+
+                                TodoList loadedTodoList = new TodoList(listID, listName);
+                                Cursor c = db.select("todo_lists", "SERVER_ID=" + listID + " AND STATUS=1");
+                                if (!c.moveToFirst()) {
+                                    Map<String, String> contentValues = new HashMap<>();
+                                    contentValues.put("LIST_ID", listID);
+                                    contentValues.put("LIST_NAME", listName);
+                                    contentValues.put("SERVER_ID", listID);
+                                    contentValues.put("ACTION", "0");
+                                    contentValues.put("STATUS", "1");
+                                    db.insert("todo_lists", contentValues);
+                                } else {
+                                    do {
+                                        String action = c.getString(c.getColumnIndex("ACTION"));
+                                        if (action.equals("1")) {
+                                            // local list on edited state, sync edit to server
+                                            String serverId = c.getString(c.getColumnIndex("SERVER_ID"));
+                                            String editedListName = c.getString(c.getColumnIndex("LIST_NAME"));
+                                            TodoList editedTodoList = new TodoList(serverId, editedListName);
+                                            editList(editedListName, editedTodoList);
+                                            loadedTodoList.setName(editedListName);
+                                        }
+                                    } while (c.moveToNext());
+                                }
+                                c.close();
+
+                                adapter.add(loadedTodoList);
                                 adapter.notifyDataSetChanged();
                             } catch (JSONException e) {
                                 Log.e("JSON_Exception", e.getMessage());
@@ -272,6 +309,7 @@ public class MainMenuActivity extends AppCompatActivity {
 
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(getRequest, "retrieve_list");
     }
+
 
 //    private void loadItems() {
 //        todoLists.clear();
@@ -310,14 +348,78 @@ public class MainMenuActivity extends AppCompatActivity {
 //        setEmptyTextVisibility(emptyTextView);
 //    }
 
-    private void saveItemToLocalStorage(int listID, String listName, int accessType, int status) {
-        db.addItem(listID, listName, status);
-        TodoList todoList = new TodoList(String.valueOf(listID), listName, accessType);
+    private void loadLists() {
+        todoLists.clear();
+        Cursor cursor = db.select("todo_lists");
+        if (cursor.moveToFirst()) {
+            do {
+                String status = cursor.getString(cursor.getColumnIndex("STATUS"));
+                if (status.equals("1")) {
+                    TodoList todoList = new TodoList(
+                            cursor.getString(cursor.getColumnIndex("SERVER_ID")),
+                            cursor.getString(cursor.getColumnIndex("LIST_NAME"))
+                    );
+                    todoLists.add(todoList);
+                } else {
+
+                }
+            } while (cursor.moveToNext());
+        }
+
+        adapter = new TodoListAdapter(this, todoLists);
+        todoListsList.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+
+        todoListsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView parent, View view, int position, long id) {
+                //Initialize the Intent
+                Intent todolistIntent = new Intent(getApplicationContext(), ListMenuActivity.class);
+
+                //Get selected Todolist object
+                TodoList clickedList = (TodoList) todoListsList.getItemAtPosition(position);
+                //and extract its name for the page title, and ID for reference.
+                todolistIntent.putExtra("TODO_LIST_ID", clickedList.getID());
+                todolistIntent.putExtra("TODO_LIST_NAME", clickedList.getName());
+
+                startActivity(todolistIntent);
+
+            }
+        });
+
+        setEmptyTextVisibility(emptyTextView);
+    }
+
+    private void saveListToLocalStorage(int listID, String listName, int status, boolean success) {
+        Map<String, String> contentValues = new HashMap<>();
+        contentValues.put("LIST_ID", String.valueOf(listID));
+        contentValues.put("LIST_NAME", listName);
+        contentValues.put("STATUS", String.valueOf(status));
+        contentValues.put("ACTION", "0");
+        if (success) {
+            contentValues.put("SERVER_ID", String.valueOf(listID));
+        } else {
+            contentValues.put("SERVER_ID", "0");
+        }
+        db.insert("todo_lists", contentValues);
+        TodoList todoList = new TodoList(String.valueOf(listID), listName);
         todoLists.add(todoList);
         adapter.notifyDataSetChanged();
     }
 
-    private void saveItemToServer(final String newListName) {
+    private void editListInLocalStorage(int listID, String listName, boolean success) {
+        Map<String, String> updatedValues = new HashMap<>();
+        updatedValues.put("LIST_NAME", listName);
+        if (!success) {
+            updatedValues.put("ACTION", "1");
+        } else {
+            updatedValues.put("ACTION", "0");
+        }
+        db.update("todo_lists", updatedValues, "LIST_ID=" + listID);
+        adapter.notifyDataSetChanged();
+    }
+
+    private void saveListToServer(final String newListName) {
         progressDialog.setMessage("Saving data...");
         showDialog();
 
@@ -334,7 +436,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                 String newListName = jsonObject.getString("list_name");
                                 adapter.add(new TodoList(newListID, newListName));
                                 adapter.notifyDataSetChanged();
-                                //saveItemToLocalStorage(Integer.parseInt(newListID), newListName, SYNCHED);
+                                saveListToLocalStorage(Integer.parseInt(newListID), newListName, SYNCHED, true);
                                 setEmptyTextVisibility(emptyTextView);
                                 Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
                             } else if (status == 1)
@@ -345,7 +447,8 @@ public class MainMenuActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), "Unknown attempt!", Toast.LENGTH_LONG).show();
                             else {
                                 Log.e("RESPONSE_UNSYNCHED", response);
-                                saveItemToLocalStorage((int) Math.random(), newListName, UNSYNCHED);
+//                                Random randId = new Random();
+                                //saveListToLocalStorage(randId.nextInt(Integer.MAX_VALUE), newListName, UNSYNCHED, false);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -365,7 +468,8 @@ public class MainMenuActivity extends AppCompatActivity {
                         String msg = error.getMessage();
                         if (msg != null)
                             Log.e("ADD_ERROR", error.getMessage());
-                        saveItemToLocalStorage((int) Math.random(), newListName, UNSYNCHED);
+                        Random randId = new Random();
+                        saveListToLocalStorage(randId.nextInt(Integer.MAX_VALUE), newListName, UNSYNCHED, false);
                         hideDialog();
                     }
                 }
@@ -566,6 +670,8 @@ public class MainMenuActivity extends AppCompatActivity {
                     JSONObject jsonObject = new JSONObject(response);
                     int status = jsonObject.getInt("status");
                     if (status == 0) {
+                        int listID = jsonObject.getInt("list_id");
+                        editListInLocalStorage(listID, newListName, true);
                         String oldListName = list.getName();
                         list.setName(newListName);
                         adapter.notifyDataSetChanged();
@@ -592,8 +698,10 @@ public class MainMenuActivity extends AppCompatActivity {
                 String msg = error.getMessage();
                 if (msg != null)
                     Log.e("EDIT_REQUEST", msg);
-                else
-                    Log.e("EDIT_REQUEST", "An error occured but the error message is empty. You must chase the bugs yourself, good luck!");
+                else Log.e("EDIT_REQUEST", "An error occured but the error message is empty. You must chase the bugs yourself, good luck!");
+                editListInLocalStorage(Integer.parseInt(list.getID()), newListName, false);
+                list.setName(newListName);
+                adapter.notifyDataSetChanged();
                 hideDialog();
             }
         };
@@ -707,8 +815,9 @@ public class MainMenuActivity extends AppCompatActivity {
                 boolean isValid = validateNewListTitle(context, newListText.getText().toString());
                 //Call the activity's addNewList function using user's string.
                 //addNewList(newListText.getText().toString());
+
                 if(isValid)
-                    saveItemToServer(newListText.getText().toString());
+                    saveListToServer(newListText.getText().toString());
             }
         });
         //Add the "Negative" (Left button) logic
