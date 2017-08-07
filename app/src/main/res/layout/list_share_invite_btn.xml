@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/normal_btn_margin"
+    android:paddingTop="@dimen/normal_btn_margin">
+
+
+    <Button
+        android:id="@+id/invite_member_btn"
+        android:drawableLeft="@drawable/ic_person_add_black_24dp"
+        android:drawableTint="@android:color/white"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/invite_member_btn"
+        android:padding="@dimen/normal_btn_margin"
+        android:background="@color/btn_blue"
+        android:textColor="@android:color/white"/>
+</LinearLayout>

@@ -91,8 +91,11 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     }
 
     public void refreshList(){
-        adapter.notifyDataSetChanged();
+        adapter.clear();
+        getItemsList(this.listID);
     }
+
+
 
     public void addTask(TodoItem task) {
         adapter.add(task);
@@ -152,7 +155,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
 
                 //Get selected TodoItem object
                 TodoItem clickedTask = (TodoItem) listView.getItemAtPosition(position);
-                Log.d("PARCEL FRAGMENT",String.valueOf(clickedTask.getNote() == null));
                 //parcel the TodoItem
                 taskDetailsIntent.putExtra("TODO_OBJECT",clickedTask);
                 //and extract its name for the page title, and ID for reference.

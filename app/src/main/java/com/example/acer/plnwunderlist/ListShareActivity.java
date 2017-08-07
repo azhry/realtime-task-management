@@ -46,6 +46,7 @@ public class ListShareActivity extends AppCompatActivity {
     private ListView memberList;
     private Button inviteBtn;
 
+    private String listOwnerID;
     private String listID;
     private String endpoint;
 
@@ -56,13 +57,15 @@ public class ListShareActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_menu_share);
 
+        setTitle("Share List");
+
         endpoint = getString(R.string.uri_endpoint);
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
 
         //get textview
         TextView listTitle = (TextView) findViewById(R.id.share_list_title);
-        inviteBtn = (Button) findViewById(R.id.inviteBtn);
+
 
         //setup listview
         listMembers = new ArrayList<>();
@@ -78,6 +81,11 @@ public class ListShareActivity extends AppCompatActivity {
             String listName = getIntent().getStringExtra("TODO_LIST_NAME");
             listTitle.setText(listName);
         }
+
+        View layout = getLayoutInflater().inflate(R.layout.list_share_invite_btn, null);
+        memberList.addFooterView(layout);
+
+        inviteBtn = (Button) findViewById(R.id.invite_member_btn);
 
         inviteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,6 +112,12 @@ public class ListShareActivity extends AppCompatActivity {
                                 JSONObject memberJSON = membersJSON.getJSONObject(i);
                                 memberAdapter.add(new User(memberJSON.getInt("USER_ID"), memberJSON.getString("EMAIL"),
                                         memberJSON.getString("NAME")));
+
+                                int memberAccessType = memberJSON.getInt("ACCESS_TYPE");
+                                if(memberAccessType == AppHelper.TODOLIST_ACCESS_CODE_OWNER){
+//                                    memberAdapter.setListOwnerID(
+//                                            String.valueOf(memberJSON.getInt("USER_ID"));
+                                }
                             }
                             memberAdapter.notifyDataSetChanged();
                         } catch (JSONException e) {

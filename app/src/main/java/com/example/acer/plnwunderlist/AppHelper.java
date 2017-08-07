@@ -24,6 +24,9 @@ import java.util.concurrent.TimeUnit;
 
 public class AppHelper {
 
+    public static final int TODOLIST_ACCESS_CODE_OWNER = 0;
+    public static final int TODOLIST_ACCESS_CODE_MEMBER = 1;
+
     public static Map<String, String> validateJSONMap(Map<String, String> map) {
         Iterator<Map.Entry<String, String>> it = map.entrySet().iterator();
         while (it.hasNext()) {

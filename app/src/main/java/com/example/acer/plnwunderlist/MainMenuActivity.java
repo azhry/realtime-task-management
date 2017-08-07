@@ -56,9 +56,7 @@ public class MainMenuActivity extends AppCompatActivity {
 
     public static final int LIST_TITLE_MAX_LENGTH = 100;
 
-    public static final int TODOLIST_ACCESS_CODE_OWNER = 0;
-    public static final int TODOLIST_ACCESS_CODE_MEMBER = 1;
-    public static final int TODOLIST_TEMP_VALUE = 0;
+
 
     //Statics
     private static final String TAG = "MainMenuActivity";

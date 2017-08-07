@@ -7,21 +7,35 @@
     android:padding="12dp">
 
     <ImageView
-        android:id="@+id/listIcon"
-        android:layout_width="@dimen/img_list_default"
-        android:layout_height="@dimen/img_list_default"
-        android:layout_gravity="center_vertical"
-        android:src="@drawable/ic_format_list_bulleted_black_24dp"
+        android:id="@+id/userTypeIcon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginRight="12dp"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
+        android:enabled="true"
+        android:src="@drawable/ic_account_circle_black_24dp"
         android:tint="@android:color/darker_gray" />
 
-    <TextView
-        android:id="@+id/listTitle"
-        android:layout_toEndOf="@id/listIcon"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:paddingLeft="12dp"
-        android:text="@string/list_default_value"
-        android:textSize="@dimen/font_normal" />
+        android:layout_toRightOf="@id/userTypeIcon"
+        android:layout_centerVertical="true"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/txtRealName"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="16sp" />
+        <TextView
+            android:id="@+id/txtEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            />
+    </LinearLayout>
 
 </RelativeLayout>
