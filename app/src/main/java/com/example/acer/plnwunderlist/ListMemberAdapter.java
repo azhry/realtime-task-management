@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 /**
@@ -33,13 +35,16 @@ public class ListMemberAdapter extends ArrayAdapter<User> {
 
         // Get the {@link Word} object located at this position in the list
         User currentUser = getItem(position);
-        String currentListName = currentUser.getName();
+        String currentUserName = currentUser.getName();
+        String currentEmail = currentUser.getEmail();
 
         // Find the TextView in the main_menu_list.xml layout with the ID ListTitle
-        TextView todoListTextView = (TextView) listItemView.findViewById(R.id.listTitle);
+        TextView nameTextView = (TextView) listItemView.findViewById(R.id.txtRealName);
+        TextView emailTextView = (TextView) listItemView.findViewById(R.id.txtEmail);
         // Get the list title from the current object and
         // set this text on the name TextView
-        todoListTextView.setText(currentListName);
+        nameTextView.setText(currentUserName);
+        emailTextView.setText(currentEmail);
 
         // Return the whole list item layout (containing an ImageView and a TextView)
         // so that it can be shown in the ListView
