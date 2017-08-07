@@ -163,7 +163,7 @@ public class MainMenuActivity extends AppCompatActivity {
         Drawable accountBtnIcon = accountBtn.getIcon();
         Drawable logoutBtnIcon = logoutBtn.getIcon();
 
-        //Tint the shit out
+        //Tint the shit out <-- bukan aku pak
         accountBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
         logoutBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
 
@@ -276,9 +276,28 @@ public class MainMenuActivity extends AppCompatActivity {
                                             TodoList editedTodoList = new TodoList(serverId, editedListName);
                                             editList(editedListName, editedTodoList);
                                             loadedTodoList.setName(editedListName);
+                                        } else if (action.equals("2")) {
+                                            // local list on deleted state, sync delete to server
+                                            deleteList(loadedTodoList);
                                         }
                                     } while (c.moveToNext());
                                 }
+
+                                SessionManager userData = new SessionManager(MainMenuActivity.this);
+                                Map<String, String> userDetails = userData.getUserDetails();
+                                c = db.select("list_access", "SERVER_ID=" + listID + " AND STATUS=1" +
+                                        " AND USER_ID=" + userDetails.get("user_id"));
+                                if (!c.moveToFirst()) {
+                                    Map<String, String> contentValues = new HashMap<String,String>();
+                                    contentValues.put("STATUS", "1");
+                                    contentValues.put("SERVER_ID", listID);
+                                    contentValues.put("ACTION", "0");
+                                    contentValues.put("ACCESS_TYPE", String.valueOf(accessType));
+                                    contentValues.put("LIST_ID", listID);
+                                    contentValues.put("USER_ID", userDetails.get("user_id"));
+                                    db.insert("list_access", contentValues);
+                                }
+
                                 c.close();
 
                                 adapter.add(loadedTodoList);
@@ -419,6 +438,22 @@ public class MainMenuActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
+    private boolean deleteListFromLocalStorage(int listID, boolean success) {
+        if (!success) {
+            SessionManager userData = new SessionManager(this);
+            Map<String, String> userDetails = userData.getUserDetails();
+            Map<String, String> contentValues = new HashMap<>();
+            contentValues.put("ACTION", "2");
+            return db.update("todo_lists", contentValues, "LIST_ID=" + listID) &&
+                    db.update("list_access", contentValues, "LIST_ID=" + listID + " AND USER_ID=" + userDetails.get("user_id"));
+        } else {
+            SessionManager userData = new SessionManager(this);
+            Map<String, String> userDetails = userData.getUserDetails();
+            return db.delete("list_access", "LIST_ID=" + listID + " AND USER_ID=" + userDetails.get("user_id"))
+                    && db.delete("todo_lists", "LIST_ID=" + listID);
+        }
+    }
+
     private void saveListToServer(final String newListName) {
         progressDialog.setMessage("Saving data...");
         showDialog();
@@ -546,6 +581,7 @@ public class MainMenuActivity extends AppCompatActivity {
                         String listName = jsonObject.getString("list_name");
                         adapter.remove(list);
                         adapter.notifyDataSetChanged();
+                        deleteListFromLocalStorage(Integer.parseInt(list.getID()), true);
                         Toast.makeText(MainMenuActivity.this, listName + " has been deleted", Toast.LENGTH_LONG).show();
                         setEmptyTextVisibility(emptyTextView);
                     } else if (status == 1) {
@@ -570,6 +606,10 @@ public class MainMenuActivity extends AppCompatActivity {
                     Log.e("DELETE_REQUEST", msg);
                 else
                     Log.e("DELETE_REQUEST", "An error occured but the error message is empty. You must chase the bug yourself, good luck!");
+                if (deleteListFromLocalStorage(Integer.parseInt(list.getID()), false)) {
+                    adapter.remove(list);
+                    adapter.notifyDataSetChanged();
+                }
                 hideDialog();
             }
         };
