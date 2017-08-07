@@ -94,7 +94,6 @@ public class LoginActivity extends AppCompatActivity {
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                         SessionManager sessionManager = new SessionManager(loginContext);
                         sessionManager.createLoginSession(user_name, user_email, String.valueOf(user_id));
-                        intent.putExtra("email", user_email);
                         startActivity(intent);
                         finish();
                     } else {

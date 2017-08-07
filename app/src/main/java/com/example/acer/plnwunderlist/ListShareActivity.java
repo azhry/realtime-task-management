@@ -40,21 +40,24 @@ import java.util.zip.Inflater;
 
 public class ListShareActivity extends AppCompatActivity {
 
+    private ArrayList<User> listMembers;
+
     private ListMemberAdapter memberAdapter;
     private ListView memberList;
     private Button inviteBtn;
 
+    private String listOwnerID;
     private String listID;
     private String endpoint;
 
     private ProgressDialog progressDialog;
 
-    private static final int SHARE_LIST_NOTIFICATION_ID = 69;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_menu_share);
+
+        setTitle("Share List");
 
         endpoint = getString(R.string.uri_endpoint);
         progressDialog = new ProgressDialog(this);
@@ -62,7 +65,13 @@ public class ListShareActivity extends AppCompatActivity {
 
         //get textview
         TextView listTitle = (TextView) findViewById(R.id.share_list_title);
-        inviteBtn = (Button) findViewById(R.id.inviteBtn);
+
+
+        //setup listview
+        listMembers = new ArrayList<>();
+        memberAdapter = new ListMemberAdapter(ListShareActivity.this, listMembers);
+        memberList = (ListView) findViewById(R.id.member_listview);
+        memberList.setAdapter(memberAdapter);
 
         //get data sent from intent
         if (getIntent().hasExtra("TODO_LIST_ID")) {
@@ -72,6 +81,11 @@ public class ListShareActivity extends AppCompatActivity {
             String listName = getIntent().getStringExtra("TODO_LIST_NAME");
             listTitle.setText(listName);
         }
+
+        View layout = getLayoutInflater().inflate(R.layout.list_share_invite_btn, null);
+        memberList.addFooterView(layout);
+
+        inviteBtn = (Button) findViewById(R.id.invite_member_btn);
 
         inviteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,18 +106,20 @@ public class ListShareActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         Log.e("RESPONSE", response);
-                        ArrayList<User> listMembers = new ArrayList<>();
-                        memberAdapter = new ListMemberAdapter(ListShareActivity.this, listMembers);
-                        memberList = (ListView) findViewById(R.id.member_listview);
-
                         try {
                             JSONArray membersJSON = new JSONArray(response);
                             for (int i = 0; i < membersJSON.length(); i++) {
                                 JSONObject memberJSON = membersJSON.getJSONObject(i);
                                 memberAdapter.add(new User(memberJSON.getInt("USER_ID"), memberJSON.getString("EMAIL"),
                                         memberJSON.getString("NAME")));
+
+                                int memberAccessType = memberJSON.getInt("ACCESS_TYPE");
+                                if(memberAccessType == AppHelper.TODOLIST_ACCESS_CODE_OWNER){
+//                                    memberAdapter.setListOwnerID(
+//                                            String.valueOf(memberJSON.getInt("USER_ID"));
+                                }
                             }
-                            memberList.setAdapter(memberAdapter);
+                            memberAdapter.notifyDataSetChanged();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -117,30 +133,6 @@ public class ListShareActivity extends AppCompatActivity {
                 });
 
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(getMembersRequest, "GET_LIST_MEMBERS");
-    }
-
-    private void showNotification() {
-        NotificationCompat.Builder mBuilder =
-                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_add_white_24dp)
-                        .setContentTitle("Garok invited you to his list!")
-                        .setContentText("See what task mhamanx has assigned you to")
-                        .setDefaults(Notification.DEFAULT_VIBRATE)
-                        .setPriority(Notification.PRIORITY_HIGH)
-                        .setVibrate(new long[] {1000, 1000})
-                        .setSound(Settings.System.DEFAULT_NOTIFICATION_URI);
-        Intent shareNotificationIntent = new Intent(ListShareActivity.this, MainGatewayActivity.class);
-        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        stackBuilder.addParentStack(MainGatewayActivity.class);
-        stackBuilder.addNextIntent(shareNotificationIntent);
-        PendingIntent shareNotificationPendingIntent =
-                stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-        mBuilder.setContentIntent(shareNotificationPendingIntent);
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(SHARE_LIST_NOTIFICATION_ID, mBuilder.build());
     }
 
     private void showInviteDialog(Context context) {

@@ -3,6 +3,7 @@ package com.example.acer.plnwunderlist;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -26,6 +27,8 @@ import org.json.JSONObject;
 
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -55,6 +58,8 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
 
     private String endpoint;
     private JSONArray todoItems;
+
+    private DBPLNHelper db;
 
     public TaskListFragment() {
         // Required empty public constructor
@@ -88,11 +93,15 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
             isOngoingFragment = !mIsStrikethrough;
         }
         endpoint = getString(R.string.uri_endpoint);
+        db = new DBPLNHelper(getContext());
     }
 
     public void refreshList(){
-        adapter.notifyDataSetChanged();
+        adapter.clear();
+        //getItemsList(this.listID);
     }
+
+
 
     public void addTask(TodoItem task) {
         adapter.add(task);
@@ -152,7 +161,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
 
                 //Get selected TodoItem object
                 TodoItem clickedTask = (TodoItem) listView.getItemAtPosition(position);
-                Log.d("PARCEL FRAGMENT",String.valueOf(clickedTask.getNote() == null));
                 //parcel the TodoItem
                 taskDetailsIntent.putExtra("TODO_OBJECT",clickedTask);
                 //and extract its name for the page title, and ID for reference.
@@ -191,7 +199,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
         boolean fragmentCheckboxClicked(TodoItem data, boolean isOngoingFragment);
     }
 
-    private void getItemsList(String listID) {
+    private void getItemsList(final String listID) {
         final String REQUEST_TAG = "get_todo_item";
         String REQUEST_URI = endpoint + "?action=" + REQUEST_TAG + "&list_id=" + listID;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, REQUEST_URI, null,
@@ -203,9 +211,25 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                             try {
                                 JSONObject item = todoItems.getJSONObject(i);
                                 boolean is_completed = item.getInt("IS_COMPLETED") == 1 ? true : false;
-
                                 if (is_completed == mIsStrikethrough) {
                                     adapter.add(TodoItem.newInstance(item));
+                                }
+                                Cursor c = db.select("todo_items", "SERVER_ID=" + item.getInt("TODO_ID") +
+                                            " AND LIST_ID=" + listID + " AND STATUS=1");
+                                if (!c.moveToFirst()) {
+                                    Map<String, String> contentValues = new HashMap<>();
+                                    contentValues.put("TODO_ID", item.getString("TODO_ID"));
+                                    contentValues.put("LIST_ID", item.getString("LIST_ID"));
+                                    contentValues.put("ITEM_DESC", item.getString("ITEM_DESC"));
+                                    contentValues.put("DUE_DATE", item.getString("DUE_DATE"));
+                                    contentValues.put("NOTE", item.getString("NOTE"));
+                                    contentValues.put("IS_COMPLETED", item.getString("IS_COMPLETED"));
+                                    contentValues.put("SERVER_ID", item.getString("TODO_ID"));
+                                    contentValues.put("STATUS", "1");
+                                    contentValues.put("ACTION", "0");
+                                    db.insert("todo_items", contentValues);
+                                } else {
+
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();

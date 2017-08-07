@@ -41,6 +41,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by Ryan Fadholi on 24/07/2017.
@@ -68,6 +69,8 @@ public class ListMenuActivity extends AppCompatActivity implements
 
     ProgressDialog progressDialog;
 
+    private DBPLNHelper db;
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = this.getMenuInflater();
@@ -82,27 +85,10 @@ public class ListMenuActivity extends AppCompatActivity implements
         //Retrieve all Icons
         Drawable shareBtnIcon = shareBtn.getIcon();
         shareBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
+        //END Menu Icon Tinting
+        //------------------------------------------------------------------------------------------
 
-        shareBtn.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                switch(menuItem.getItemId()){
-                    case R.id.list_share_btn:
-                        //Initialize the Intent
-                        Intent shareIntent = new Intent(getApplicationContext(), ListShareActivity.class);
-                        //Setup data to pass w/ the intent
-                        shareIntent.putExtra("TODO_LIST_ID", listID);
-                        if(getIntent().hasExtra("TODO_LIST_NAME")){
-                            shareIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
-                        }
-                        startActivity(shareIntent);
-                        return true;
-                    default:
-                        break;
-                }
-                return false;
-            }
-        });
+
         return true;
     }
 
@@ -118,8 +104,17 @@ public class ListMenuActivity extends AppCompatActivity implements
                 NavUtils.navigateUpFromSameTask(this);
                 return true;
             case R.id.list_share_btn:
-                Log.d("MENUEXAMPLE","Yooo it works!");
+                //Initialize the Intent
+                Intent shareIntent = new Intent(getApplicationContext(), ListShareActivity.class);
+                //Setup data to pass w/ the intent
+                shareIntent.putExtra("TODO_LIST_ID", listID);
+                if(getIntent().hasExtra("TODO_LIST_NAME")){
+                    shareIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
+                }
+                startActivity(shareIntent);
                 return true;
+            default:
+                break;
         }
 
         return true;
@@ -129,6 +124,8 @@ public class ListMenuActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_task);
+
+        db = new DBPLNHelper(this);
 
         //Define endpoint
         endpoint = getString(R.string.uri_endpoint);
@@ -247,7 +244,6 @@ public class ListMenuActivity extends AppCompatActivity implements
         newList.show();
     }
 
-
     private void quickAddTask(final String name) {
         progressDialog.setMessage("Processing...");
         showDialog();
@@ -262,7 +258,11 @@ public class ListMenuActivity extends AppCompatActivity implements
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
+                                int todoID      = jsonObject.getInt("TODO_ID");
+                                int listID      = jsonObject.getInt("LIST_ID");
+                                String itemDesc = jsonObject.getString("ITEM_DESC");
                                 onGoingFragment.addTask(TodoItem.newInstance(jsonObject));
+                                saveItemToLocalStorage(todoID, listID, itemDesc, null, null, 0, 1, true);
                                 Toast.makeText(ListMenuActivity.this, name + " added!", Toast.LENGTH_LONG).show();
                             } else if (status == 1) {
                                 Toast.makeText(ListMenuActivity.this, "Quick add failed!", Toast.LENGTH_LONG).show();
@@ -283,6 +283,9 @@ public class ListMenuActivity extends AppCompatActivity implements
                         if (msg != null) {
                             Log.e("QUICK_ADD_ERROR", msg);
                         }
+                        Random randId = new Random();
+                        saveItemToLocalStorage(randId.nextInt(Integer.MAX_VALUE), Integer.parseInt(listID),
+                                name, null, null, 0, 0, false);
                         hideDialog();
                     }
                 }) {
@@ -297,6 +300,50 @@ public class ListMenuActivity extends AppCompatActivity implements
             }
         };
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(quickAddRequest, REQUEST_TAG);
+    }
+
+    private void saveItemToLocalStorage(int todoID, int listID, String itemDesc, String dueDate, String note,
+                                        int completed, int status, boolean success) {
+        Map<String, String> contentValues = new HashMap<>();
+        contentValues.put("TODO_ID", String.valueOf(todoID));
+        contentValues.put("LIST_ID", String.valueOf(listID));
+        contentValues.put("ITEM_DESC", itemDesc);
+        contentValues.put("DUE_DATE", dueDate);
+        contentValues.put("NOTE", note);
+        contentValues.put("IS_COMPLETED", String.valueOf(completed));
+        contentValues.put("STATUS", String.valueOf(status));
+        contentValues.put("ACTION", "0");
+        if (success) {
+            contentValues.put("SERVER_ID", String.valueOf(todoID));
+        } else {
+            contentValues.put("SERVER_ID", "0");
+        }
+        db.insert("todo_items", contentValues);
+    }
+
+    private void editItemInLocalStorage(int todoID, int listID, String itemDesc, String dueDate, String note,
+                                        int completed, boolean success) {
+        Map<String, String> updatedValues = new HashMap<>();
+        updatedValues.put("ITEM_DESC", itemDesc);
+        updatedValues.put("DUE_DATE", dueDate);
+        updatedValues.put("NOTE", note);
+        updatedValues.put("IS_COMPLETED", String.valueOf(completed));
+        if (!success) {
+            updatedValues.put("ACTION", "1");
+        } else {
+            updatedValues.put("ACTION", "0");
+        }
+        db.update("todo_items", updatedValues, "LIST_ID=" + listID + " AND TODO_ID=" + todoID);
+    }
+
+    private boolean deleteItemFromLocalStorage(int todoID, int listID, boolean success) {
+        if (!success) {
+            Map<String, String> contentValues = new HashMap<>();
+            contentValues.put("ACTION", "2");
+            return db.update("todo_items", contentValues, "TODO_ID=" + todoID + " AND LIST_ID=" + listID);
+        } else {
+            return db.delete("todo_items", "TODO_ID=" + todoID + " AND LIST_ID=" + listID);
+        }
     }
 
     private void showDialog() {

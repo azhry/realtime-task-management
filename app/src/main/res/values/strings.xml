@@ -27,4 +27,5 @@
     <string name="edit_dialog_start">There are changes made for </string>
     <string name="edit_dialog_end">. Do you want to save your changes?</string>
     <string name="add_dialog">Do you want to save your new items?</string>
+    <string name="invite_member_btn">Invite New Member</string>
 </resources>

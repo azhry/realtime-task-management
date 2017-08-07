@@ -7,7 +7,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -16,6 +19,8 @@ import java.util.List;
  */
 
 public class ListMemberAdapter extends ArrayAdapter<User> {
+
+    private String listOwnerID;
 
     public ListMemberAdapter(@NonNull Context context, @NonNull List<User> objects) {
         super(context, 0, objects);
@@ -28,18 +33,30 @@ public class ListMemberAdapter extends ArrayAdapter<User> {
         View listItemView = convertView;
         if (listItemView == null) {
             listItemView = LayoutInflater.from(getContext()).inflate(
-                    R.layout.main_menu_list, parent, false);
+                    R.layout.list_share_list, parent, false);
         }
 
         // Get the {@link Word} object located at this position in the list
         User currentUser = getItem(position);
-        String currentListName = currentUser.getName();
+        String currentUserID = String.valueOf(currentUser.getUserID());
+        String currentUserName = currentUser.getName();
+        String currentEmail = currentUser.getEmail();
 
         // Find the TextView in the main_menu_list.xml layout with the ID ListTitle
-        TextView todoListTextView = (TextView) listItemView.findViewById(R.id.listTitle);
+        TextView nameTextView = (TextView) listItemView.findViewById(R.id.txtRealName);
+        TextView emailTextView = (TextView) listItemView.findViewById(R.id.txtEmail);
         // Get the list title from the current object and
         // set this text on the name TextView
-        todoListTextView.setText(currentListName);
+        nameTextView.setText(currentUserName);
+        emailTextView.setText(currentEmail);
+
+        if(this.listOwnerID != null){
+            if(currentUserID.equals(this.listOwnerID)){
+                ImageView userIcon = (ImageView) listItemView.findViewById(R.id.userTypeIcon);
+                userIcon.setImageDrawable(
+                        getContext().getDrawable(R.drawable.ic_stars_black_24dp));
+            }
+        }
 
         // Return the whole list item layout (containing an ImageView and a TextView)
         // so that it can be shown in the ListView

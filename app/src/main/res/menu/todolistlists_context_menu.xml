@@ -7,6 +7,10 @@
         android:title="Delete List"
         app:showAsAction="ifRoom|withText"
         />
+    <item android:id="@+id/leaveTodoList"
+        android:title="Leave"
+        app:showAsAction="ifRoom|withText"
+        />
     <item android:id="@+id/EditTodoList"
         android:title="Edit List"
         app:showAsAction="ifRoom|withText"

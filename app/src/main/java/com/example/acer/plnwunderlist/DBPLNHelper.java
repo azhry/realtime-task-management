@@ -2,16 +2,21 @@ package com.example.acer.plnwunderlist;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+
+import org.json.JSONObject;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 public class DBPLNHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "db_pln";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 4;
 
-    public static final String[] USERS_COLUMNS
-            = new String[] {"USER_ID", "EMAIL", "PASSWORD", "NAME"};
     public static final String[] TODO_LISTS_COLUMNS
             = new String[] {"LIST_ID", "LIST_NAME"};
     public static final String[] TODO_ITEMS_COLUMNS
@@ -23,22 +28,22 @@ public class DBPLNHelper extends SQLiteOpenHelper {
         super(context, DB_NAME, null, DB_VERSION);
     }
 
+    /**
+     * Action field
+     * 0 = newly created
+     * 1 = deleted
+     * 2 = edited
+     */
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE TABLE users (");
-        sb.append(USERS_COLUMNS[0] + " INT, ");
-        sb.append(USERS_COLUMNS[1] + " VARCHAR, ");
-        sb.append(USERS_COLUMNS[2] + " VARCHAR, ");
-        sb.append(USERS_COLUMNS[3] + " VARCHAR, ");
-        sb.append("STATUS TINYINT);");
-        db.execSQL(sb.toString());
-
-        sb = new StringBuilder();
         sb.append("CREATE TABLE todo_lists (");
         sb.append(TODO_LISTS_COLUMNS[0] + " INT, ");
         sb.append(TODO_LISTS_COLUMNS[1] + " VARCHAR, ");
-        sb.append("STATUS TINYINT);");
+        sb.append("STATUS TINYINT, ");
+        sb.append("ACTION TINYINT, ");
+        sb.append("SERVER_ID INT);");
         db.execSQL(sb.toString());
 
         sb = new StringBuilder();
@@ -49,7 +54,9 @@ public class DBPLNHelper extends SQLiteOpenHelper {
         sb.append(TODO_ITEMS_COLUMNS[3] + " VARCHAR, ");
         sb.append(TODO_ITEMS_COLUMNS[4] + " VARCHAR, ");
         sb.append(TODO_ITEMS_COLUMNS[5] + " TINYINT, ");
-        sb.append("STATUS TINYINT);");
+        sb.append("STATUS TINYINT, ");
+        sb.append("ACTION TINYINT, ");
+        sb.append("SERVER_ID INT);");
         db.execSQL(sb.toString());
 
         sb = new StringBuilder();
@@ -57,7 +64,9 @@ public class DBPLNHelper extends SQLiteOpenHelper {
         sb.append(LIST_ACCESS_COLUMNS[0] + " INT, ");
         sb.append(LIST_ACCESS_COLUMNS[1] + " INT, ");
         sb.append(LIST_ACCESS_COLUMNS[2] + " INT, ");
-        sb.append("STATUS TINYINT);");
+        sb.append("STATUS TINYINT, ");
+        sb.append("ACTION TINYINT, ");
+        sb.append("SERVER_ID INT);");
         db.execSQL(sb.toString());
     }
 
@@ -70,9 +79,48 @@ public class DBPLNHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public boolean insert() {
+    public boolean insert(String table, Map<String, String> keyValuePair) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
+        Set<String> keys = keyValuePair.keySet();
+        for (String key : keys) {
+            contentValues.put(key, keyValuePair.get(key));
+        }
+        db.insert(table, null, contentValues);
+        db.close();
         return true;
+    }
+
+    public boolean update(String table, Map<String, String> keyValuePair, String conditions) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        Set<String> keys = keyValuePair.keySet();
+        for (String key : keys) {
+            contentValues.put(key, keyValuePair.get(key));
+        }
+        db.update(table, contentValues, conditions, null);
+        db.close();
+        return true;
+    }
+
+    /** start select method overloading */
+    public Cursor select(String table, String conditions) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = "SELECT * FROM " + table + " WHERE " + conditions;
+        Cursor c = db.rawQuery(sql, null);
+        return c;
+    }
+
+    public Cursor select(String table) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String sql = "SELECT * FROM " + table;
+        Cursor c = db.rawQuery(sql, null);
+        return c;
+    }
+    /** end select method overloading */
+
+    public boolean delete(String table, String conditions) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        return db.delete(table, conditions, null) > 0;
     }
 }
