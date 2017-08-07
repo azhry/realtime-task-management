@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.icu.text.DisplayContext;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.provider.ContactsContract;
@@ -41,27 +42,29 @@ public class NetworkStateChecker extends BroadcastReceiver {
             if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI
                     || activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
                 ProgressDialog progressDialog = new ProgressDialog(context);
-                progressDialog.setMessage("Synching to-do lists");
+                progressDialog.setMessage("Synchronizing");
                 progressDialog.show();
 
                 Cursor c = db.select("todo_lists", "STATUS=0 AND SERVER_ID=0");
                 if (c.moveToFirst()) {
                     do {
-                        Log.e("SYNC", "SYNCING");
+                        Log.e("SYNC", "LIST");
                         syncTodoList(c.getString(c.getColumnIndex("LIST_ID")),
                                 c.getString(c.getColumnIndex("LIST_NAME")));
                     } while (c.moveToNext());
                 }
 
-//                progressDialog.setMessage("Synching to-do items");
-//
-//                c = db.select("todo_items", "STATUS=0 AND SERVER_ID=0");
-//                if (c.moveToFirst()) {
-//                    do {
-//                        syncTodoItem(c.getString(c.getColumnIndex("LIST_ID")),
-//                                c.getString(c.getColumnIndex("LIST_NAME")));
-//                    } while (c.moveToNext());
-//                }
+                c = db.select("todo_items", "STATUS=0 AND SERVER_ID=0");
+                if (c.moveToFirst()) {
+                    do {
+                        Log.e("SYNC", "ITEM");
+                        syncTodoItem(c.getString(c.getColumnIndex("TODO_ID")),
+                                c.getString(c.getColumnIndex("LIST_ID")),
+                                c.getString(c.getColumnIndex("ITEM_DESC")),
+                                c.getString(c.getColumnIndex("DUE_DATE")),
+                                c.getString(c.getColumnIndex("NOTE")));
+                    } while (c.moveToNext());
+                }
 
                 progressDialog.dismiss();
                 c.close();
@@ -117,14 +120,17 @@ public class NetworkStateChecker extends BroadcastReceiver {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        Log.e("RESPONSEE", response);
                         try {
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
                                 Map<String, String> contentValues = new HashMap<>();
                                 contentValues.put("STATUS", "1");
-                                db.update("todo_items", contentValues, "TODO_ID="+ itemID);
-                                context.sendBroadcast(new Intent(MainMenuActivity.DATA_SAVED_BROADCAST));
+                                contentValues.put("SERVER_ID", jsonObject.getString("todo_id"));
+                                contentValues.put("TODO_ID", jsonObject.getString("todo_id"));
+                                db.update("todo_items", contentValues, "TODO_ID=" + itemID);
+                                //context.sendBroadcast(new Intent(MainMenuActivity.DATA_SAVED_BROADCAST));
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -134,7 +140,11 @@ public class NetworkStateChecker extends BroadcastReceiver {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
+                        String msg = error.getMessage();
+                        if (msg != null) {
+                            Log.e("ERROR_SYNC", msg);
+                        }
+                        Log.e("SYNC", "FAILED?");
                     }
                 }) {
             @Override
@@ -144,8 +154,12 @@ public class NetworkStateChecker extends BroadcastReceiver {
                 params.put("insert_type", "regular_add");
                 params.put("task_name", itemDesc);
                 params.put("list_id", listID);
-                params.put("due_date", dueDate);
-                params.put("note", note);
+                if (dueDate != null) {
+                    params.put("due_date", dueDate);
+                }
+                if (note != null) {
+                    params.put("note", note);
+                }
                 return params;
             }
         };

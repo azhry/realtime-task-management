@@ -56,8 +56,6 @@ public class MainMenuActivity extends AppCompatActivity {
 
     public static final int LIST_TITLE_MAX_LENGTH = 100;
 
-
-
     //Statics
     private static final String TAG = "MainMenuActivity";
     ProgressDialog progressDialog;      //'nuff said.
