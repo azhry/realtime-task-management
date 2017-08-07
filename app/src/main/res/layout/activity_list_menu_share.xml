@@ -17,17 +17,6 @@
             android:paddingLeft="24dp"
             android:paddingBottom="12dp"
             android:text="LIST TITLE" />
-
-        <Button
-            android:id="@+id/inviteBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="18dp"
-            android:drawableLeft="@drawable/ic_person_add_black_24dp"
-            android:drawablePadding="6dp"
-            android:text="Invite"/>
-
     </RelativeLayout>
 
     <TextView
