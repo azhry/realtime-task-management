@@ -46,9 +46,12 @@ public class ListShareActivity extends AppCompatActivity {
     private ListView memberList;
     private Button inviteBtn;
 
-    private String listOwnerID;
     private String listID;
     private String endpoint;
+
+    private SessionManager sessionManager;
+    private HashMap<String,String> userDetails;
+    private String thisUserID;
 
     private ProgressDialog progressDialog;
 
@@ -62,6 +65,11 @@ public class ListShareActivity extends AppCompatActivity {
         endpoint = getString(R.string.uri_endpoint);
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
+        sessionManager = new SessionManager(this);
+
+        //get current user details, and fetch its ID
+        userDetails = sessionManager.getUserDetails();
+        thisUserID = userDetails.get(SessionManager.KEY_ID);
 
         //get textview
         TextView listTitle = (TextView) findViewById(R.id.share_list_title);
@@ -110,13 +118,23 @@ public class ListShareActivity extends AppCompatActivity {
                             JSONArray membersJSON = new JSONArray(response);
                             for (int i = 0; i < membersJSON.length(); i++) {
                                 JSONObject memberJSON = membersJSON.getJSONObject(i);
-                                memberAdapter.add(new User(memberJSON.getInt("USER_ID"), memberJSON.getString("EMAIL"),
-                                        memberJSON.getString("NAME")));
+                                User currentUser =
+                                        new User(memberJSON.getInt("USER_ID"),
+                                                memberJSON.getString("EMAIL"),
+                                        memberJSON.getString("NAME"));
 
+                                //Check if this user is the owner of the list.
+                                //if true, set adapter OwnerID as such
                                 int memberAccessType = memberJSON.getInt("ACCESS_TYPE");
-                                if(memberAccessType == AppHelper.TODOLIST_ACCESS_CODE_OWNER){
-//                                    memberAdapter.setListOwnerID(
-//                                            String.valueOf(memberJSON.getInt("USER_ID"));
+                                if(memberAccessType == AppHelper.TODOLIST_ACCESS_CODE_OWNER) {
+                                    memberAdapter.setListOwnerID(String.valueOf(memberJSON.getInt("USER_ID")));
+                                }
+                                
+                                if(currentUser.getUserID() == Integer.parseInt(thisUserID)){
+                                    currentUser.setName("You");
+                                    memberAdapter.insert(currentUser, 0);
+                                } else {
+                                    memberAdapter.add(currentUser);
                                 }
                             }
                             memberAdapter.notifyDataSetChanged();

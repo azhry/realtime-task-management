@@ -15,6 +15,10 @@ public class User {
         this.name = name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public int getUserID() {
         return userID;
     }

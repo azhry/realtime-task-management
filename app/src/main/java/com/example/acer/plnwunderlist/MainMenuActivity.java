@@ -250,7 +250,6 @@ public class MainMenuActivity extends AppCompatActivity {
                                 JSONObject jsonObject = response.getJSONObject(i);
                                 String listID = jsonObject.getString("LIST_ID");
                                 String listName = jsonObject.getString("LIST_NAME");
-                                int accessType = jsonObject.getInt("ACCESS_TYPE");
 
                                 TodoList loadedTodoList = new TodoList(listID, listName);
                                 Cursor c = db.select("todo_lists", "SERVER_ID=" + listID + " AND STATUS=1");
@@ -288,7 +287,6 @@ public class MainMenuActivity extends AppCompatActivity {
                                     contentValues.put("STATUS", "1");
                                     contentValues.put("SERVER_ID", listID);
                                     contentValues.put("ACTION", "0");
-                                    contentValues.put("ACCESS_TYPE", String.valueOf(accessType));
                                     contentValues.put("LIST_ID", listID);
                                     contentValues.put("USER_ID", userDetails.get("user_id"));
                                     db.insert("list_access", contentValues);

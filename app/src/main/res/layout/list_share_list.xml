@@ -35,7 +35,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="14sp"
+            android:textStyle="italic"
             />
     </LinearLayout>
 
+    <ImageView
+        android:id="@+id/ownerIcon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_vpn_key_black_24dp"
+        android:visibility="invisible"
+        android:tint="@android:color/darker_gray" />
 </RelativeLayout>

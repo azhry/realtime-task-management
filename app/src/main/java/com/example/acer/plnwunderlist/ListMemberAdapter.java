@@ -1,8 +1,10 @@
 package com.example.acer.plnwunderlist;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +14,9 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.jar.Pack200;
 
 /**
  * Created by Ryan Fadholi on 31/07/2017.
@@ -21,9 +25,15 @@ import java.util.List;
 public class ListMemberAdapter extends ArrayAdapter<User> {
 
     private String listOwnerID;
-
+    private HashMap<String, String> userData;
     public ListMemberAdapter(@NonNull Context context, @NonNull List<User> objects) {
         super(context, 0, objects);
+
+        this.userData = new SessionManager(getContext()).getUserDetails();
+    }
+
+    public void setListOwnerID(String listOwnerID){
+        this.listOwnerID = listOwnerID;
     }
 
     @NonNull
@@ -45,17 +55,27 @@ public class ListMemberAdapter extends ArrayAdapter<User> {
         // Find the TextView in the main_menu_list.xml layout with the ID ListTitle
         TextView nameTextView = (TextView) listItemView.findViewById(R.id.txtRealName);
         TextView emailTextView = (TextView) listItemView.findViewById(R.id.txtEmail);
+
+        //If this row is User's, change the view
+        if(currentUserID.equals(this.userData.get(SessionManager.KEY_ID))){
+            nameTextView.setTypeface(null, Typeface.BOLD);
+            emailTextView.setTypeface(emailTextView.getTypeface(), Typeface.BOLD);
+        } else {
+            nameTextView.setTypeface(null, Typeface.NORMAL);
+            emailTextView.setTypeface(null, Typeface.ITALIC);
+        }
+
         // Get the list title from the current object and
         // set this text on the name TextView
         nameTextView.setText(currentUserName);
         emailTextView.setText(currentEmail);
 
-        if(this.listOwnerID != null){
-            if(currentUserID.equals(this.listOwnerID)){
-                ImageView userIcon = (ImageView) listItemView.findViewById(R.id.userTypeIcon);
-                userIcon.setImageDrawable(
-                        getContext().getDrawable(R.drawable.ic_stars_black_24dp));
-            }
+        ImageView ownerIcon = (ImageView) listItemView.findViewById(R.id.ownerIcon);
+
+        if(this.listOwnerID != null && currentUserID.equals(this.listOwnerID)){
+                ownerIcon.setVisibility(View.VISIBLE);
+        } else {
+            ownerIcon.setVisibility(View.INVISIBLE);
         }
 
         // Return the whole list item layout (containing an ImageView and a TextView)

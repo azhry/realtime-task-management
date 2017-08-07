@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.amitshekhar.DebugDB;
 import com.example.acer.plnwunderlist.Singleton.WebSocketClientManager;
 
 import org.json.JSONObject;
@@ -85,14 +86,15 @@ public class MainActivity extends AppCompatActivity {
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String text = editText.getText().toString();
-                Map<String, String> msg = new HashMap<>();
-                msg.put("type", "sending_info");
-                msg.put("user", userData.get("email"));
-                msg.put("msg", text);
-                JSONObject jsonMsg = new JSONObject(msg);
-                WebSocketClientManager.send(jsonMsg.toString());
-                editText.setText("");
+//                String text = editText.getText().toString();
+//                Map<String, String> msg = new HashMap<>();
+//                msg.put("type", "sending_info");
+//                msg.put("user", userData.get("email"));
+//                msg.put("msg", text);
+//                JSONObject jsonMsg = new JSONObject(msg);
+//                WebSocketClientManager.send(jsonMsg.toString());
+//                editText.setText("");
+                DebugDB.getAddressLog();
             }
         });
     }
