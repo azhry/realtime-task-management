@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -79,21 +80,21 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
+        Log.e("WS", String.valueOf(WebSocketClientManager.connected()));
         if (!WebSocketClientManager.connected()) {
             WebSocketClientManager.createWebSocketConnection(getApplicationContext(), getString(R.string.uri_websocket));
         }
         btnSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                String text = editText.getText().toString();
-//                Map<String, String> msg = new HashMap<>();
-//                msg.put("type", "sending_info");
-//                msg.put("user", userData.get("email"));
-//                msg.put("msg", text);
-//                JSONObject jsonMsg = new JSONObject(msg);
-//                WebSocketClientManager.send(jsonMsg.toString());
-//                editText.setText("");
+                String text = editText.getText().toString();
+                Map<String, String> msg = new HashMap<>();
+                msg.put("type", "sending_info");
+                msg.put("user", userData.get("email"));
+                msg.put("msg", text);
+                JSONObject jsonMsg = new JSONObject(msg);
+                WebSocketClientManager.send(jsonMsg.toString());
+                editText.setText("");
                 DebugDB.getAddressLog();
             }
         });

@@ -87,6 +87,10 @@ public class MainMenuActivity extends AppCompatActivity {
         //Initalize the pseudo-statics
         endpoint = getString(R.string.uri_endpoint);
 
+        if (!WebSocketClientManager.connected()) {
+            WebSocketClientManager.createWebSocketConnection(getApplicationContext(), getString(R.string.uri_websocket));
+        }
+
         userData = null;
 
         //Initialize progressDialog
@@ -817,8 +821,41 @@ public class MainMenuActivity extends AppCompatActivity {
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(editRequest, "edit_list");
     }
 
-    private void leaveList(TodoList todoList){
-        //TODO: Disini az
+    private void leaveList(final TodoList todoList){
+        StringRequest leaveList = new StringRequest(Request.Method.POST, endpoint,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            int status = jsonObject.getInt("status");
+                            if (status == 0) {
+                                adapter.remove(todoList);
+                                adapter.notifyDataSetChanged();
+                                db.delete("list_access", "LIST_ID=" + todoList.getID() + " AND USER_ID=" + userData.get("user_id"));
+                                Toast.makeText(MainMenuActivity.this, "You left this list", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "leave_list");
+                params.put("list_id", todoList.getID());
+                params.put("user_id", userData.get("user_id"));
+                return params;
+            }
+        };
     }
 
     private void setEmptyTextVisibility(View headerView) {
