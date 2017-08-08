@@ -26,6 +26,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -97,14 +99,20 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     }
 
     public void refreshList(){
-        adapter.notifyDataSetChanged();
-        //adapter.clear();
-        //getItemsList(this.listID);
+//        adapter.clear();
+//        adapter.notifyDataSetChanged();
+        getItemsList(this.listID);
     }
 
     public void addTask(TodoItem task) {
         adapter.add(task);
         adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.e("STATE", "DESTROYED!");
+        super.onDestroy();
     }
 
     @Override
@@ -163,13 +171,14 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                 //parcel the TodoItem
                 taskDetailsIntent.putExtra("TODO_OBJECT",clickedTask);
                 //and extract its name for the page title, and ID for reference.
+                taskDetailsIntent.putExtra("TODO_LIST_ID",listID);
 
                 startActivity(taskDetailsIntent);
 
             }
         });
 
-        getItemsList(listID);
+        //getItemsList(listID);
     }
 
     @Override
@@ -198,7 +207,71 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
         boolean fragmentCheckboxClicked(TodoItem data, boolean isOngoingFragment);
     }
 
+    public void loadItems(final String listID, int isStrikethrough) {
+        taskList.clear();
+
+        final SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Cursor cursor = db.select("todo_items", "IS_COMPLETED=" + isStrikethrough + " AND LIST_ID=" + listID);
+        if (cursor.moveToFirst()) {
+            do {
+                String status = cursor.getString(cursor.getColumnIndex("STATUS"));
+                //if (status.equals("1")) {
+                    try {
+                        TodoItem todoItem = new TodoItem(
+                                cursor.getInt(cursor.getColumnIndex("TODO_ID")),
+                                cursor.getInt(cursor.getColumnIndex("LIST_ID")),
+                                cursor.getString(cursor.getColumnIndex("ITEM_DESC")),
+                                cursor.getString(cursor.getColumnIndex("NOTE")) != null &&
+                                        !cursor.getString(cursor.getColumnIndex("NOTE")).equals("false")?
+                                        cursor.getString(cursor.getColumnIndex("NOTE")) : "",
+                                cursor.getString(cursor.getColumnIndex("DUE_DATE")) != null &&
+                                        !cursor.getString(cursor.getColumnIndex("DUE_DATE")).equals("null") &&
+                                        !cursor.getString(cursor.getColumnIndex("DUE_DATE")).equals("false") ?
+                                        inputFormat.parse(cursor.getString(cursor.getColumnIndex("DUE_DATE"))) :
+                                        null);
+                        taskList.add(todoItem);
+                        Log.e("DATA", cursor.getString(cursor.getColumnIndex("ITEM_DESC")));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        Log.e("PARSE", e.getMessage());
+                    }
+//
+//                } else {
+//
+//                }
+            } while (cursor.moveToNext());
+        }
+
+        this.adapter = new CustomAdapter(taskList, getContext(), mIsStrikethrough);
+
+        //Initialize OnCheckboxClickedListener to make the damn thing work.
+        this.adapter.setOnCheckboxClickedListener(this);
+        //asasa
+        listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView parent, View view, int position, long id) {
+
+                //Initialize the Intent
+                Intent taskDetailsIntent = new Intent(getActivity().getApplicationContext(), TaskDetailsActivity.class);
+
+                //Get selected TodoItem object
+                TodoItem clickedTask = (TodoItem) listView.getItemAtPosition(position);
+                //parcel the TodoItem
+                taskDetailsIntent.putExtra("TODO_OBJECT",clickedTask);
+                taskDetailsIntent.putExtra("TODO_LIST_ID",listID);
+                //and extract its name for the page title, and ID for reference.
+
+                startActivity(taskDetailsIntent);
+
+            }
+        });
+    }
+
     private void getItemsList(final String listID) {
+        taskList.clear();
+        adapter.notifyDataSetChanged();
+
         final String REQUEST_TAG = "get_todo_item";
         String REQUEST_URI = endpoint + "?action=" + REQUEST_TAG + "&list_id=" + listID;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, REQUEST_URI, null,
@@ -244,6 +317,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                         String msg = error.getMessage();
                         if (msg != null)
                             Log.e(REQUEST_TAG, msg);
+                        loadItems(listID, mIsStrikethrough ? 1 : 0);
                     }
                 });
         AppSingleton.getInstance(getActivity().getApplicationContext()).addToRequestQueue(jsonArrayRequest, REQUEST_TAG);
