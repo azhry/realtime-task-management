@@ -72,7 +72,6 @@ public class FileListPseudoAdapter {
         deleteBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("DELETE", "aaaa");
                 StringRequest deleteFileRequest = new StringRequest(Request.Method.POST, mContext.getString(R.string.uri_endpoint),
                         new Response.Listener<String>() {
                             @Override

@@ -475,7 +475,6 @@ public class MainMenuActivity extends AppCompatActivity {
             adapter.sort(TodoListAdapter.TodoListComparator);
         }
         db.insert("todo_lists", contentValues);
-
     }
 
     private void editListInLocalStorage(int listID, String listName, boolean success) {

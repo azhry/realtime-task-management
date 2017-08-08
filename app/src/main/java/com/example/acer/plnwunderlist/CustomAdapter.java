@@ -139,7 +139,7 @@ public class CustomAdapter extends ArrayAdapter {
         }
 
         //Check if there's file attached
-        if (true) { //TODO: write logic here
+        if (item.hasFiles()) { //TODO: write logic here
             viewHolder.fileIcon.setVisibility(View.VISIBLE);
         } else {
             viewHolder.fileIcon.setVisibility(View.GONE);

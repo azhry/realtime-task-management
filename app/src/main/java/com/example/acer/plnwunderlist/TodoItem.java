@@ -12,12 +12,6 @@ import java.util.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-/**
- * Created by Azhary Arliansyah on 27/07/2017.
- * <p>
- * TodoItem.java
- * Custom class to display TodoItem in ListView with ArrayAdapter
- */
 
 public class TodoItem implements Parcelable {
 
@@ -35,6 +29,7 @@ public class TodoItem implements Parcelable {
     private Date dueDate;
     private String note;
     private boolean completed;
+    private boolean hasFiles;
 
     /**
      * Create new TodoItem object
@@ -46,6 +41,7 @@ public class TodoItem implements Parcelable {
         this.note = note;
         this.dueDate = dueDate;
         this.completed = false;
+        this.hasFiles = false;
     }
 
     TodoItem(Parcel in){
@@ -136,7 +132,13 @@ public class TodoItem implements Parcelable {
             Log.e("PLN-Comm","Error when parsing Task date from JSON, " + e);
         }
 
-        return new TodoItem(newID, newListID, newDesc,newNote, newDate);
+        TodoItem newTodoItem = new TodoItem(newID, newListID, newDesc,newNote, newDate);
+        try {
+            newTodoItem.setHasFiles(param.getBoolean("HAS_FILES"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return newTodoItem;
     }
 
     public static final Creator<TodoItem> CREATOR = new Creator<TodoItem>() {
@@ -185,6 +187,14 @@ public class TodoItem implements Parcelable {
      */
     public Date getDueDate() {
         return this.dueDate;
+    }
+
+    public boolean hasFiles() {
+        return this.hasFiles;
+    }
+
+    public void setHasFiles(boolean hasFiles) {
+        this.hasFiles = hasFiles;
     }
 
     /**
