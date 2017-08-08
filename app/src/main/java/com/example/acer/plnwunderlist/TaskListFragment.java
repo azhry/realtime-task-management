@@ -101,8 +101,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
         //getItemsList(this.listID);
     }
 
-
-
     public void addTask(TodoItem task) {
         adapter.add(task);
         adapter.notifyDataSetChanged();

@@ -129,7 +129,7 @@ public class ListShareActivity extends AppCompatActivity {
                                 if(memberAccessType == AppHelper.TODOLIST_ACCESS_CODE_OWNER) {
                                     memberAdapter.setListOwnerID(String.valueOf(memberJSON.getInt("USER_ID")));
                                 }
-                                
+
                                 if(currentUser.getUserID() == Integer.parseInt(thisUserID)){
                                     currentUser.setName("You");
                                     memberAdapter.insert(currentUser, 0);
@@ -202,7 +202,7 @@ public class ListShareActivity extends AppCompatActivity {
                                 memberAdapter.add(new User(jsonObject.getInt("USER_ID"), jsonObject.getString("EMAIL"),
                                         jsonObject.getString("NAME")));
                             } else if (status == 1) {
-                                Toast.makeText(ListShareActivity.this, "User not found", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(ListShareActivity.this, "User not found!", Toast.LENGTH_SHORT).show();
                             } else if (status == 2) {
                                 Toast.makeText(ListShareActivity.this, "This user is already a member of this list", Toast.LENGTH_SHORT).show();
                             } else if (status == 3) {

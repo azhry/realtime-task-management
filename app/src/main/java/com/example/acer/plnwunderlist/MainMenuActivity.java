@@ -295,7 +295,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                 c.close();
 
                                 adapter.add(loadedTodoList);
-                                adapter.notifyDataSetChanged();
+                                adapter.sort(TodoListAdapter.TodoListComparator);
                             } catch (JSONException e) {
                                 Log.e("JSON_Exception", e.getMessage());
                                 e.printStackTrace();
@@ -381,7 +381,7 @@ public class MainMenuActivity extends AppCompatActivity {
 
         adapter = new TodoListAdapter(this, todoLists);
         todoListsList.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
+        adapter.sort(TodoListAdapter.TodoListComparator);
 
         todoListsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -417,7 +417,7 @@ public class MainMenuActivity extends AppCompatActivity {
         db.insert("todo_lists", contentValues);
         TodoList todoList = new TodoList(String.valueOf(listID), listName);
         todoLists.add(todoList);
-        adapter.notifyDataSetChanged();
+        adapter.sort(TodoListAdapter.TodoListComparator);
     }
 
     private void editListInLocalStorage(int listID, String listName, boolean success) {
@@ -429,7 +429,7 @@ public class MainMenuActivity extends AppCompatActivity {
             updatedValues.put("ACTION", "0");
         }
         db.update("todo_lists", updatedValues, "LIST_ID=" + listID);
-        adapter.notifyDataSetChanged();
+        adapter.sort(TodoListAdapter.TodoListComparator);
     }
 
     private boolean deleteListFromLocalStorage(int listID, boolean success) {
@@ -464,7 +464,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                 String newListID = jsonObject.getString("list_id");
                                 String newListName = jsonObject.getString("list_name");
                                 adapter.add(new TodoList(newListID, newListName));
-                                adapter.notifyDataSetChanged();
+                                adapter.sort(TodoListAdapter.TodoListComparator);
                                 saveListToLocalStorage(Integer.parseInt(newListID), newListName, SYNCHED, true);
                                 setEmptyTextVisibility(emptyTextView);
                                 Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
@@ -708,7 +708,7 @@ public class MainMenuActivity extends AppCompatActivity {
                         editListInLocalStorage(listID, newListName, true);
                         String oldListName = list.getName();
                         list.setName(newListName);
-                        adapter.notifyDataSetChanged();
+                        adapter.sort(TodoListAdapter.TodoListComparator);
                         Toast.makeText(MainMenuActivity.this, oldListName + " changed to " + newListName, Toast.LENGTH_LONG).show();
                     } else if (status == 1) {
                         Toast.makeText(MainMenuActivity.this, "You don't have access to edit this list!", Toast.LENGTH_LONG).show();
@@ -735,7 +735,7 @@ public class MainMenuActivity extends AppCompatActivity {
                 else Log.e("EDIT_REQUEST", "An error occured but the error message is empty. You must chase the bugs yourself, good luck!");
                 editListInLocalStorage(Integer.parseInt(list.getID()), newListName, false);
                 list.setName(newListName);
-                adapter.notifyDataSetChanged();
+                adapter.sort(TodoListAdapter.TodoListComparator);
                 hideDialog();
             }
         };

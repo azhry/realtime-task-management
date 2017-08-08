@@ -128,31 +128,34 @@ public class TaskDetailsActivity extends AppCompatActivity {
         fileList = (LinearLayout) findViewById(R.id.fileListView);
         fileListPseudoAdapter = new FileListPseudoAdapter(fileList, this);
 
-        String todoFilesRequestUrl = endpoint + "?action=get_todo_files&todo_id=" + item.getID();
-        StringRequest todoFilesRequest = new StringRequest(Request.Method.GET, todoFilesRequestUrl,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        try {
-                            JSONArray filesArray = new JSONArray(response);
-                            for (int i = 0; i < filesArray.length(); i++) {
-                                JSONObject file = filesArray.getJSONObject(i);
-                                fileListPseudoAdapter.add(Integer.parseInt(file.getString("FILE_ID")),
-                                        file.getString("FILENAME"));
+        if (item != null) {
+            String todoFilesRequestUrl = endpoint + "?action=get_todo_files&todo_id=" + item.getID();
+            StringRequest todoFilesRequest = new StringRequest(Request.Method.GET, todoFilesRequestUrl,
+                    new Response.Listener<String>() {
+                        @Override
+                        public void onResponse(String response) {
+                            try {
+                                JSONArray filesArray = new JSONArray(response);
+                                for (int i = 0; i < filesArray.length(); i++) {
+                                    JSONObject file = filesArray.getJSONObject(i);
+                                    fileListPseudoAdapter.add(Integer.parseInt(file.getString("FILE_ID")),
+                                            file.getString("FILENAME"));
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
                         }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
 
-                    }
-                });
+                        }
+                    });
 
-        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(todoFilesRequest, "todo_item_files");
+            AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(todoFilesRequest, "todo_item_files");
+        }
+
 
         addEditDueDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -399,7 +402,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
         String note = getNewNote();
         String dueDate = null;
 
-        Log.e("UPDT", "Update procedure called!");
         if (!isDescriptionValid(taskName)) {
             return;
         }

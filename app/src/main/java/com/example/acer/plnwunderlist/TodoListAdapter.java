@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -23,6 +24,12 @@ public class TodoListAdapter extends ArrayAdapter<TodoList> {
     public TodoListAdapter(@NonNull Context context, @NonNull List<TodoList> objects) {
         super(context, 0, objects);
     }
+
+    final static public Comparator<TodoList> TodoListComparator = new Comparator<TodoList>() {
+        public int compare(TodoList e1, TodoList e2) {
+           return e1.getName().compareTo(e2.getName());
+        }
+    };
 
     @NonNull
     @Override
