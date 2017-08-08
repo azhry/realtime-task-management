@@ -57,11 +57,12 @@ public class WebSocketClientManager {
 
         if (!isConnected)
         {
-            mWebSocketClient.close();
+            //mWebSocketClient.close();
             mWebSocketClient.setConnectTimeout(10000);
             mWebSocketClient.setReadTimeout(60000);
             mWebSocketClient.enableAutomaticReconnection(5000);
             mWebSocketClient.connect();
+            Log.e("WS", "connect");
         }
     }
 
@@ -135,6 +136,7 @@ public class WebSocketClientManager {
                     String msg = e.getMessage();
                     if (msg != null)
                         Log.e("WebSocket", msg);
+                    Log.e("WebSocket", "EXCEPTION");
                     isConnected = false;
                 }
 

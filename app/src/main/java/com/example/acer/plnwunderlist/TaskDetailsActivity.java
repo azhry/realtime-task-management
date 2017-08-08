@@ -67,7 +67,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private Button addEditDueDateBtn;
     private Button deleteDueDateBtn;
     private Button addFileBtn;
-    private Button uploadFileBtn;
     private EditText taskNameInput, noteInput;
     private TextView dueDateInput;
 
@@ -103,7 +102,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
         addEditDueDateBtn = (Button) findViewById(R.id.addEditDueDateBtn);
         deleteDueDateBtn = (Button) findViewById(R.id.deleteDueDateBtn);
         addFileBtn = (Button) findViewById(R.id.addFileBtn);
-        uploadFileBtn = (Button) findViewById(R.id.uploadFileBtn);
 
         //Initialize EditText values
         taskNameInput = (EditText) findViewById(R.id.taskNameEdit);
@@ -189,31 +187,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 showFileChooser();
             }
         });
-
-        uploadFileBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (selectedFilePath != null) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                            checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PICK_FILE_REQUEST);
-                        Log.e("REQUEST_PERMISSION", "TRUE");
-                    }
-
-                    Map<String, String> params = new HashMap<String, String>();
-                    params.put("todo_id", String.valueOf(item.getID()));
-
-                    File uploadFile = new File(selectedFilePath);
-                    new FileUploaderTask(endpoint, uploadFile,
-                            TaskDetailsActivity.this,
-                            TaskDetailsActivity.this,
-                            params).execute();
-                } else {
-                    Log.e("UPLOAD", "Please choose a file first");
-                }
-            }
-        });
-
     }
 
     public void finishEditing(){
@@ -370,6 +343,20 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 Log.e("ON_ACTIVITY_RESULT", "Selected file path: " + selectedFilePath);
                 if (selectedFilePath != null && !selectedFilePath.equals("")) {
                     Log.e("ON_ACTVT_RESULT_SUCCESS", "Selected file path: " + selectedFilePath);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                            checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PICK_FILE_REQUEST);
+                        Log.e("REQUEST_PERMISSION", "TRUE");
+                    }
+
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("todo_id", String.valueOf(item.getID()));
+
+                    File uploadFile = new File(selectedFilePath);
+                    new FileUploaderTask(endpoint, uploadFile,
+                            TaskDetailsActivity.this,
+                            TaskDetailsActivity.this,
+                            params).execute();
                 } else {
                     Log.e("ON_ACTIVITY_RESULT", "Cannot upload file to server");
                 }

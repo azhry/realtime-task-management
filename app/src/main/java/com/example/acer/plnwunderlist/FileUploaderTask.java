@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
@@ -68,6 +69,7 @@ public class FileUploaderTask extends AsyncTask<Void, Integer, Void>
     @Override
     protected void onPostExecute(Void v) {
         this.progressDialog.dismiss();
+        Toast.makeText(context, "File uploaded!", Toast.LENGTH_SHORT).show();
     }
 
     private int uploadFile() {
