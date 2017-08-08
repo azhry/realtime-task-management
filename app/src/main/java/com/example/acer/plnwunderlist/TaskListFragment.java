@@ -8,7 +8,10 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -176,18 +179,61 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                 //and extract its name for the page title, and ID for reference.
                 taskDetailsIntent.putExtra("TODO_LIST_ID",listID);
 
-                startActivity(taskDetailsIntent);
+                getActivity().startActivityForResult(taskDetailsIntent, ListMenuActivity.REQUEST_CODE_TASKDETAILS);
 
             }
         });
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                return false;
-            }
-        });
 
-        //getItemsList(listID);
+        //Lastly, register the specified ContextMenu to the Listview.
+        registerForContextMenu(listView);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            super.onCreateContextMenu(menu, v, menuInfo);
+            MenuInflater inflater = getActivity().getMenuInflater();
+            inflater.inflate(R.menu.task_list_long_press_menu, menu);
+
+            MenuItem markTask = menu.findItem(R.id.markTask);
+
+            //Catch the ContextMenu.ContextMenuItem sent from parameter
+            //as AdapterView.AdapterContextMenuInfo to itemInfo variable.
+            AdapterView.AdapterContextMenuInfo itemInfo = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            //Get the Item at the specified position, and get the value.
+            TodoItem selectedItem = (TodoItem) listView.getItemAtPosition(itemInfo.position);
+            String titleName = selectedItem.getDescription();
+
+            boolean isCompletedFragment = mIsStrikethrough;
+
+            if(isCompletedFragment){
+                markTask.setTitle("Mark as Ongoing");
+            } else {
+                markTask.setTitle("Mark as Completed");
+            }
+
+
+            //Set the header title
+            menu.setHeaderTitle(titleName);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        if(getUserVisibleHint()) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            switch (item.getItemId()) {
+
+                case R.id.markTask:
+                    Log.e("CLICKEDDDD", adapter.getItem(info.position).getDescription());
+                    checkboxClicked(info.position);
+                    return true;
+                case R.id.deleteTask:
+                    Log.e("CLICKEDDDD", adapter.getItem(info.position).getDescription());
+                default:
+                    return super.onContextItemSelected(item);
+            }
+        } else {
+            return super.onContextItemSelected(item);
+        }
     }
 
     @Override

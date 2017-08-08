@@ -51,6 +51,8 @@ public class ListMenuActivity extends AppCompatActivity implements
         TaskListFragment.OnFragmentInteractionListener {
 
     static int taskTabCount = 2;
+    static final int REQUEST_CODE_TASKDETAILS = 1;
+
 
     ArrayList<TodoItem> dataModels;
     ListView listView;

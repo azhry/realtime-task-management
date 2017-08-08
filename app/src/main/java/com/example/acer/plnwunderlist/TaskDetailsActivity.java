@@ -283,6 +283,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
             case R.id.finishEditBtn:
                 finishEditing();
                 return true;
+            case R.id.deleteTaskBtn:
+                return true;
             default:
                 break;
         }
