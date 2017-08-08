@@ -53,6 +53,10 @@ import java.util.concurrent.TimeUnit;
 
 public class TaskDetailsActivity extends AppCompatActivity {
 
+    public static String EXTRA_USER_ACTION = "TaskDetails.UserAction";
+    public static String EXTRA_ITEM_DATA = "TaskDetails.ItemData";
+    public static int USER_ACT_DELETE = -1;
+    public static int USER_ACT_FINISH = 1;
     private static final int PICK_FILE_REQUEST = 1;
 
     private FileListPseudoAdapter fileListPseudoAdapter;
@@ -189,38 +193,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
         });
     }
 
-    public void finishEditing(){
-        String taskName = getNewDesc();
-        String note = getNewNote();
-        String dueDate = null;
-
-        if (!isDescriptionValid(taskName)) {
-            return;
-        }
-
-        SimpleDateFormat sqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
-        if (tempDate != null) {
-            dueDate = sqlDateFormat.format(tempDate);
-            Log.e("DATE", dueDate);
-        }
-
-        Map<String, String> data = new HashMap<String, String>();
-        if (isUpdate) {
-            data.put("todo_id", String.valueOf(item.getID()));
-
-            //If the item is completed, set the value as 1. Otherwise set as 0.
-            data.put("is_completed",
-                    String.valueOf(item.isCompleted() ? 1 : 0));
-        }
-
-        data.put("task_name", taskName);
-        data.put("list_id", listID);
-        data.put("due_date", dueDate);
-        data.put("note", note);
-        updateTask(data);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = this.getMenuInflater();
@@ -254,13 +226,27 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 NavUtils.navigateUpFromSameTask(this);
                 return true;
             case R.id.finishEditBtn:
-                finishEditing();
+                startUpdateProcedure();
+                return true;
+            case R.id.deleteTaskBtn:
+                deleteItem();
                 return true;
             default:
                 break;
         }
 
         return true;
+    }
+
+    private void deleteItem(){
+        Intent returnIntent = new Intent();
+
+        Log.e("DELETION","DeleteItem called");
+
+        returnIntent.putExtra(EXTRA_USER_ACTION, USER_ACT_DELETE);
+        returnIntent.putExtra(EXTRA_ITEM_DATA, item);
+        setResult(RESULT_OK,returnIntent);
+        finish();
     }
 
     private void setDateBtnsVisibility(boolean isDateSet) {
@@ -438,6 +424,9 @@ public class TaskDetailsActivity extends AppCompatActivity {
     }
 
     private void startUpdateProcedure() {
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra(EXTRA_USER_ACTION, USER_ACT_FINISH);
+
         String taskName = getNewDesc();
         String note = getNewNote();
         String dueDate = null;
@@ -450,6 +439,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         if (tempDate != null) {
             dueDate = sqlDateFormat.format(tempDate);
+            Log.e("DATE", dueDate);
         }
 
         Map<String, String> data = new HashMap<String, String>();
@@ -465,7 +455,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         data.put("list_id", listID);
         data.put("due_date", dueDate);
         data.put("note", note);
-        updateTask(data);
+        updateTask(data, returnIntent);
     }
 
     private void showAddConfirmationDialog() {
@@ -610,7 +600,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         }
     }
 
-    private void updateTask(final Map<String, String> paramData) {
+    private void updateTask(final Map<String, String> paramData, final Intent intent) {
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
 
@@ -649,23 +639,28 @@ public class TaskDetailsActivity extends AppCompatActivity {
                                         jsonObject.getString("note"),
                                         jsonObject.getInt("is_completed"), 1, true,
                                         updateMode);
+
+                                setResult(RESULT_OK, intent);
                                 progressDialog.dismiss();
-                                finish();
                             } else if (status == 1) {
                                 Toast.makeText(TaskDetailsActivity.this, "Insert task failed!", Toast.LENGTH_LONG).show();
+                                setResult(RESULT_CANCELED);
                                 progressDialog.dismiss();
                             } else {
                                 Log.e(updateMode, "Error: " + response);
+                                setResult(RESULT_CANCELED);
                                 progressDialog.dismiss();
                             }
                         } catch (JSONException e) {
                             String msg = e.getMessage();
                             if (msg != null) {
                                 Log.e(updateMode + "_EXCEPTION", msg);
-
+                                setResult(RESULT_CANCELED);
                                 progressDialog.dismiss();
                             }
                         }
+
+                        finish();
                     }
                 },
                 new Response.ErrorListener() {

@@ -2,12 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/markOngoing"
-        android:title="Mark as Ongoing"
-        app:showAsAction="ifRoom|withText"
-        />
-    <item android:id="@+id/markCompleted"
-        android:title="Mark as Completed"
+    <item android:id="@+id/markTask"
+        android:title="Mark as Context"
         app:showAsAction="ifRoom|withText"
         />
     <item android:id="@+id/deleteTask"

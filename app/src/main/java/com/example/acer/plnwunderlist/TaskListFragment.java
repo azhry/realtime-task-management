@@ -8,7 +8,10 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -32,6 +35,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static android.app.Activity.RESULT_OK;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -46,6 +51,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "isStrikethrough";
     private static final String ARG_PARAM2 = "listID";
+    public static final int REQUEST_CODE_TASK_ACTION = 1;
 
     //Variables to store param
     private Boolean mIsStrikethrough;
@@ -176,18 +182,61 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                 //and extract its name for the page title, and ID for reference.
                 taskDetailsIntent.putExtra("TODO_LIST_ID",listID);
 
-                startActivity(taskDetailsIntent);
+                startActivityForResult(taskDetailsIntent, REQUEST_CODE_TASK_ACTION);
 
             }
         });
-        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                return false;
-            }
-        });
 
-        //getItemsList(listID);
+        //Lastly, register the specified ContextMenu to the Listview.
+        registerForContextMenu(listView);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            super.onCreateContextMenu(menu, v, menuInfo);
+            MenuInflater inflater = getActivity().getMenuInflater();
+            inflater.inflate(R.menu.task_list_long_press_menu, menu);
+
+            MenuItem markTask = menu.findItem(R.id.markTask);
+
+            //Catch the ContextMenu.ContextMenuItem sent from parameter
+            //as AdapterView.AdapterContextMenuInfo to itemInfo variable.
+            AdapterView.AdapterContextMenuInfo itemInfo = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            //Get the Item at the specified position, and get the value.
+            TodoItem selectedItem = (TodoItem) listView.getItemAtPosition(itemInfo.position);
+            String titleName = selectedItem.getDescription();
+
+            boolean isCompletedFragment = mIsStrikethrough;
+
+            if(isCompletedFragment){
+                markTask.setTitle("Mark as Ongoing");
+            } else {
+                markTask.setTitle("Mark as Completed");
+            }
+
+
+            //Set the header title
+            menu.setHeaderTitle(titleName);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        if(getUserVisibleHint()) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+            switch (item.getItemId()) {
+
+                case R.id.markTask:
+                    Log.e("CLICKEDDDD", adapter.getItem(info.position).getDescription());
+                    checkboxClicked(info.position);
+                    return true;
+                case R.id.deleteTask:
+                    attemptDeletion(info.position);
+                default:
+                    return super.onContextItemSelected(item);
+            }
+        } else {
+            return super.onContextItemSelected(item);
+        }
     }
 
     @Override
@@ -258,10 +307,51 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                 taskDetailsIntent.putExtra("TODO_LIST_ID",listID);
                 //and extract its name for the page title, and ID for reference.
 
-                startActivity(taskDetailsIntent);
+                startActivityForResult(taskDetailsIntent, REQUEST_CODE_TASK_ACTION);
 
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.e("DELETION","OnActivityResult called");
+        if (requestCode == REQUEST_CODE_TASK_ACTION) {
+            if (resultCode == RESULT_OK) {
+               int userAction = data.getIntExtra(TaskDetailsActivity.EXTRA_USER_ACTION, 0);
+                if(userAction == TaskDetailsActivity.USER_ACT_DELETE){
+                    TodoItem targetItem = data.getParcelableExtra(TaskDetailsActivity.EXTRA_ITEM_DATA);
+                    attemptDeletion(targetItem);
+                }
+            }
+        }
+    }
+
+    private void attemptDeletion(int pos){
+        attemptDeletion(adapter.getItem(pos));
+    }
+
+    private void attemptDeletion(TodoItem target){
+
+        TodoItem localTarget = null;
+
+        //TODO: Gawekela disini az
+        
+        //Check if GUI needs deletion
+        for(int i=0 ; i< adapter.getCount() ; i++){
+            TodoItem currentItem = adapter.getItem(i);
+            if(currentItem.getID() == target.getID()){
+                localTarget = adapter.getItem(i);
+                break;
+            }
+        }
+
+        if(localTarget != null) { //It means the deleted is here
+            adapter.remove(localTarget);
+            Log.e("DELETION","TARGET FOUND!" + localTarget.getDescription());
+        }
+
     }
 
     private void getItemsList(final String listID) {

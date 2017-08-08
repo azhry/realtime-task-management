@@ -51,6 +51,8 @@ public class ListMenuActivity extends AppCompatActivity implements
         TaskListFragment.OnFragmentInteractionListener {
 
     static int taskTabCount = 2;
+    static final int REQUEST_CODE_TASKDETAILS = 1;
+
 
     ArrayList<TodoItem> dataModels;
     ListView listView;
@@ -70,6 +72,11 @@ public class ListMenuActivity extends AppCompatActivity implements
     ProgressDialog progressDialog;
 
     private DBPLNHelper db;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
