@@ -97,7 +97,8 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     }
 
     public void refreshList(){
-        adapter.clear();
+        adapter.notifyDataSetChanged();
+        //adapter.clear();
         //getItemsList(this.listID);
     }
 

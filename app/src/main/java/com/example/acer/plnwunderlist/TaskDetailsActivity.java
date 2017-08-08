@@ -156,7 +156,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
             AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(todoFilesRequest, "todo_item_files");
         }
 
-
         addEditDueDateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

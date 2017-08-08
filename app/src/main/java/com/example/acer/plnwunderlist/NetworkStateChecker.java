@@ -29,6 +29,14 @@ public class NetworkStateChecker extends BroadcastReceiver {
     private Context context;
     private DBPLNHelper db;
 
+    public static boolean isNetworkActive(Context context){
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+        return activeNetwork != null;
+    }
+
+
     @Override
     public void onReceive(Context context, Intent intent) {
         this.context = context;

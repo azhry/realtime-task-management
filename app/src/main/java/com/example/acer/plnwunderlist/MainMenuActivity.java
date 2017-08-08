@@ -1,7 +1,6 @@
 package com.example.acer.plnwunderlist;
 
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -72,8 +71,8 @@ public class MainMenuActivity extends AppCompatActivity {
     private DBPLNHelper db;
     private NetworkStateChecker networkStateReceiver;
 
-    public static final int SYNCHED = 1;
-    public static final int UNSYNCHED = 0;
+    public static final int SYNCED = 1;
+    public static final int UNSYNCED = 0;
     public static final String DATA_SAVED_BROADCAST = "com.example.acer.plnwunderlist";
     public final static int PERMISSIONS_REQUEST_READ_PHONE_STATE = 11;
 
@@ -465,7 +464,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                 String newListName = jsonObject.getString("list_name");
                                 adapter.add(new TodoList(newListID, newListName));
                                 adapter.sort(TodoListAdapter.TodoListComparator);
-                                saveListToLocalStorage(Integer.parseInt(newListID), newListName, SYNCHED, true);
+                                saveListToLocalStorage(Integer.parseInt(newListID), newListName, SYNCED, true);
                                 setEmptyTextVisibility(emptyTextView);
                                 Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
                             } else if (status == 1)
@@ -477,7 +476,7 @@ public class MainMenuActivity extends AppCompatActivity {
                             else {
                                 Log.e("RESPONSE_UNSYNCHED", response);
 //                                Random randId = new Random();
-                                //saveListToLocalStorage(randId.nextInt(Integer.MAX_VALUE), newListName, UNSYNCHED, false);
+                                //saveListToLocalStorage(randId.nextInt(Integer.MAX_VALUE), newListName, UNSYNCED, false);
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -498,7 +497,7 @@ public class MainMenuActivity extends AppCompatActivity {
                         if (msg != null)
                             Log.e("ADD_ERROR", error.getMessage());
                         Random randId = new Random();
-                        saveListToLocalStorage(randId.nextInt(Integer.MAX_VALUE), newListName, UNSYNCHED, false);
+                        saveListToLocalStorage(randId.nextInt(Integer.MAX_VALUE), newListName, UNSYNCED, false);
                         hideDialog();
                     }
                 }
