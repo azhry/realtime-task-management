@@ -416,7 +416,9 @@ public class MainMenuActivity extends AppCompatActivity {
         }
         db.insert("todo_lists", contentValues);
         TodoList todoList = new TodoList(String.valueOf(listID), listName);
-        todoLists.add(todoList);
+        if (!success) {
+            todoLists.add(todoList);
+        }
         adapter.sort(TodoListAdapter.TodoListComparator);
     }
 

@@ -27,7 +27,10 @@ public class TodoListAdapter extends ArrayAdapter<TodoList> {
 
     final static public Comparator<TodoList> TodoListComparator = new Comparator<TodoList>() {
         public int compare(TodoList e1, TodoList e2) {
-           return e1.getName().compareTo(e2.getName());
+        String listName1 = e1.getName().toLowerCase();
+        String listName2 = e2.getName().toLowerCase();
+
+           return listName1.compareTo(listName2);
         }
     };
 
