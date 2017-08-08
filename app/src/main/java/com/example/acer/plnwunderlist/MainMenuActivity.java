@@ -844,7 +844,10 @@ public class MainMenuActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
+                        String msg = error.getMessage();
+                        if (msg != null) {
+                            Log.e("LEAVE_ERROR", msg);
+                        }
                     }
                 }) {
             @Override
@@ -856,6 +859,8 @@ public class MainMenuActivity extends AppCompatActivity {
                 return params;
             }
         };
+
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(leaveList, "LEAVE");
     }
 
     private void setEmptyTextVisibility(View headerView) {

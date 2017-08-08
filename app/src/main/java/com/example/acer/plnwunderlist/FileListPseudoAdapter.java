@@ -1,6 +1,11 @@
 package com.example.acer.plnwunderlist;
 
+import android.app.DownloadManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -65,7 +70,8 @@ public class FileListPseudoAdapter {
         downloadBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new FileDownloaderTask(mContext, data).execute(url);
+                //new FileDownloaderTask(mContext, data).execute(url);
+                downloadFile(url, data);
             }
         });
         ImageView deleteBtn = (ImageView) result.findViewById(R.id.deleteFileBtn);
@@ -102,5 +108,20 @@ public class FileListPseudoAdapter {
 
         });
         return result;
+    }
+
+    public void downloadFile(String DownloadUrl, String FileName){
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(DownloadUrl));
+        request.setDescription("Downloading " + FileName);   //appears the same in Notification bar while downloading
+        request.setTitle(FileName);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            request.allowScanningByMediaScanner();
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        }
+        request.setDestinationInExternalFilesDir(mContext.getApplicationContext(),null, FileName);
+
+        // get download service and enqueue file
+        DownloadManager manager = (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
+        manager.enqueue(request);
     }
 }
