@@ -40,6 +40,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class TaskDetailsActivity extends AppCompatActivity {
@@ -72,6 +73,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private TodoItem item;
     private Date tempDate;
 
+    private DBPLNHelper db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +85,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PICK_FILE_REQUEST);
             Log.e("REQUEST_PERMISSION", "TRUE");
         }
+
+        db = new DBPLNHelper(this);
 
         endpoint = getString(R.string.uri_endpoint);
 
@@ -216,6 +221,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
                 if (tempDate != null) {
                     dueDate = sqlDateFormat.format(tempDate);
+                    Log.e("DATE", dueDate);
                 }
 
                 Map<String, String> data = new HashMap<String, String>();
@@ -540,6 +546,35 @@ public class TaskDetailsActivity extends AppCompatActivity {
         this.setDateBtnsVisibility(true);
     }
 
+    private void saveItemToLocalStorage(int todoID, int listID, String itemDesc, String dueDate, String note,
+                                        int completed, int status, boolean success, String mode) {
+        Map<String, String> contentValues = new HashMap<>();
+        contentValues.put("TODO_ID", String.valueOf(todoID));
+        contentValues.put("LIST_ID", String.valueOf(listID));
+        contentValues.put("ITEM_DESC", itemDesc);
+        contentValues.put("DUE_DATE", dueDate);
+        contentValues.put("NOTE", note);
+        contentValues.put("IS_COMPLETED", String.valueOf(completed));
+        contentValues.put("STATUS", String.valueOf(status));
+        if (success) {
+            contentValues.put("SERVER_ID", String.valueOf(todoID));
+        } else {
+            contentValues.put("SERVER_ID", "0");
+        }
+
+        if (mode.equals("insert_todo_item")) {
+            contentValues.put("ACTION", "0");
+            db.insert("todo_items", contentValues);
+        } else if (mode.equals("update_todo_item")) {
+            if (success) {
+                contentValues.put("ACTION", "0");
+            } else {
+                contentValues.put("ACTION", "1");
+            }
+            db.update("todo_items", contentValues, "TODO_ID=" + todoID);
+        }
+    }
+
     private void updateTask(final Map<String, String> paramData) {
         final ProgressDialog progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
@@ -568,10 +603,17 @@ public class TaskDetailsActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(String response) {
                         try {
-                            Log.e(updateMode + "_EXCEPTION", response);
+                            Log.e(updateMode, response);
                             JSONObject jsonObject = new JSONObject(response);
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
+                                saveItemToLocalStorage(jsonObject.getInt("todo_id"),
+                                        Integer.parseInt(paramData.get("list_id")),
+                                        jsonObject.getString("item_desc"),
+                                        jsonObject.getString("due_date"),
+                                        jsonObject.getString("note"),
+                                        jsonObject.getInt("is_completed"), 1, true,
+                                        updateMode);
                                 progressDialog.dismiss();
                                 finish();
                             } else if (status == 1) {
@@ -598,7 +640,14 @@ public class TaskDetailsActivity extends AppCompatActivity {
                         if (msg != null) {
                             Log.e(updateMode + "_ERROR", msg);
                         }
-
+//                        Random randId = new Random();
+//                        saveItemToLocalStorage(randId.nextInt(Integer.MAX_VALUE),
+//                                Integer.parseInt(paramData.get("list_id")),
+//                                paramData.get("task_name"),
+//                                paramData.get("due_date"),
+//                                paramData.get("note"),
+//                                0, 0, false,
+//                                updateMode);
                         progressDialog.dismiss();
                     }
                 }) {

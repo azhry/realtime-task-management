@@ -334,6 +334,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                     contentValues.put("STATUS", "1");
                                     contentValues.put("SERVER_ID", listID);
                                     contentValues.put("ACTION", "0");
+                                    contentValues.put("ACCESS_TYPE", jsonObject.getString("ACCESS_TYPE"));
                                     contentValues.put("LIST_ID", listID);
                                     contentValues.put("USER_ID", userDetails.get("user_id"));
                                     db.insert("list_access", contentValues);
