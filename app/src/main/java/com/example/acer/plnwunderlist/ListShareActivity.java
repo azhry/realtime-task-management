@@ -147,7 +147,7 @@ public class ListShareActivity extends AppCompatActivity {
                                 }
 
                                 if(currentUser.getUserID() == Integer.parseInt(thisUserID)){
-                                    currentUser.setName("You");
+                                    currentUser.setName("Me");
                                     memberAdapter.insert(currentUser, 0);
                                 } else {
                                     memberAdapter.add(currentUser);

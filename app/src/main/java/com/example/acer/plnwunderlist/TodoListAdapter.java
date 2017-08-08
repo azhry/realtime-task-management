@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -21,8 +22,12 @@ import java.util.List;
 
 public class TodoListAdapter extends ArrayAdapter<TodoList> {
 
-    public TodoListAdapter(@NonNull Context context, @NonNull List<TodoList> objects) {
+    private HashMap<String, Integer> accessTypeList;
+
+    public TodoListAdapter(@NonNull Context context,
+                           @NonNull List<TodoList> objects, HashMap<String, Integer> accessCodes) {
         super(context, 0, objects);
+        this.accessTypeList = new HashMap<>(accessCodes);
     }
 
     final static public Comparator<TodoList> TodoListComparator = new Comparator<TodoList>() {
@@ -30,6 +35,10 @@ public class TodoListAdapter extends ArrayAdapter<TodoList> {
            return e1.getName().compareTo(e2.getName());
         }
     };
+
+    public void addAccessValue(String key, Integer value){
+        this.accessTypeList.put(key, value);
+    }
 
     @NonNull
     @Override
@@ -43,13 +52,30 @@ public class TodoListAdapter extends ArrayAdapter<TodoList> {
 
         // Get the {@link Word} object located at this position in the list
         TodoList currentList = getItem(position);
+        String currentListID = currentList.getID();
         String currentListName = currentList.getName();
+
+        //Shouldn't be called EVER, but just in case.
+        if(!this.accessTypeList.containsKey(currentListID)){
+            Log.e("PLN-COMM",currentListName + " doesn't have an access code!");
+            //assume it's a new to-do list.
+            this.accessTypeList.put(currentListID, AppHelper.TODOLIST_ACCESS_CODE_OWNER);
+        }
 
         // Find the TextView in the main_menu_list.xml layout with the ID ListTitle
         TextView todoListTextView = (TextView) listItemView.findViewById(R.id.listTitle);
+        ImageView shareIcon = (ImageView)  listItemView.findViewById(R.id.listShareIcon);
+
         // Get the list title from the current object and
         // set this text on the name TextView
         todoListTextView.setText(currentListName);
+
+        int accessType = accessTypeList.get(currentListID);
+        if(accessType == AppHelper.TODOLIST_ACCESS_CODE_OWNER){
+            shareIcon.setVisibility(View.GONE);
+        } else {
+            shareIcon.setVisibility(View.VISIBLE);
+        }
 
         // Return the whole list item layout (containing an ImageView and a TextView)
         // so that it can be shown in the ListView

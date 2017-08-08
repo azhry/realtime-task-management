@@ -57,6 +57,7 @@ public class WebSocketClientManager {
 
         if (!isConnected)
         {
+            mWebSocketClient.close();
             mWebSocketClient.setConnectTimeout(10000);
             mWebSocketClient.setReadTimeout(60000);
             mWebSocketClient.enableAutomaticReconnection(5000);

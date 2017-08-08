@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/deleteTaskBtn"
+        android:orderInCategory="100"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_delete_forever_black_24dp"
+        android:title="Delete Task"/>
+    <item
+        android:id="@+id/finishEditBtn"
+        android:orderInCategory="101"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_done_black_24dp"
+        android:title="Finish Editing"/>
 </menu>

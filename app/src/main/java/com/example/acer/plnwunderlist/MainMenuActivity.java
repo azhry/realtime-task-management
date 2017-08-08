@@ -94,11 +94,13 @@ public class MainMenuActivity extends AppCompatActivity {
         progressDialog.setCancelable(false);
 
         todoListsList = (ListView) findViewById(R.id.todolistslist);
-        todoListsList.setDivider(null);
-        todoListsList.setDividerHeight(0);
 
         initUserData();
+
+        //Initialize data
         accessList = getAllAccessType();
+        adapter = new TodoListAdapter(this, todoLists, accessList);
+        todoListsList.setAdapter(adapter);
 
         emptyTextView = getLayoutInflater().inflate(R.layout.main_menu_empty_list_text, null);
 
@@ -165,8 +167,9 @@ public class MainMenuActivity extends AppCompatActivity {
         inflater.inflate(R.menu.todolistlists_context_menu, menu);
         MenuItem leaveList = menu.findItem(R.id.leaveTodoList);
         MenuItem deleteList = menu.findItem(R.id.deleteTodoList);
+        MenuItem editList = menu.findItem(R.id.EditTodoList);
 
-        if(this.accessList == null){
+        if(this.accessList == null || this.accessList.isEmpty()){
             this.accessList = getAllAccessType();
         }
 
@@ -176,13 +179,16 @@ public class MainMenuActivity extends AppCompatActivity {
         //Get the Item at the specified position, and get the value.
         TodoList selectedList = (TodoList) todoListsList.getItemAtPosition(itemInfo.position);
         String titleName = selectedList.getName();
+
         int accessType = this.accessList.get(selectedList.getID());
         Log.e("ACSTYP",titleName + ", access code " + accessType);
         if(accessType == AppHelper.TODOLIST_ACCESS_CODE_OWNER){
             deleteList.setVisible(true);
+            editList.setVisible(true);
             leaveList.setVisible(false);
         } else {
             deleteList.setVisible(false);
+            editList.setVisible(false);
             leaveList.setVisible(true);
         }
 
@@ -248,6 +254,10 @@ public class MainMenuActivity extends AppCompatActivity {
                 showEditListDialog(MainMenuActivity.this,
                         (TodoList) todoListsList.getItemAtPosition(info.position));
                 return true;
+            case R.id.leaveTodoList:
+                showLeaveListDialog(MainMenuActivity.this,
+                        (TodoList) todoListsList.getItemAtPosition(info.position));
+                return true;
             default:
                 return super.onContextItemSelected(item);
         }
@@ -264,9 +274,6 @@ public class MainMenuActivity extends AppCompatActivity {
         progressDialog.setMessage("Loading data...");
         showDialog();
 
-        adapter = new TodoListAdapter(this, todoLists);
-
-        todoListsList.setAdapter(adapter);
         //Set onclick listener; send user to the item's respective to-do list.
         todoListsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -291,7 +298,7 @@ public class MainMenuActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONArray response) {
                         //Log.e("JSON", response.toString());
-                        todoLists.clear();
+                        adapter.clear();
                         for (int i = 0; i < response.length(); i++) {
                             try {
                                 JSONObject jsonObject = response.getJSONObject(i);
@@ -343,12 +350,14 @@ public class MainMenuActivity extends AppCompatActivity {
                                 c.close();
 
                                 adapter.add(loadedTodoList);
-                                adapter.sort(TodoListAdapter.TodoListComparator);
+                                Log.e("LOADED",loadedTodoList.getName());
                             } catch (JSONException e) {
                                 Log.e("JSON_Exception", e.getMessage());
                                 e.printStackTrace();
                             }
                         }
+                        Log.e("LOADED","IS EMPTY: "+ adapter.isEmpty());
+                        adapter.sort(TodoListAdapter.TodoListComparator);
 
                         setEmptyTextVisibility(emptyTextView);
 
@@ -410,7 +419,7 @@ public class MainMenuActivity extends AppCompatActivity {
 //    }
 
     private void loadLists() {
-        todoLists.clear();
+        adapter.clear();
         Cursor cursor = db.select("todo_lists");
         if (cursor.moveToFirst()) {
             do {
@@ -420,15 +429,14 @@ public class MainMenuActivity extends AppCompatActivity {
                             cursor.getString(cursor.getColumnIndex("SERVER_ID")),
                             cursor.getString(cursor.getColumnIndex("LIST_NAME"))
                     );
-                    todoLists.add(todoList);
+                    adapter.add(todoList);
+                    Log.e("LOADED_LOCAL",todoList.getName());
                 } else {
 
                 }
             } while (cursor.moveToNext());
         }
-
-        adapter = new TodoListAdapter(this, todoLists);
-        todoListsList.setAdapter(adapter);
+        Log.e("LOADED_LOCAL","IS EMPTY: "+ adapter.isEmpty());
         adapter.sort(TodoListAdapter.TodoListComparator);
 
         todoListsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -461,11 +469,13 @@ public class MainMenuActivity extends AppCompatActivity {
             contentValues.put("SERVER_ID", String.valueOf(listID));
         } else {
             contentValues.put("SERVER_ID", "0");
+            TodoList todoList = new TodoList(String.valueOf(listID), listName);
+            adapter.add(todoList);
+            updateAccessList(String.valueOf(listID), AppHelper.TODOLIST_ACCESS_CODE_OWNER);
+            adapter.sort(TodoListAdapter.TodoListComparator);
         }
         db.insert("todo_lists", contentValues);
-        TodoList todoList = new TodoList(String.valueOf(listID), listName);
-        todoLists.add(todoList);
-        adapter.sort(TodoListAdapter.TodoListComparator);
+
     }
 
     private void editListInLocalStorage(int listID, String listName, boolean success) {
@@ -496,6 +506,11 @@ public class MainMenuActivity extends AppCompatActivity {
         }
     }
 
+    private void updateAccessList(String key, Integer value){
+        this.accessList.put(key, value);
+        this.adapter.addAccessValue(key, value);
+    }
+
     private void saveListToServer(final String newListName) {
         progressDialog.setMessage("Saving data...");
         showDialog();
@@ -512,6 +527,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                 String newListID = jsonObject.getString("list_id");
                                 String newListName = jsonObject.getString("list_name");
                                 adapter.add(new TodoList(newListID, newListName));
+                                updateAccessList(newListID, AppHelper.TODOLIST_ACCESS_CODE_OWNER);
                                 adapter.sort(TodoListAdapter.TodoListComparator);
                                 saveListToLocalStorage(Integer.parseInt(newListID), newListName, SYNCED, true);
                                 setEmptyTextVisibility(emptyTextView);
@@ -802,6 +818,10 @@ public class MainMenuActivity extends AppCompatActivity {
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(editRequest, "edit_list");
     }
 
+    private void leaveList(TodoList todoList){
+        //TODO: Disini az
+    }
+
     private void setEmptyTextVisibility(View headerView) {
         //Set the visibility of empty to-do lists notice.
         if (adapter.isEmpty()) {
@@ -938,6 +958,41 @@ public class MainMenuActivity extends AppCompatActivity {
 
         AlertDialog editDialog = editListDialog.create();
         editDialog.show();
+    }
+
+    private void showLeaveListDialog(final Context context, final TodoList todolist){
+        //------------------------------------------------------------------------------------------
+        //START AlertDialog Definition
+        final AlertDialog.Builder leaveListBuilder = new AlertDialog.Builder(context);
+
+        //Set its title and view
+        String dialogMsg = "Are you sure you want to leave".
+                concat(" ").concat(todolist.getName()).
+                concat(" ").concat(" list?");
+
+        //Set title and message
+        leaveListBuilder.setTitle("Leave List").setMessage(dialogMsg);
+
+        //Add the "Positive" (Right button) logic
+        leaveListBuilder.setPositiveButton(R.string.dialog_default_positive_labeal, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //Call the delete function
+                leaveList(todolist);
+            }
+        });
+        //Add the "Negative" (Left button) logic
+        leaveListBuilder.setNegativeButton(R.string.dialog_default_negative_label, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        });
+
+        //END AlertDialog Definition
+        //------------------------------------------------------------------------------------------
+
+        AlertDialog newList = leaveListBuilder.create();
+        newList.show();
     }
 
     private void showDialog() {

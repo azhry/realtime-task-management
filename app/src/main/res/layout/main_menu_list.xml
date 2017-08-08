@@ -4,13 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="12dp">
+    android:paddingBottom="18dp"
+    android:paddingTop="18dp"
+    android:paddingLeft="12dp"
+    android:paddingRight="12dp">
 
     <ImageView
         android:id="@+id/listIcon"
         android:layout_width="@dimen/img_list_default"
         android:layout_height="@dimen/img_list_default"
-        android:layout_gravity="center_vertical"
+        android:layout_alignParentLeft="true"
+        android:layout_centerVertical="true"
         android:src="@drawable/ic_format_list_bulleted_black_24dp"
         android:tint="@android:color/darker_gray" />
 
@@ -18,13 +22,23 @@
         android:id="@+id/listTitle"
         android:ellipsize="end"
         android:layout_toEndOf="@id/listIcon"
-        android:layout_width="wrap_content"
+        android:layout_width= "match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
+        android:layout_centerVertical="true"
         android:paddingLeft="12dp"
         android:maxLines="1"
         android:text="@string/list_default_value"
         android:textSize="@dimen/font_normal"
 />
+
+    <ImageView
+        android:id="@+id/listShareIcon"
+        android:layout_width="@dimen/img_list_default"
+        android:layout_height="@dimen/img_list_default"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_people_black_24dp"
+        android:tint="@android:color/darker_gray"
+        android:visibility="gone"/>
 
 </RelativeLayout>

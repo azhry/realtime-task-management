@@ -32,7 +32,6 @@
             android:id="@+id/taskDueDateLabel"
             android:text="@string/task_details_date_label" />
 
-
         <TextView
             android:id="@+id/taskDueDateEdit"
             android:layout_width="wrap_content"
@@ -128,17 +127,6 @@
                 android:text="Upload" />
 
         </LinearLayout>
-
-        <View style="@style/Divider" />
-
-        <Button
-            android:id="@+id/addTask"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/btn_blue"
-            android:minHeight="36dp"
-            android:text="Add Task"
-            android:textColor="@android:color/white"/>
 
     </LinearLayout>
 

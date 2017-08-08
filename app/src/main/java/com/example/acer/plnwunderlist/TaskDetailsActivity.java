@@ -9,12 +9,19 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
@@ -28,6 +35,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
+import com.example.acer.plnwunderlist.Singleton.WebSocketClientManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,7 +66,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
     //Updateable views
     private Button addEditDueDateBtn;
     private Button deleteDueDateBtn;
-    private Button addTaskBtn;
     private Button addFileBtn;
     private Button uploadFileBtn;
     private EditText taskNameInput, noteInput;
@@ -86,6 +93,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
             Log.e("REQUEST_PERMISSION", "TRUE");
         }
 
+        setTitle("Task Details");
+
         db = new DBPLNHelper(this);
 
         endpoint = getString(R.string.uri_endpoint);
@@ -93,7 +102,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
         //Initialize Button values
         addEditDueDateBtn = (Button) findViewById(R.id.addEditDueDateBtn);
         deleteDueDateBtn = (Button) findViewById(R.id.deleteDueDateBtn);
-        addTaskBtn = (Button) findViewById(R.id.addTask);
         addFileBtn = (Button) findViewById(R.id.addFileBtn);
         uploadFileBtn = (Button) findViewById(R.id.uploadFileBtn);
 
@@ -206,40 +214,80 @@ public class TaskDetailsActivity extends AppCompatActivity {
             }
         });
 
-        addTaskBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String taskName = getNewDesc();
-                String note = getNewNote();
-                String dueDate = null;
+    }
 
-                if (!isDescriptionValid(taskName)) {
-                    return;
-                }
+    public void finishEditing(){
+        String taskName = getNewDesc();
+        String note = getNewNote();
+        String dueDate = null;
 
-                SimpleDateFormat sqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        if (!isDescriptionValid(taskName)) {
+            return;
+        }
 
-                if (tempDate != null) {
-                    dueDate = sqlDateFormat.format(tempDate);
-                    Log.e("DATE", dueDate);
-                }
+        SimpleDateFormat sqlDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-                Map<String, String> data = new HashMap<String, String>();
-                if (isUpdate) {
-                    data.put("todo_id", String.valueOf(item.getID()));
+        if (tempDate != null) {
+            dueDate = sqlDateFormat.format(tempDate);
+            Log.e("DATE", dueDate);
+        }
 
-                    //If the item is completed, set the value as 1. Otherwise set as 0.
-                    data.put("is_completed",
-                            String.valueOf(item.isCompleted() ? 1 : 0));
-                }
+        Map<String, String> data = new HashMap<String, String>();
+        if (isUpdate) {
+            data.put("todo_id", String.valueOf(item.getID()));
 
-                data.put("task_name", taskName);
-                data.put("list_id", listID);
-                data.put("due_date", dueDate);
-                data.put("note", note);
-                updateTask(data);
-            }
-        });
+            //If the item is completed, set the value as 1. Otherwise set as 0.
+            data.put("is_completed",
+                    String.valueOf(item.isCompleted() ? 1 : 0));
+        }
+
+        data.put("task_name", taskName);
+        data.put("list_id", listID);
+        data.put("due_date", dueDate);
+        data.put("note", note);
+        updateTask(data);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = this.getMenuInflater();
+        inflater.inflate(R.menu.task_details_actionbar_menu, menu);
+
+        //------------------------------------------------------------------------------------------
+        //START Menu Icon Tinting
+
+        //Retrieve all Menu Items
+        final MenuItem deleteBtn = menu.findItem(R.id.deleteTaskBtn);
+        final MenuItem completeBtn = menu.findItem(R.id.finishEditBtn);
+
+        //Retrieve all Icons
+        Drawable deleteBtnIcon = deleteBtn.getIcon();
+        Drawable completeBtnIcon = completeBtn.getIcon();
+
+        //Tint the shit out <-- bukan aku pak
+        deleteBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
+        completeBtnIcon.mutate().setColorFilter(Color.argb(255, 255, 255, 255), PorterDuff.Mode.SRC_IN);
+
+        //END Menu Icon Tinting
+        //------------------------------------------------------------------------------------------
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+            case R.id.finishEditBtn:
+                finishEditing();
+                return true;
+            default:
+                break;
+        }
+
+        return true;
     }
 
     private void setDateBtnsVisibility(boolean isDateSet) {
