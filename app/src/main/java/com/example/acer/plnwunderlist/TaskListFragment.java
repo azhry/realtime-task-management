@@ -35,6 +35,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import static android.app.Activity.RESULT_OK;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -49,6 +51,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "isStrikethrough";
     private static final String ARG_PARAM2 = "listID";
+    public static final int REQUEST_CODE_TASK_ACTION = 1;
 
     //Variables to store param
     private Boolean mIsStrikethrough;
@@ -179,7 +182,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                 //and extract its name for the page title, and ID for reference.
                 taskDetailsIntent.putExtra("TODO_LIST_ID",listID);
 
-                getActivity().startActivityForResult(taskDetailsIntent, ListMenuActivity.REQUEST_CODE_TASKDETAILS);
+                startActivityForResult(taskDetailsIntent, REQUEST_CODE_TASK_ACTION);
 
             }
         });
@@ -227,7 +230,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                     checkboxClicked(info.position);
                     return true;
                 case R.id.deleteTask:
-                    Log.e("CLICKEDDDD", adapter.getItem(info.position).getDescription());
+                    attemptDeletion(info.position);
                 default:
                     return super.onContextItemSelected(item);
             }
@@ -304,10 +307,51 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                 taskDetailsIntent.putExtra("TODO_LIST_ID",listID);
                 //and extract its name for the page title, and ID for reference.
 
-                startActivity(taskDetailsIntent);
+                startActivityForResult(taskDetailsIntent, REQUEST_CODE_TASK_ACTION);
 
             }
         });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.e("DELETION","OnActivityResult called");
+        if (requestCode == REQUEST_CODE_TASK_ACTION) {
+            if (resultCode == RESULT_OK) {
+               int userAction = data.getIntExtra(TaskDetailsActivity.EXTRA_USER_ACTION, 0);
+                if(userAction == TaskDetailsActivity.USER_ACT_DELETE){
+                    TodoItem targetItem = data.getParcelableExtra(TaskDetailsActivity.EXTRA_ITEM_DATA);
+                    attemptDeletion(targetItem);
+                }
+            }
+        }
+    }
+
+    private void attemptDeletion(int pos){
+        attemptDeletion(adapter.getItem(pos));
+    }
+
+    private void attemptDeletion(TodoItem target){
+
+        TodoItem localTarget = null;
+
+        //TODO: Gawekela disini az
+        
+        //Check if GUI needs deletion
+        for(int i=0 ; i< adapter.getCount() ; i++){
+            TodoItem currentItem = adapter.getItem(i);
+            if(currentItem.getID() == target.getID()){
+                localTarget = adapter.getItem(i);
+                break;
+            }
+        }
+
+        if(localTarget != null) { //It means the deleted is here
+            adapter.remove(localTarget);
+            Log.e("DELETION","TARGET FOUND!" + localTarget.getDescription());
+        }
+
     }
 
     private void getItemsList(final String listID) {

@@ -74,6 +74,11 @@ public class ListMenuActivity extends AppCompatActivity implements
     private DBPLNHelper db;
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = this.getMenuInflater();
         inflater.inflate(R.menu.todo_list_menu, menu);
