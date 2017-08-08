@@ -174,9 +174,8 @@ public class FileUploaderTask extends AsyncTask<Void, Integer, Void>
                 while ((output = br.readLine()) != null) {
                     sb.append(output);
                 }
-
+                Log.e("RESPONSE", sb.toString());
                 Log.e("SERVER_RESPONSE", "Server response is: " + serverResponseMessage + ": " + serverResponseCode);
-
                 if (serverResponseCode == 200) {
                     activity.runOnUiThread(new Runnable() {
                         @Override
