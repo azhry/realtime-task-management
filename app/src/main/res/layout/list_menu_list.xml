@@ -11,6 +11,7 @@
         android:layout_alignParentLeft="true"
         android:layout_centerInParent="true"
         android:enabled="true"
+        android:clickable="false"
         android:focusable="false"
         android:focusableInTouchMode="false" />
 

@@ -41,5 +41,6 @@
     <ListView
         android:id="@+id/member_listview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"></ListView>
+        android:layout_height="wrap_content"
+        android:footerDividersEnabled="false"></ListView>
 </LinearLayout>

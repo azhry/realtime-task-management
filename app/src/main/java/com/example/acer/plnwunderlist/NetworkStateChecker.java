@@ -10,6 +10,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -17,10 +18,15 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
+import com.example.acer.plnwunderlist.Singleton.WebSocketClientManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +34,25 @@ public class NetworkStateChecker extends BroadcastReceiver {
 
     private Context context;
     private DBPLNHelper db;
+
+    public static boolean checkServerReachability(Context context){
+        if(isNetworkActive(context)){
+            if(isServerReachable()) return true;
+            else {
+                Toast.makeText(context, "Server unreachable, please try again.",
+                        Toast.LENGTH_LONG).show();
+                return false;
+            }
+        }
+
+        Toast.makeText(context, "Device is offline. Please connect to Internet first.",
+                Toast.LENGTH_LONG).show();
+        return false;
+    }
+
+    public static boolean isServerReachable(){
+       return WebSocketClientManager.isConnected;
+    }
 
     public static boolean isNetworkActive(Context context){
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

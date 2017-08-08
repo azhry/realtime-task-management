@@ -8,7 +8,7 @@
         app:showAsAction="ifRoom|withText"
         />
     <item android:id="@+id/leaveTodoList"
-        android:title="Leave"
+        android:title="Leave List"
         app:showAsAction="ifRoom|withText"
         />
     <item android:id="@+id/EditTodoList"
