@@ -9,12 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 /**
  * Created by Ryan Fadholi on 24/07/2017.
@@ -27,6 +29,7 @@ public class CustomAdapter extends ArrayAdapter {
     private Context mContext;
     private Boolean isStrikethrough;
 
+
     // View lookup cache
     private static class ViewHolder {
         TextView txtName;
@@ -34,6 +37,33 @@ public class CustomAdapter extends ArrayAdapter {
         CheckBox checkBox;
         ImageView noteIcon;
         ImageView fileIcon;
+    }
+
+    final static public Comparator<TodoItem> TodoItemComparator = new Comparator<TodoItem>() {
+        public int compare(TodoItem e1, TodoItem e2) {
+            int dateCompare = 0;
+
+            boolean isFirstDueDateNull = e1.getDueDate() == null;
+            boolean isSecondDueDateNull = e2.getDueDate() == null;
+
+            if (!isFirstDueDateNull && !isSecondDueDateNull) {
+                dateCompare = e1.getDueDate().compareTo(e2.getDueDate());
+            } else if (isFirstDueDateNull && !isSecondDueDateNull) {
+                dateCompare = 1;
+            } else if (!isFirstDueDateNull && isSecondDueDateNull) {
+                dateCompare = -1;
+            }
+
+            if (dateCompare != 0) {
+                return dateCompare;
+            }
+            return e1.getDescription().compareTo(e2.getDescription());
+        }
+    };
+
+    @Override
+    public void notifyDataSetChanged() {
+        super.notifyDataSetChanged();
     }
 
     public interface OnCheckboxClickedListener {
@@ -61,10 +91,12 @@ public class CustomAdapter extends ArrayAdapter {
         this.mCallback = mCallback;
     }
 
+
+
     @Override
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
 
-        CheckBox itemCheckBox;
+        final CheckBox itemCheckBox;
 
         final int callbackPosition = position;
         ViewHolder viewHolder;
@@ -138,6 +170,13 @@ public class CustomAdapter extends ArrayAdapter {
             @Override
             public void onClick(View view) {
                 mCallback.checkboxClicked(callbackPosition);
+            }
+        });
+        itemCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                itemCheckBox.setChecked(!b);
+                compoundButton.jumpDrawablesToCurrentState();
             }
         });
         return result;

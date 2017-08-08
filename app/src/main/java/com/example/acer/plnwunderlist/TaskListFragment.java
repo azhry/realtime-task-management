@@ -101,12 +101,14 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     public void refreshList(){
 //        adapter.clear();
 //        adapter.notifyDataSetChanged();
-        getItemsList(this.listID);
+            getItemsList(this.listID);
+
     }
 
     public void addTask(TodoItem task) {
         adapter.add(task);
-        adapter.notifyDataSetChanged();
+        adapter.sort(CustomAdapter.TodoItemComparator);
+//        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -143,7 +145,8 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
         mListener.fragmentCheckboxClicked(adapter.getItem(pos),
                 isOngoingFragment);
         adapter.remove(adapter.getItem(pos));
-        adapter.notifyDataSetChanged();
+        adapter.sort(CustomAdapter.TodoItemComparator);
+//        adapter.notifyDataSetChanged();
 
     }
 
@@ -169,12 +172,18 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                 //Get selected TodoItem object
                 TodoItem clickedTask = (TodoItem) listView.getItemAtPosition(position);
                 //parcel the TodoItem
-                taskDetailsIntent.putExtra("TODO_OBJECT",clickedTask);
+                taskDetailsIntent.putExtra("TODO_OBJECT", clickedTask);
                 //and extract its name for the page title, and ID for reference.
                 taskDetailsIntent.putExtra("TODO_LIST_ID",listID);
 
                 startActivity(taskDetailsIntent);
 
+            }
+        });
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                return false;
             }
         });
 
@@ -193,19 +202,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
         super.onDetach();
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        boolean fragmentCheckboxClicked(TodoItem data, boolean isOngoingFragment);
-    }
 
     public void loadItems(final String listID, int isStrikethrough) {
         taskList.clear();
@@ -287,7 +283,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                                     adapter.add(TodoItem.newInstance(item));
                                 }
                                 Cursor c = db.select("todo_items", "SERVER_ID=" + item.getInt("TODO_ID") +
-                                            " AND LIST_ID=" + listID + " AND STATUS=1");
+                                        " AND LIST_ID=" + listID + " AND STATUS=1");
                                 if (!c.moveToFirst()) {
                                     Map<String, String> contentValues = new HashMap<>();
                                     contentValues.put("TODO_ID", item.getString("TODO_ID"));
@@ -307,8 +303,9 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                                 e.printStackTrace();
                             }
                         }
+                        adapter.sort(CustomAdapter.TodoItemComparator);
 
-                        adapter.notifyDataSetChanged();
+//                        adapter.notifyDataSetChanged();
                     }
                 },
                 new Response.ErrorListener() {
@@ -321,5 +318,19 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                     }
                 });
         AppSingleton.getInstance(getActivity().getApplicationContext()).addToRequestQueue(jsonArrayRequest, REQUEST_TAG);
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        boolean fragmentCheckboxClicked(TodoItem data, boolean isOngoingFragment);
     }
 }

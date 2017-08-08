@@ -99,24 +99,32 @@ public class ListMenuActivity extends AppCompatActivity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()){
+        switch(item.getItemId()) {
             case android.R.id.home:
                 NavUtils.navigateUpFromSameTask(this);
                 return true;
             case R.id.list_share_btn:
-                //Initialize the Intent
-                Intent shareIntent = new Intent(getApplicationContext(), ListShareActivity.class);
-                //Setup data to pass w/ the intent
-                shareIntent.putExtra("TODO_LIST_ID", listID);
-                if(getIntent().hasExtra("TODO_LIST_NAME")){
-                    shareIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
+
+                //Check if the phone is in offline state
+                boolean isConnected = NetworkStateChecker.checkServerReachability(this);
+
+                if (!isConnected) {
+                    return true;
+                } else {
+
+                    //Initialize the Intent
+                    Intent shareIntent = new Intent(getApplicationContext(), ListShareActivity.class);
+                    //Setup data to pass w/ the intent
+                    shareIntent.putExtra("TODO_LIST_ID", listID);
+                    if (getIntent().hasExtra("TODO_LIST_NAME")) {
+                        shareIntent.putExtra("TODO_LIST_NAME", getIntent().getStringExtra("TODO_LIST_NAME"));
+                    }
+                    startActivity(shareIntent);
+                    return true;
                 }
-                startActivity(shareIntent);
-                return true;
             default:
                 break;
         }
-
         return true;
     }
 

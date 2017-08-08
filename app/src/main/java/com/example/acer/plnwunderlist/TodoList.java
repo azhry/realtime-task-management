@@ -7,7 +7,6 @@ package com.example.acer.plnwunderlist;
 public class TodoList {
     private String ID;
     private String name;
-    private int accessType;
 
     public TodoList(String newID, String newName){
         this.ID = newID;

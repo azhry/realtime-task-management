@@ -36,7 +36,7 @@ public class WebSocketClientManager {
 
     private static WebSocketClient mWebSocketClient;
     private static URI uri;
-    private static boolean isConnected;
+    public static boolean isConnected;
     private static HashMap<String, String> userData;
     private static Context mContext;
 

@@ -64,6 +64,7 @@ public class MainMenuActivity extends AppCompatActivity {
     //Declare attributes necessary for UI black magic.
     //Everything is assumed to be initialized in onCreate() method.
     private ArrayList<TodoList> todoLists = new ArrayList<>();//Used to hold data
+    private HashMap<String, Integer> accessList; //To check user permissions.
     private TodoListAdapter adapter;    //Used to bridge todoLists and todoListsList
     private ListView todoListsList;     //The RecyclerView.
     private View emptyTextView;         //Header that pops up when the list is empty.
@@ -86,6 +87,8 @@ public class MainMenuActivity extends AppCompatActivity {
         //Initalize the pseudo-statics
         endpoint = getString(R.string.uri_endpoint);
 
+        userData = null;
+
         //Initialize progressDialog
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
@@ -94,12 +97,12 @@ public class MainMenuActivity extends AppCompatActivity {
         todoListsList.setDivider(null);
         todoListsList.setDividerHeight(0);
 
+        initUserData();
+        accessList = getAllAccessType();
+
         emptyTextView = getLayoutInflater().inflate(R.layout.main_menu_empty_list_text, null);
 
         todoListsList.addHeaderView(emptyTextView, null, false);
-        SessionManager sessionManager = new SessionManager(this);
-        userData = sessionManager.getUserDetails();
-
 
         setTitle(userData.get("name"));
         loadLists();
@@ -126,11 +129,46 @@ public class MainMenuActivity extends AppCompatActivity {
 
     }
 
+    private void initUserData(){
+        SessionManager sessionManager = new SessionManager(this);
+        userData = sessionManager.getUserDetails();
+    }
+
+    private HashMap<String, Integer> getAllAccessType(){
+
+        HashMap<String, Integer> result = new HashMap<>();
+        Cursor cursor = db.select("list_access");
+
+        //If user data is null, initialize.
+        if(userData == null){
+            initUserData();
+        }
+
+        if (cursor.moveToFirst()) {
+            do {
+                String userID = cursor.getString(cursor.getColumnIndex("USER_ID"));
+                if(userID.equals(this.userData.get(SessionManager.KEY_ID))){
+                    String listID = cursor.getString(cursor.getColumnIndex("LIST_ID"));
+                    int accessType = cursor.getInt(cursor.getColumnIndex("ACCESS_TYPE"));
+                    result.put(listID, accessType);
+                }
+            } while (cursor.moveToNext());
+        }
+
+        return result;
+    }
+
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.todolistlists_context_menu, menu);
+        MenuItem leaveList = menu.findItem(R.id.leaveTodoList);
+        MenuItem deleteList = menu.findItem(R.id.deleteTodoList);
+
+        if(this.accessList == null){
+            this.accessList = getAllAccessType();
+        }
 
         //Catch the ContextMenu.ContextMenuItem sent from parameter
         //as AdapterView.AdapterContextMenuInfo to itemInfo variable.
@@ -138,6 +176,16 @@ public class MainMenuActivity extends AppCompatActivity {
         //Get the Item at the specified position, and get the value.
         TodoList selectedList = (TodoList) todoListsList.getItemAtPosition(itemInfo.position);
         String titleName = selectedList.getName();
+        int accessType = this.accessList.get(selectedList.getID());
+        Log.e("ACSTYP",titleName + ", access code " + accessType);
+        if(accessType == AppHelper.TODOLIST_ACCESS_CODE_OWNER){
+            deleteList.setVisible(true);
+            leaveList.setVisible(false);
+        } else {
+            deleteList.setVisible(false);
+            leaveList.setVisible(true);
+        }
+
         //Set the header title
         menu.setHeaderTitle(titleName);
     }
