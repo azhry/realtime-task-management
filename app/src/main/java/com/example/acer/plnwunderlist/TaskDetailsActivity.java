@@ -229,7 +229,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 startUpdateProcedure();
                 return true;
             case R.id.deleteTaskBtn:
-                deleteItem();
+                showDeleteConfirmationDialog();
                 return true;
             default:
                 break;
@@ -542,7 +542,39 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         AlertDialog quitConfirmation = confirmationDialogBuilder.create();
         quitConfirmation.show();
+    }
 
+    private void showDeleteConfirmationDialog() {
+
+        //------------------------------------------------------------------------------------------
+        //START AlertDialog Definition
+        final AlertDialog.Builder deleteDialogBuilder = new AlertDialog.Builder(this);
+
+        //Set its title and view
+        String dialogMsg = "Are you sure you want to delete this task?";
+
+        //Set title and message
+        deleteDialogBuilder.setTitle("Delete Task").setMessage(dialogMsg);
+
+        //Add the "Positive" (Right button) logic
+        deleteDialogBuilder.setPositiveButton(R.string.dialog_default_positive_labeal, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                deleteItem();
+            }
+        });
+        //Add the "Negative" (Left button) logic
+        deleteDialogBuilder.setNegativeButton(R.string.dialog_default_negative_label, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        });
+
+        //END AlertDialog Definition
+        //------------------------------------------------------------------------------------------
+
+        AlertDialog deleteConfirmation = deleteDialogBuilder.create();
+        deleteConfirmation.show();
     }
 
 
