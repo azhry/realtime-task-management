@@ -57,7 +57,10 @@ public class CustomAdapter extends ArrayAdapter {
             if (dateCompare != 0) {
                 return dateCompare;
             }
-            return e1.getDescription().compareTo(e2.getDescription());
+
+            String e1desc = e1.getDescription().toLowerCase();
+            String e2desc = e2.getDescription().toLowerCase();
+            return e1desc.compareTo(e2desc);
         }
     };
 
