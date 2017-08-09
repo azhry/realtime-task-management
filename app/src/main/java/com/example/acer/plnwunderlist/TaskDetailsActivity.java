@@ -77,6 +77,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
     //Extra state-changeable views
     private View fileDivider;
     private TextView fileLabel;
+    private TextView noFileLabel;
     private LinearLayout fileListLayout;
     private LinearLayout fileBtns;
 
@@ -115,6 +116,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         //Initialize extra views
         fileDivider = findViewById(R.id.fileDivider);
         fileLabel = (TextView) findViewById(R.id.taskFileLabel);
+        noFileLabel = (TextView) findViewById(R.id.noFileLabel);
         fileListLayout = (LinearLayout) findViewById(R.id.fileListView);
         fileBtns = (LinearLayout) findViewById(R.id.uploadBtnParent);
 
@@ -151,10 +153,16 @@ public class TaskDetailsActivity extends AppCompatActivity {
                         public void onResponse(String response) {
                             try {
                                 JSONArray filesArray = new JSONArray(response);
-                                for (int i = 0; i < filesArray.length(); i++) {
-                                    JSONObject file = filesArray.getJSONObject(i);
-                                    fileListPseudoAdapter.add(Integer.parseInt(file.getString("FILE_ID")),
-                                            file.getString("FILENAME"));
+                                int len = filesArray.length();
+                                if (len > 0) {
+                                    for (int i = 0; i < len; i++) {
+                                        JSONObject file = filesArray.getJSONObject(i);
+                                        fileListPseudoAdapter.add(Integer.parseInt(file.getString("FILE_ID")),
+                                                file.getString("FILENAME"));
+                                    }
+                                    noFileLabel.setVisibility(View.GONE);
+                                } else {
+                                    noFileLabel.setVisibility(View.VISIBLE);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();

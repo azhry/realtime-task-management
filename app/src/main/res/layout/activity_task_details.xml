@@ -106,6 +106,13 @@
 
         </LinearLayout>
 
+        <TextView
+            style="@style/TaskDetailsLabel"
+            android:id="@+id/noFileLabel"
+            android:layout_gravity="center_horizontal"
+            android:text="No files attached"
+            android:visibility="gone"/>
+
         <LinearLayout
             android:id="@+id/uploadBtnParent"
             android:layout_height="wrap_content"
