@@ -22,6 +22,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
 
 import org.json.JSONArray;
@@ -332,32 +333,74 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
         attemptDeletion(adapter.getItem(pos));
     }
 
-    private void attemptDeletion(TodoItem target){
+    private void attemptDeletion(final TodoItem target){
 
-        TodoItem localTarget = null;
+        final TodoItem localTarget = null;
 
-        //TODO: Gawekela disini az
-        
-        //Check if GUI needs deletion
-        for(int i=0 ; i< adapter.getCount() ; i++){
-            TodoItem currentItem = adapter.getItem(i);
-            if(currentItem.getID() == target.getID()){
-                localTarget = adapter.getItem(i);
-                break;
+        StringRequest deleteItemRequest = new StringRequest(Request.Method.POST, endpoint,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            int status = jsonObject.getInt("status");
+                            if (status == 0) { // success
+                                db.delete("todo_items", "SERVER_ID=" + target.getID());
+
+                                TodoItem currentItem = null;
+                                //Check if GUI needs deletion
+                                for(int i=0 ; i< adapter.getCount() ; i++){
+                                    currentItem = adapter.getItem(i);
+                                    if(currentItem.getID() == target.getID()){
+                                        //localTarget = adapter.getItem(i);
+                                        break;
+                                    } else {
+                                        currentItem = null;
+                                    }
+                                }
+
+                                if(currentItem != null) { //It means the deleted is here
+                                    adapter.remove(currentItem);
+                                    refreshList();
+                                    Log.e("DELETION","TARGET FOUND!" + currentItem.getDescription());
+                                }
+
+                                Toast.makeText(getActivity().getApplicationContext(), "Item deleted!", Toast.LENGTH_SHORT).show();
+                            } else if (status == 1) {
+                                Toast.makeText(getActivity().getApplicationContext(), "Unable to delete item", Toast.LENGTH_SHORT).show();
+                            } else if (status == 2) {
+                                Toast.makeText(getActivity().getApplicationContext(), "Unable to delete files", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(getActivity().getApplicationContext(), "Unknown error", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String msg = error.getMessage();
+                        if (msg != null) {
+                            Log.e("DELETION_EXCEPTION", msg);
+                        }
+                    }
+                }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("action", "delete_todo_item");
+                params.put("todo_id", String.valueOf(target.getID()));
+                return params;
             }
-        }
-
-        if(localTarget != null) { //It means the deleted is here
-            adapter.remove(localTarget);
-            Log.e("DELETION","TARGET FOUND!" + localTarget.getDescription());
-        }
-
+        };
+        AppSingleton.getInstance(getActivity().getApplicationContext()).addToRequestQueue(deleteItemRequest, "ITEM_DELETION");
     }
 
     private void getItemsList(final String listID) {
         taskList.clear();
         adapter.notifyDataSetChanged();
-
         final String REQUEST_TAG = "get_todo_item";
         String REQUEST_URI = endpoint + "?action=" + REQUEST_TAG + "&list_id=" + listID;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, REQUEST_URI, null,
