@@ -12,8 +12,8 @@
         android:orientation="vertical">
 
         <TextView
-            style="@style/TaskDetailsLabel"
             android:id="@+id/taskNameLabel"
+            style="@style/TaskDetailsLabel"
             android:text="@string/task_details_name_label" />
 
         <EditText
@@ -28,8 +28,8 @@
         <View style="@style/Divider" />
 
         <TextView
-            style="@style/TaskDetailsLabel"
             android:id="@+id/taskDueDateLabel"
+            style="@style/TaskDetailsLabel"
             android:text="@string/task_details_date_label" />
 
         <TextView
@@ -37,11 +37,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
+            android:layout_marginBottom="16dp"
             android:layout_marginLeft="@dimen/app_default_left_margin"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:textColor="@color/btn_blue"
             android:text="No Due Date Set"
+            android:textColor="@color/btn_blue"
             android:textSize="20sp" />
 
         <LinearLayout
@@ -74,52 +74,48 @@
         <View style="@style/Divider" />
 
         <TextView
-            style="@style/TaskDetailsLabel"
             android:id="@+id/taskNotesLabel"
+            style="@style/TaskDetailsLabel"
             android:text="@string/task_details_note_label" />
 
         <EditText
             android:id="@+id/editTaskNote"
-            android:minLines="3"
-            android:hint="Add a note..."
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/app_default_left_margin"
             android:layout_marginRight="12dp"
             android:ems="10"
-            android:inputType="textMultiLine" />
+            android:hint="Add a note..."
+            android:inputType="textMultiLine"
+            android:minLines="3" />
 
         <View
             android:id="@+id/fileDivider"
             style="@style/Divider" />
 
         <TextView
-            style="@style/TaskDetailsLabel"
             android:id="@+id/taskFileLabel"
+            style="@style/TaskDetailsLabel"
             android:text="@string/task_details_files_label" />
 
         <LinearLayout
             android:id="@+id/fileListView"
+            android:layout_marginLeft="12dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/uploadBtnParent"
+        <Button
+            android:id="@+id/addFileBtn"
+            android:layout_width="wrap_content"
+            android:layout_marginLeft="12dp"
             android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/addFileBtn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:text="@string/task_details_add_file_btn_label" />
-
-        </LinearLayout>
+            android:background="@color/btn_blue"
+            android:minHeight="36dp"
+            android:text="@string/task_details_add_file_btn_label"
+            android:textColor="@android:color/white"/>
 
     </LinearLayout>
 

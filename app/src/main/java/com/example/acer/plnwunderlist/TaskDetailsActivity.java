@@ -78,7 +78,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private View fileDivider;
     private TextView fileLabel;
     private LinearLayout fileListLayout;
-    private LinearLayout fileBtns;
 
     private TodoItem item;
     private Date tempDate;
@@ -116,7 +115,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
         fileDivider = findViewById(R.id.fileDivider);
         fileLabel = (TextView) findViewById(R.id.taskFileLabel);
         fileListLayout = (LinearLayout) findViewById(R.id.fileListView);
-        fileBtns = (LinearLayout) findViewById(R.id.uploadBtnParent);
 
         //Initialize TodoItem and temporary values
         item = null;
@@ -135,7 +133,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
             fileDivider.setVisibility(View.GONE);
             fileLabel.setVisibility(View.GONE);
             fileListLayout.setVisibility(View.GONE);
-            fileBtns.setVisibility(View.GONE);
+            addFileBtn.setVisibility(View.GONE);
         }
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
