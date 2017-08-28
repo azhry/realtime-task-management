@@ -6,6 +6,7 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,6 +20,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -27,6 +29,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +46,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -695,6 +699,48 @@ public class TaskDetailsActivity extends AppCompatActivity {
         intent.setType("*/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "Choose file to upload!"), PICK_FILE_REQUEST);
+    }
+
+    public void showAssignDialog(){
+        Context context = TaskDetailsActivity.this;
+
+        ArrayList<User> users = new ArrayList<>();
+        users.add(new User(1, "test01@gmail.com", "Test"));
+        users.add(new User(1, "test02@gmail.com", "Test"));
+        users.add(new User(1, "test03@gmail.com", "Test"));
+        users.add(new User(1, "ahmad@gmail.com", "Ahmad"));
+        users.add(new User(1, "ahmad@gmail.com", "Ahmadi"));
+        users.add(new User(1, "yo@gmail.com", "Yoddie"));
+        users.add(new User(1, "test01@gmail.com", "Test"));
+        users.add(new User(1, "test01@gmail.com", "Test"));
+        users.add(new User(1, "test01@gmail.com", "Test"));
+        users.add(new User(1, "test01@gmail.com", "Test"));
+
+
+        LayoutInflater inflater = LayoutInflater.from(context);
+        final View assignDialogView = inflater.inflate(R.layout.task_details_assign_dialog, null);
+        final ListView assigneeList = (ListView) findViewById(R.id.assigneeList);
+        assigneeList.setAdapter(new AssignListAdapter(context, ));
+
+        final AlertDialog.Builder quickAddBuilder = new AlertDialog.Builder(context);
+        quickAddBuilder.setTitle("Create New Task");
+        quickAddBuilder.setView(quickAddDialogView);
+        quickAddBuilder.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                EditText newTaskText = (EditText) quickAddDialogView.findViewById(R.id.newListTitleText);
+                quickAddTask(newTaskText.getText().toString());
+            }
+        });
+        quickAddBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        AlertDialog newList = quickAddBuilder.create();
+        newList.show();
     }
 
     public static class DatePickerFragment extends DialogFragment

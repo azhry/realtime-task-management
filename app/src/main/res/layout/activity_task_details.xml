@@ -29,6 +29,48 @@
 
         <TextView
             style="@style/TaskDetailsLabel"
+            android:id="@+id/assigneeLabel"
+            android:text="Assigned to: " />
+
+        <TextView
+            android:id="@+id/taskAssigneeEdit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="@dimen/app_default_left_margin"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/btn_blue"
+            android:text="No Assignee Set"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:id="@+id/assignBtnParent"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/assignUserBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:text="@string/task_details_add_file_btn_label" />
+
+            <Button
+                android:id="@+id/unassignUserBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:backgroundTint="@android:color/holo_red_light"
+                android:text="Unassign" />
+
+        </LinearLayout>
+
+        <View style="@style/Divider" />
+
+        <TextView
+            style="@style/TaskDetailsLabel"
             android:id="@+id/taskDueDateLabel"
             android:text="@string/task_details_date_label" />
 

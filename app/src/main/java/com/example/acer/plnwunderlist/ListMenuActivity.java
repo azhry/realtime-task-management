@@ -190,6 +190,7 @@ public class ListMenuActivity extends AppCompatActivity implements
         //The boolean is used to identify which fragment called the callback.
         //true means the calling fragment is ongoingFragment,
         //false means the calling fragment is completedFragment.
+        //false means the calling fragment is completedFragment.
 
         if(isOngoingFragment){
             //TODO change isComplete to 1
