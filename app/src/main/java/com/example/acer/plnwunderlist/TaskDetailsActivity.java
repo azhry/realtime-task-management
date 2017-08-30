@@ -81,8 +81,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
     //Extra state-changeable views
     private View fileDivider;
     private TextView fileLabel;
+    private TextView noFileLabel;
     private LinearLayout fileListLayout;
-    private LinearLayout fileBtns;
 
     private TodoItem item;
     private Date tempDate;
@@ -119,8 +119,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
         //Initialize extra views
         fileDivider = findViewById(R.id.fileDivider);
         fileLabel = (TextView) findViewById(R.id.taskFileLabel);
+        noFileLabel = (TextView) findViewById(R.id.noFileLabel);
         fileListLayout = (LinearLayout) findViewById(R.id.fileListView);
-        fileBtns = (LinearLayout) findViewById(R.id.uploadBtnParent);
 
         //Initialize TodoItem and temporary values
         item = null;
@@ -139,7 +139,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
             fileDivider.setVisibility(View.GONE);
             fileLabel.setVisibility(View.GONE);
             fileListLayout.setVisibility(View.GONE);
-            fileBtns.setVisibility(View.GONE);
+            addFileBtn.setVisibility(View.GONE);
         }
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -155,10 +155,16 @@ public class TaskDetailsActivity extends AppCompatActivity {
                         public void onResponse(String response) {
                             try {
                                 JSONArray filesArray = new JSONArray(response);
-                                for (int i = 0; i < filesArray.length(); i++) {
-                                    JSONObject file = filesArray.getJSONObject(i);
-                                    fileListPseudoAdapter.add(Integer.parseInt(file.getString("FILE_ID")),
-                                            file.getString("FILENAME"));
+                                int len = filesArray.length();
+                                if (len > 0) {
+                                    for (int i = 0; i < len; i++) {
+                                        JSONObject file = filesArray.getJSONObject(i);
+                                        fileListPseudoAdapter.add(Integer.parseInt(file.getString("FILE_ID")),
+                                                file.getString("FILENAME"));
+                                    }
+                                    noFileLabel.setVisibility(View.GONE);
+                                } else {
+                                    noFileLabel.setVisibility(View.VISIBLE);
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -233,7 +239,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 startUpdateProcedure();
                 return true;
             case R.id.deleteTaskBtn:
-                deleteItem();
+                showDeleteConfirmationDialog();
                 return true;
             default:
                 break;
@@ -546,7 +552,39 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         AlertDialog quitConfirmation = confirmationDialogBuilder.create();
         quitConfirmation.show();
+    }
 
+    private void showDeleteConfirmationDialog() {
+
+        //------------------------------------------------------------------------------------------
+        //START AlertDialog Definition
+        final AlertDialog.Builder deleteDialogBuilder = new AlertDialog.Builder(this);
+
+        //Set its title and view
+        String dialogMsg = "Are you sure you want to delete this task?";
+
+        //Set title and message
+        deleteDialogBuilder.setTitle("Delete Task").setMessage(dialogMsg);
+
+        //Add the "Positive" (Right button) logic
+        deleteDialogBuilder.setPositiveButton(R.string.dialog_default_positive_labeal, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                deleteItem();
+            }
+        });
+        //Add the "Negative" (Left button) logic
+        deleteDialogBuilder.setNegativeButton(R.string.dialog_default_negative_label, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        });
+
+        //END AlertDialog Definition
+        //------------------------------------------------------------------------------------------
+
+        AlertDialog deleteConfirmation = deleteDialogBuilder.create();
+        deleteConfirmation.show();
     }
 
 

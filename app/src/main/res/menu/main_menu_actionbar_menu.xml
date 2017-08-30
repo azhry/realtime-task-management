@@ -6,7 +6,8 @@
         android:orderInCategory="100"
         app:showAsAction="always"
         android:icon="@drawable/ic_perm_identity_black_24dp"
-        android:title="User Details"/>
+        android:title="User Details"
+        android:visible="false"/>
     <item
         android:id="@+id/logout_btn"
         android:orderInCategory="101"

@@ -91,7 +91,7 @@ public class LoginActivity extends AppCompatActivity {
                         String user_email   = userJson.getString("email");
                         String user_name    = userJson.getString("name");
                         int user_id         = userJson.getInt("user_id");
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        Intent intent = new Intent(LoginActivity.this, MainMenuActivity.class);
                         SessionManager sessionManager = new SessionManager(loginContext);
                         sessionManager.createLoginSession(user_name, user_email, String.valueOf(user_id));
                         startActivity(intent);

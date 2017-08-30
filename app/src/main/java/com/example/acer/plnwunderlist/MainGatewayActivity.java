@@ -17,7 +17,7 @@ public class MainGatewayActivity extends AppCompatActivity {
         //Based on the user log status, invoke different activity.
         SessionManager sessionManager = new SessionManager(this);
         if (sessionManager.isUserLoggedIn()) {
-            activityIntent = new Intent(this, MainActivity.class);
+            activityIntent = new Intent(this, MainMenuActivity.class);
         } else {
             activityIntent = new Intent(this, LoginActivity.class);
         }

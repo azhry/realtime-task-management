@@ -822,6 +822,8 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     private void leaveList(final TodoList todoList){
+        progressDialog.setMessage("Processing...");
+        showDialog();
         StringRequest leaveList = new StringRequest(Request.Method.POST, endpoint,
                 new Response.Listener<String>() {
                     @Override
@@ -835,6 +837,7 @@ public class MainMenuActivity extends AppCompatActivity {
                                 db.delete("list_access", "LIST_ID=" + todoList.getID() + " AND USER_ID=" + userData.get("user_id"));
                                 Toast.makeText(MainMenuActivity.this, "You left this list", Toast.LENGTH_SHORT).show();
                             }
+                            hideDialog();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -844,7 +847,11 @@ public class MainMenuActivity extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-
+                        String msg = error.getMessage();
+                        if (msg != null) {
+                            Log.e("LEAVE_ERROR", msg);
+                        }
+                        hideDialog();
                     }
                 }) {
             @Override
@@ -856,6 +863,8 @@ public class MainMenuActivity extends AppCompatActivity {
                 return params;
             }
         };
+
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(leaveList, "LEAVE");
     }
 
     private void setEmptyTextVisibility(View headerView) {
