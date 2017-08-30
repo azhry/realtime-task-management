@@ -758,16 +758,14 @@ public class TaskDetailsActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(context);
         final View assignDialogView = inflater.inflate(R.layout.task_details_assign_dialog, null);
         final ListView assigneeList = (ListView) findViewById(R.id.assigneeList);
-        assigneeList.setAdapter(new AssignListAdapter(context, ));
+        assigneeList.setAdapter(new AssignListAdapter(context, users));
 
         final AlertDialog.Builder quickAddBuilder = new AlertDialog.Builder(context);
         quickAddBuilder.setTitle("Create New Task");
-        quickAddBuilder.setView(quickAddDialogView);
+        quickAddBuilder.setView(assignDialogView);
         quickAddBuilder.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                EditText newTaskText = (EditText) quickAddDialogView.findViewById(R.id.newListTitleText);
-                quickAddTask(newTaskText.getText().toString());
             }
         });
         quickAddBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
