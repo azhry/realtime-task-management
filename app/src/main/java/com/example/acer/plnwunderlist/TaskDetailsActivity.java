@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -71,12 +72,15 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private String listName;
     private String selectedFilePath;
     private boolean isUpdate;
+
     //Updateable views
     private Button addEditDueDateBtn;
     private Button deleteDueDateBtn;
     private Button addFileBtn;
+    private Button assignBtn;
     private EditText taskNameInput, noteInput;
     private TextView dueDateInput;
+    private TextView assigneeInput;
 
     //Extra state-changeable views
     private View fileDivider;
@@ -110,6 +114,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         addEditDueDateBtn = (Button) findViewById(R.id.addEditDueDateBtn);
         deleteDueDateBtn = (Button) findViewById(R.id.deleteDueDateBtn);
         addFileBtn = (Button) findViewById(R.id.addFileBtn);
+        assignBtn = (Button) findViewById(R.id.assignUserBtn);
 
         //Initialize EditText values
         taskNameInput = (EditText) findViewById(R.id.taskNameEdit);
@@ -120,6 +125,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         fileDivider = findViewById(R.id.fileDivider);
         fileLabel = (TextView) findViewById(R.id.taskFileLabel);
         noFileLabel = (TextView) findViewById(R.id.noFileLabel);
+        assigneeInput = (TextView) findViewById(R.id.taskAssigneeEdit);
         fileListLayout = (LinearLayout) findViewById(R.id.fileListView);
 
         //Initialize TodoItem and temporary values
@@ -201,6 +207,14 @@ public class TaskDetailsActivity extends AppCompatActivity {
                 showFileChooser();
             }
         });
+
+        assignBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showAssignDialog();
+            }
+        });
+
     }
 
     @Override
@@ -731,6 +745,9 @@ public class TaskDetailsActivity extends AppCompatActivity {
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest, updateMode);
     }
 
+    public void setAssigneeLabel(String newAssignee){
+        this.assigneeInput.setText(newAssignee);
+    }
 
     private void showFileChooser() {
         Intent intent = new Intent();
@@ -741,6 +758,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     public void showAssignDialog(){
         Context context = TaskDetailsActivity.this;
+        final TextView test = this.assigneeInput;
 
         ArrayList<User> users = new ArrayList<>();
         users.add(new User(1, "test01@gmail.com", "Test"));
@@ -757,26 +775,31 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
         LayoutInflater inflater = LayoutInflater.from(context);
         final View assignDialogView = inflater.inflate(R.layout.task_details_assign_dialog, null);
-        final ListView assigneeList = (ListView) findViewById(R.id.assigneeList);
-        assigneeList.setAdapter(new AssignListAdapter(context, users));
+        final ListView assigneeList = (ListView) assignDialogView.findViewById(R.id.assigneeList);
+        final AssignListAdapter assignees = new AssignListAdapter(context, users);
+        assigneeList.setAdapter(assignees);
 
-        final AlertDialog.Builder quickAddBuilder = new AlertDialog.Builder(context);
+
+        AlertDialog.Builder quickAddBuilder = new AlertDialog.Builder(context);
         quickAddBuilder.setTitle("Create New Task");
         quickAddBuilder.setView(assignDialogView);
-        quickAddBuilder.setPositiveButton("ADD", new DialogInterface.OnClickListener() {
+        quickAddBuilder.setPositiveButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }
         });
-        quickAddBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
 
-            }
-        });
-
-        AlertDialog newList = quickAddBuilder.create();
+        final AlertDialog newList = quickAddBuilder.create();
         newList.show();
+
+        assigneeList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                newList.dismiss();
+                test.setText("INPUT!");
+
+            }
+        });
     }
 
     public static class DatePickerFragment extends DialogFragment
