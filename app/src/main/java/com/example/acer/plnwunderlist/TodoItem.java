@@ -28,6 +28,7 @@ public class TodoItem implements Parcelable {
     private String description;
     private Date dueDate;
     private String note;
+    private User assignedUser;
     private boolean completed;
     private boolean hasFiles;
 

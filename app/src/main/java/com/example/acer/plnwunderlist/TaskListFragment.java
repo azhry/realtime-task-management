@@ -170,7 +170,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
         this.adapter = new CustomAdapter(taskList, getContext(), mIsStrikethrough);
         //Initialize OnCheckboxClickedListener to make the damn thing work.
         this.adapter.setOnCheckboxClickedListener(this);
-        //asasa
+
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -259,6 +259,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     public void loadItems(final String listID, int isStrikethrough) {
         taskList.clear();
 
+        Log.e("TESTFRG","I'm called, bitch!");
         final SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
         Cursor cursor = db.select("todo_items", "IS_COMPLETED=" + isStrikethrough + " AND LIST_ID=" + listID);
         if (cursor.moveToFirst()) {

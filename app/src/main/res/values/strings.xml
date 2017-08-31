@@ -23,7 +23,11 @@
     <string name="add_dialog_title">Create New To-Do List</string>
     <string name="task_details_date_label">Finish Date</string>
     <string name="task_details_name_label">Task</string>
+    <string name="task_details_assign_btn_label_1">Assign To...</string>
+    <string name="task_details_assign_btn_label_2">Edit Assignment</string>
+    <string name="task_details_unassign_btn_label">Cancel Assignment</string>
     <string name="task_details_set_date_btn_label_1">Set Due Date</string>
+    <string name="task_details_set_date_btn_label_2">Edit Due Date</string>
     <string name="task_details_delete_date_btn_label">Remove Due Date</string>
     <string name="task_details_note_label">Note</string>
     <string name="task_details_files_label">Attached Files</string>
@@ -34,4 +38,5 @@
     <string name="edit_dialog_end">. Do you want to save your changes?</string>
     <string name="add_dialog">Do you want to save your new items?</string>
     <string name="invite_member_btn">Invite New Member</string>
+    <string name="task_details_assign_null_label">Unassigned</string>
 </resources>

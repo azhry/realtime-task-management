@@ -15,14 +15,16 @@ import java.util.Set;
 public class DBPLNHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "db_pln";
-    public static final int DB_VERSION = 4;
+    public static final int DB_VERSION = 7;
 
     public static final String[] TODO_LISTS_COLUMNS
             = new String[] {"LIST_ID", "LIST_NAME"};
     public static final String[] TODO_ITEMS_COLUMNS
-            = new String[] {"TODO_ID", "LIST_ID", "ITEM_DESC", "DUE_DATE", "NOTE", "IS_COMPLETED"};
+            = new String[] {"TODO_ID", "LIST_ID", "ITEM_DESC", "DUE_DATE", "NOTE", "IS_COMPLETED", "ASSIGNEE_ID"};
     public static final String[] LIST_ACCESS_COLUMNS
             = new String[] {"USER_ID", "LIST_ID", "ACCESS_TYPE"};
+    public static final String[] USERS_COLUMNS
+            = new String[] {"USER_ID", "EMAIL", "NAME"};
 
     public DBPLNHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -54,6 +56,7 @@ public class DBPLNHelper extends SQLiteOpenHelper {
         sb.append(TODO_ITEMS_COLUMNS[3] + " VARCHAR, ");
         sb.append(TODO_ITEMS_COLUMNS[4] + " VARCHAR, ");
         sb.append(TODO_ITEMS_COLUMNS[5] + " TINYINT, ");
+        sb.append(TODO_ITEMS_COLUMNS[6] + " VARCHAR, ");
         sb.append("STATUS TINYINT, ");
         sb.append("ACTION TINYINT, ");
         sb.append("SERVER_ID INT);");
@@ -68,6 +71,12 @@ public class DBPLNHelper extends SQLiteOpenHelper {
         sb.append("ACTION TINYINT, ");
         sb.append("SERVER_ID INT);");
         db.execSQL(sb.toString());
+
+        sb = new StringBuilder();
+        sb.append("CREATE TABLE users (");
+        sb.append(USERS_COLUMNS[0] + " INT, ");
+        sb.append(USERS_COLUMNS[1] + " VARCHAR, ");
+        sb.append(USERS_COLUMNS[2] + " VARCHAR, ");
     }
 
     @Override
@@ -76,6 +85,7 @@ public class DBPLNHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS todo_lists");
         db.execSQL("DROP TABLE IF EXISTS todo_items");
         db.execSQL("DROP TABLE IF EXISTS list_access");
+        db.execSQL("DROP TABLE IF EXISTS users");
         onCreate(db);
     }
 

@@ -260,6 +260,10 @@ public class ListMenuActivity extends AppCompatActivity implements
         newList.show();
     }
 
+    private void saveUsersToLocalStorage(){
+
+    }
+
     private void quickAddTask(final String name) {
         progressDialog.setMessage("Processing...");
         showDialog();

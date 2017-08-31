@@ -55,15 +55,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
-                android:text="@string/task_details_add_file_btn_label" />
+                android:text="@string/task_details_assign_btn_label_1"
+                android:backgroundTint="@color/btn_blue"
+                android:textColor="@android:color/white"/>
 
             <Button
                 android:id="@+id/unassignUserBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="10dp"
+                android:text="@string/task_details_unassign_btn_label"
                 android:backgroundTint="@android:color/holo_red_light"
-                android:text="Unassign" />
+                android:textColor="@android:color/white"
+                android:visibility="gone"/>
 
         </LinearLayout>
 

@@ -39,7 +39,6 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
-import com.example.acer.plnwunderlist.Singleton.WebSocketClientManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,10 +50,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public class TaskDetailsActivity extends AppCompatActivity {
 
@@ -78,6 +74,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private Button deleteDueDateBtn;
     private Button addFileBtn;
     private Button assignBtn;
+    private Button unassignBtn;
     private EditText taskNameInput, noteInput;
     private TextView dueDateInput;
     private TextView assigneeInput;
@@ -90,6 +87,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     private TodoItem item;
     private Date tempDate;
+    private String tempAssigneeID;
 
     private DBPLNHelper db;
 
@@ -115,6 +113,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         deleteDueDateBtn = (Button) findViewById(R.id.deleteDueDateBtn);
         addFileBtn = (Button) findViewById(R.id.addFileBtn);
         assignBtn = (Button) findViewById(R.id.assignUserBtn);
+        unassignBtn = (Button) findViewById(R.id.unassignUserBtn);
 
         //Initialize EditText values
         taskNameInput = (EditText) findViewById(R.id.taskNameEdit);
@@ -215,6 +214,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
             }
         });
 
+        unassignBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateAssignee(null);
+            }
+        });
+
     }
 
     @Override
@@ -276,10 +282,20 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private void setDateBtnsVisibility(boolean isDateSet) {
         if (isDateSet) {
             deleteDueDateBtn.setVisibility(View.VISIBLE);
-            addEditDueDateBtn.setText("Edit Due Date");
+            addEditDueDateBtn.setText(R.string.task_details_set_date_btn_label_2);
         } else {
-            addEditDueDateBtn.setText("Set Due Date");
+            addEditDueDateBtn.setText(R.string.task_details_set_date_btn_label_1);
             deleteDueDateBtn.setVisibility(View.GONE);
+        }
+    }
+
+    private void setAssignBtnsVisibility(boolean isAssigned){
+        if(isAssigned){
+            unassignBtn.setVisibility(View.VISIBLE);
+            assignBtn.setText(R.string.task_details_assign_btn_label_2);
+        } else {
+            assignBtn.setText(R.string.task_details_assign_btn_label_1);
+            unassignBtn.setVisibility(View.GONE);
         }
     }
 
@@ -745,8 +761,16 @@ public class TaskDetailsActivity extends AppCompatActivity {
         AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(stringRequest, updateMode);
     }
 
-    public void setAssigneeLabel(String newAssignee){
-        this.assigneeInput.setText(newAssignee);
+    public void updateAssignee(User newAssignee){
+        if(newAssignee == null){
+            assigneeInput.setText(R.string.task_details_assign_null_label);
+            tempDate = null;
+            this.setAssignBtnsVisibility(false);
+            return;
+        }
+
+        this.assigneeInput.setText(newAssignee.getName());
+        this.setAssignBtnsVisibility(true);
     }
 
     private void showFileChooser() {
@@ -780,26 +804,27 @@ public class TaskDetailsActivity extends AppCompatActivity {
         assigneeList.setAdapter(assignees);
 
 
-        AlertDialog.Builder quickAddBuilder = new AlertDialog.Builder(context);
-        quickAddBuilder.setTitle("Create New Task");
-        quickAddBuilder.setView(assignDialogView);
-        quickAddBuilder.setPositiveButton("CANCEL", new DialogInterface.OnClickListener() {
+        AlertDialog.Builder assignDialogBuilder = new AlertDialog.Builder(context);
+        assignDialogBuilder.setTitle("Create New Task");
+        assignDialogBuilder.setView(assignDialogView);
+        assignDialogBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }
         });
 
-        final AlertDialog newList = quickAddBuilder.create();
+        final AlertDialog newList = assignDialogBuilder.create();
         newList.show();
 
         assigneeList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                User clickedUser = (User) assigneeList.getItemAtPosition(position);
+                TaskDetailsActivity.this.updateAssignee(clickedUser);
                 newList.dismiss();
-                test.setText("INPUT!");
-
             }
         });
+
     }
 
     public static class DatePickerFragment extends DialogFragment
