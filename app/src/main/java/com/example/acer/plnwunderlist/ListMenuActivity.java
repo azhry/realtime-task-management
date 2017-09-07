@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -35,6 +36,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
 import com.github.clans.fab.FloatingActionButton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -187,6 +189,7 @@ public class ListMenuActivity extends AppCompatActivity implements
             this.setTitle(getIntent().getStringExtra("TODO_LIST_NAME"));
         }
 
+        saveUsersToLocalStorage();
     }
 
     @Override
@@ -265,7 +268,38 @@ public class ListMenuActivity extends AppCompatActivity implements
     }
 
     private void saveUsersToLocalStorage(){
+        String requestURL = endpoint + "?action=get_list_members&list_id=" + listID;
+        Log.e("RESPONSE_URL", requestURL);
+        StringRequest getMembersRequest = new StringRequest(Request.Method.GET, requestURL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONArray membersJSON = new JSONArray(response);
+                            for (int i = 0; i < membersJSON.length(); i++) {
+                                JSONObject memberJSON = membersJSON.getJSONObject(i);
+                                Map<String, String> contentValues = new HashMap<>();
+                                contentValues.put("USER_ID", memberJSON.getString("USER_ID"));
+                                contentValues.put("EMAIL", memberJSON.getString("EMAIL"));
+                                contentValues.put("NAME", memberJSON.getString("NAME"));
+                                Cursor c = db.select("users", "USER_ID = " + memberJSON.getString("USER_ID"));
+                                if (!c.moveToFirst()) {
+                                    db.insert("users", contentValues);
+                                }
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
 
+                    }
+                });
+
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(getMembersRequest, "GET_LIST_MEMBERS");
     }
 
     private void quickAddTask(final String name) {

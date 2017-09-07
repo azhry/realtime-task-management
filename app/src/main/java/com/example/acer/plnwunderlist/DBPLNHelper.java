@@ -15,7 +15,7 @@ import java.util.Set;
 public class DBPLNHelper extends SQLiteOpenHelper {
 
     public static final String DB_NAME = "db_pln";
-    public static final int DB_VERSION = 7;
+    public static final int DB_VERSION = 8;
 
     public static final String[] TODO_LISTS_COLUMNS
             = new String[] {"LIST_ID", "LIST_NAME"};
@@ -76,7 +76,8 @@ public class DBPLNHelper extends SQLiteOpenHelper {
         sb.append("CREATE TABLE users (");
         sb.append(USERS_COLUMNS[0] + " INT, ");
         sb.append(USERS_COLUMNS[1] + " VARCHAR, ");
-        sb.append(USERS_COLUMNS[2] + " VARCHAR, ");
+        sb.append(USERS_COLUMNS[2] + " VARCHAR);");
+        db.execSQL(sb.toString());
     }
 
     @Override
