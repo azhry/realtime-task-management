@@ -1,19 +1,19 @@
 <resources>
     <string name="app_name">PLN-Comm</string>
     <string name="create_new_list_label">+ Create New List</string>
-    <string name="uri_websocket">ws://pudinglab.id:2000/puding-master/PLN</string>
-    <string name="uri_server">http://pudinglab.id/puding-master/PLN</string>
+    <!--<string name="uri_websocket">ws://pudinglab.id:2000/puding-master/PLN</string>-->
+    <!--<string name="uri_server">http://pudinglab.id/puding-master/PLN</string>-->
     <!--<string name="uri_websocket">ws://192.168.43.144:2000/PLN</string>-->
     <!--<string name="uri_server">http://192.168.43.144/PLN</string>-->
     <!--<string name="uri_server">http://192.168.1.103/PLN</string>-->
     <!--<string name="uri_websocket">ws://192.168.1.103:2000/PLN</string>-->
-    <!--<string name="uri_server">http://192.168.0.103/PLN</string>-->
-    <!--<string name="uri_websocket">ws://192.168.0.103:2000/PLN</string>-->
+    <string name="uri_server">http://192.168.0.123/PLN</string>
+    <string name="uri_websocket">ws://192.168.0.123:2000/PLN</string>
     <string name="emptyList_Text">You don\'t have any lists.\n Create one using the button below!</string>
-    <string name="uri_endpoint">http://pudinglab.id/puding-master/PLN/endpoint.php</string>
+    <!--<string name="uri_endpoint">http://pudinglab.id/puding-master/PLN/endpoint.php</string>-->
     <!--<string name="uri_endpoint">http://192.168.43.144/PLN/endpoint.php</string>-->
     <!--<string name="uri_endpoint">http://192.168.1.103/PLN/endpoint.php</string>-->
-    <!--<string name="uri_endpoint">http://192.168.0.103/PLN/endpoint.php</string>-->
+    <string name="uri_endpoint">http://192.168.0.123/PLN/endpoint.php</string>
     <string name="list_default_value">DEFAULT TITLE</string>
     <string name="delete_dialog_start">Are you sure you want to delete</string>
     <string name="delete_dialog_end">list?</string>
@@ -34,7 +34,7 @@
     <string name="task_details_add_file_btn_label">Add File</string>
     <string name="list_share_title_default">INSERT TITLE HERE</string>
     <string name="null_due_date_label">No Due Date Set</string>
-    <string name="edit_dialog_start">There are changes made for </string>
+    <string name="edit_dialog_start">There are changes made for\u0020</string>
     <string name="edit_dialog_end">. Do you want to save your changes?</string>
     <string name="add_dialog">Do you want to save your new items?</string>
     <string name="invite_member_btn">Invite New Member</string>

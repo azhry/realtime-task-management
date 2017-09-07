@@ -66,6 +66,11 @@ public class AppHelper {
             }
 
             long timeDiff = dueDate.getTime() - today.getTime();
+
+            if(timeDiff < 0){
+                return dayOfWeek + ", " + dateString.format(c.getTime());
+            }
+
             int daysDiff = (int) TimeUnit.DAYS.convert(timeDiff, TimeUnit.MILLISECONDS);
 
             if (daysDiff == 0) {

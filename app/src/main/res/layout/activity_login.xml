@@ -34,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="5dp"
-            android:text="Gunakan alamat email dan password yang anda pakai saat membuat akun"
+            android:text="Gunakan alamat email dan password yang telah diberikan."
             android:textAlignment="center"
             android:textColor="#444444" />
 
@@ -67,16 +67,6 @@
             android:textColor="@android:color/white"
             android:textSize="19sp"
             android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="18dp"
-            android:onClick="forgotPassword"
-            android:text="Forgot your password?"
-            android:textColor="#444444"
-            android:textSize="18sp" />
 
     </LinearLayout>
 

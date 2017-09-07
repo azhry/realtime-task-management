@@ -259,7 +259,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     public void loadItems(final String listID, int isStrikethrough) {
         taskList.clear();
 
-        Log.e("TESTFRG","I'm called, bitch!");
         final SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd");
         Cursor cursor = db.select("todo_items", "IS_COMPLETED=" + isStrikethrough + " AND LIST_ID=" + listID);
         if (cursor.moveToFirst()) {

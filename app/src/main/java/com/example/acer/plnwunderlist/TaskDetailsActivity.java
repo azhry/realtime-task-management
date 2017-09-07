@@ -85,6 +85,9 @@ public class TaskDetailsActivity extends AppCompatActivity {
     private TextView noFileLabel;
     private LinearLayout fileListLayout;
 
+    //ProgressDialog
+    private ProgressDialog progressDialog;
+
     private TodoItem item;
     private Date tempDate;
     private String tempAssigneeID;
@@ -126,6 +129,10 @@ public class TaskDetailsActivity extends AppCompatActivity {
         noFileLabel = (TextView) findViewById(R.id.noFileLabel);
         assigneeInput = (TextView) findViewById(R.id.taskAssigneeEdit);
         fileListLayout = (LinearLayout) findViewById(R.id.fileListView);
+
+        //Initialize ProgressDialog
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(false);
 
         //Initialize TodoItem and temporary values
         item = null;
@@ -210,6 +217,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
         assignBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                //Check if the phone is in offline state
+//                boolean isConnected = NetworkStateChecker.checkServerReachability(
+//                        TaskDetailsActivity.this.getApplicationContext());
+//
+//                if (isConnected) {
+//                    showAssignDialog();
+//                }
                 showAssignDialog();
             }
         });
@@ -217,6 +231,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         unassignBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 updateAssignee(null);
             }
         });
@@ -400,6 +415,46 @@ public class TaskDetailsActivity extends AppCompatActivity {
         startBackProcedure();
         return true;
     }
+
+    private void retrieveAssigneeCandidate(final AssignListAdapter assigneeAdapter) {
+        String requestURL = endpoint + "?action=get_list_members&list_id=" + listID;
+        Log.e("RESPONSE_URL", requestURL);
+        StringRequest getMembersRequest = new StringRequest(Request.Method.GET, requestURL,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.e("RESPONSE", response);
+                        try {
+                            progressDialog.setMessage("Processing...");
+                            progressDialog.show();
+
+                            JSONArray membersJSON = new JSONArray(response);
+                            for (int i = 0; i < membersJSON.length(); i++) {
+                                JSONObject memberJSON = membersJSON.getJSONObject(i);
+                                User currentUser =
+                                        new User(memberJSON.getInt("USER_ID"),
+                                                memberJSON.getString("EMAIL"),
+                                                memberJSON.getString("NAME"));
+
+                                assigneeAdapter.add(currentUser);
+                            }
+                            assigneeAdapter.notifyDataSetChanged();
+                            progressDialog.dismiss();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+
+        AppSingleton.getInstance(getApplicationContext()).addToRequestQueue(getMembersRequest, "GET_LIST_MEMBERS");
+    }
+
 
     private void startBackProcedure() {
 
@@ -785,17 +840,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
         final TextView test = this.assigneeInput;
 
         ArrayList<User> users = new ArrayList<>();
-        users.add(new User(1, "test01@gmail.com", "Test"));
-        users.add(new User(1, "test02@gmail.com", "Test"));
-        users.add(new User(1, "test03@gmail.com", "Test"));
-        users.add(new User(1, "ahmad@gmail.com", "Ahmad"));
-        users.add(new User(1, "ahmad@gmail.com", "Ahmadi"));
-        users.add(new User(1, "yo@gmail.com", "Yoddie"));
-        users.add(new User(1, "test01@gmail.com", "Test"));
-        users.add(new User(1, "test01@gmail.com", "Test"));
-        users.add(new User(1, "test01@gmail.com", "Test"));
-        users.add(new User(1, "test01@gmail.com", "Test"));
-
 
         LayoutInflater inflater = LayoutInflater.from(context);
         final View assignDialogView = inflater.inflate(R.layout.task_details_assign_dialog, null);
@@ -803,9 +847,10 @@ public class TaskDetailsActivity extends AppCompatActivity {
         final AssignListAdapter assignees = new AssignListAdapter(context, users);
         assigneeList.setAdapter(assignees);
 
+        retrieveAssigneeCandidate(assignees);
 
         AlertDialog.Builder assignDialogBuilder = new AlertDialog.Builder(context);
-        assignDialogBuilder.setTitle("Create New Task");
+        assignDialogBuilder.setTitle("Assign to....");
         assignDialogBuilder.setView(assignDialogView);
         assignDialogBuilder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
             @Override

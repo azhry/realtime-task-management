@@ -97,21 +97,19 @@
 
             <Button
                 android:id="@+id/addEditDueDateBtn"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@color/btn_blue"
-                android:minHeight="36dp"
+                android:layout_marginLeft="10dp"
+                android:backgroundTint="@color/btn_blue"
                 android:text="@string/task_details_set_date_btn_label_1"
                 android:textColor="@android:color/white" />
 
             <Button
                 android:id="@+id/deleteDueDateBtn"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@android:color/holo_red_light"
-                android:minHeight="36dp"
+                android:layout_marginLeft="10dp"
+                android:backgroundTint="@android:color/holo_red_light"
                 android:text="@string/task_details_delete_date_btn_label"
                 android:textColor="@android:color/white"
                 android:visibility="gone" />
@@ -163,12 +161,11 @@
         <Button
             android:id="@+id/addFileBtn"
             android:layout_width="wrap_content"
-            android:layout_marginLeft="12dp"
             android:layout_height="wrap_content"
-            android:background="@color/btn_blue"
-            android:minHeight="36dp"
-            android:text="@string/task_details_add_file_btn_label"
-            android:textColor="@android:color/white"/>
+            android:layout_marginLeft="10dp"
+            android:backgroundTint="@color/btn_blue"
+            android:textColor="@android:color/white"
+            android:text="@string/task_details_add_file_btn_label" />
 
     </LinearLayout>
 
