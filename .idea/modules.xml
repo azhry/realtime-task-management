@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/realtime-task-management.iml" filepath="$PROJECT_DIR$/realtime-task-management.iml" />
       <module fileurl="file://$PROJECT_DIR$/rtm-pln.iml" filepath="$PROJECT_DIR$/rtm-pln.iml" />
     </modules>
   </component>

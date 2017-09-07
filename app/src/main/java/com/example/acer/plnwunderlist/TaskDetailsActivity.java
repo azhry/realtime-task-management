@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -315,10 +316,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
         }
     }
 
-    private String getUserDetails(String userID){
-        return "None";
-    }
-
     private void setupInputFields(TodoItem item) {
         taskNameInput.setText(item.getDescription());
 
@@ -353,7 +350,17 @@ public class TaskDetailsActivity extends AppCompatActivity {
     }
 
     private User getUserFromLocal(String userID){
-        return new User(1, "Test", "Test@Test.test");
+        Cursor c = db.select("users", "WHERE USER_ID=" + userID);
+        User user = null;
+        if (c.moveToFirst())
+        {
+            user = new User(
+                    c.getInt(c.getColumnIndex("USER_ID")),
+                    c.getString(c.getColumnIndex("NAME")),
+                    c.getString(c.getColumnIndex("EMAIL"))
+            );
+        }
+        return user;
     }
 
     private Boolean isDescriptionValid(String desc) {
