@@ -104,6 +104,10 @@ public class ListMenuActivity extends AppCompatActivity implements
         super.onResume();
     }
 
+    private void retrieveUsersToLocal(){
+
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
