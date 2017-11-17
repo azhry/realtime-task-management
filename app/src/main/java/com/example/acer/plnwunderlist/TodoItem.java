@@ -21,6 +21,7 @@ public class TodoItem implements Parcelable {
     private static final String TODO_DESC_TAG = "ITEM_DESC";
     private static final String TODO_NOTE_TAG = "NOTE";
     private static final String TODO_DATE_TAG = "DUE_DATE";
+    private static final String TODO_ASSIGNED_USER_TAG = "ASSIGNEE_ID";
 
 
     private int ID;
@@ -28,14 +29,25 @@ public class TodoItem implements Parcelable {
     private String description;
     private Date dueDate;
     private String note;
-    private User assignedUser;
+    private String assignedUserID;
     private boolean completed;
     private boolean hasFiles;
 
     /**
      * Create new TodoItem object
      */
-    public TodoItem(int newID, int listID, String description, String note, Date dueDate) {
+//    public TodoItem(int newID, int listID, String description, String note, Date dueDate) {
+//        this.ID = newID;
+//        this.listID = listID;
+//        this.description = description;
+//        this.note = note;
+//        this.dueDate = dueDate;
+//        this.completed = false;
+//        this.hasFiles = false;
+//    }
+
+    public TodoItem(int newID, int listID, String description,
+                    String note, Date dueDate, String assignedUser) {
         this.ID = newID;
         this.listID = listID;
         this.description = description;
@@ -43,6 +55,7 @@ public class TodoItem implements Parcelable {
         this.dueDate = dueDate;
         this.completed = false;
         this.hasFiles = false;
+        this.assignedUserID = assignedUser;
     }
 
     TodoItem(Parcel in){
@@ -61,6 +74,8 @@ public class TodoItem implements Parcelable {
         } else {
             this.dueDate = null;
         }
+
+        this.assignedUserID = in.readString();
     }
 
     @Override
@@ -78,6 +93,7 @@ public class TodoItem implements Parcelable {
         parcel.writeByte((byte) (completed ? 1 : 0));
         //Because java.util.Date is not natively supported, parcel its Long value instead.
         parcel.writeLong(dueDate != null ? dueDate.getTime() : -1);
+        parcel.writeString(this.assignedUserID);
     }
 
     public static TodoItem newInstance(JSONObject param) {
@@ -87,6 +103,7 @@ public class TodoItem implements Parcelable {
         String newDesc = null;
         String newNote = null;
         Date newDate = null;
+        String newAssigneeID = null;
 
         try {
             //Check for its TODO_ID existence
@@ -127,13 +144,23 @@ public class TodoItem implements Parcelable {
             } else {
                 newDate = null;
             }
+
+
+            //Check for its ASSIGNED_USER existence
+            if(param.has(TODO_ASSIGNED_USER_TAG)){
+                newAssigneeID = param.getString(TODO_ASSIGNED_USER_TAG);
+            } else {
+                Log.e("PLN-Comm","JSON error, no " + TODO_ASSIGNED_USER_TAG + " found");
+                return null;
+            }
+
         } catch (JSONException e) {
             Log.e("PLN-Comm", "JSON error " + e);
         } catch (ParseException e){
             Log.e("PLN-Comm","Error when parsing Task date from JSON, " + e);
         }
 
-        TodoItem newTodoItem = new TodoItem(newID, newListID, newDesc,newNote, newDate);
+        TodoItem newTodoItem = new TodoItem(newID, newListID, newDesc,newNote, newDate, newAssigneeID);
         try {
             newTodoItem.setHasFiles(param.getBoolean("HAS_FILES"));
         } catch (JSONException e) {
@@ -224,5 +251,13 @@ public class TodoItem implements Parcelable {
      */
     public boolean isCompleted() {
         return this.completed;
+    }
+
+    public String getAssignedUserID() {
+        return assignedUserID;
+    }
+
+    public void setAssignedUserID(String assignedUserID) {
+        this.assignedUserID = assignedUserID;
     }
 }

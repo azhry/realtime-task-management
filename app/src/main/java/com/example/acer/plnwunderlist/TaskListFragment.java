@@ -111,6 +111,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     public void refreshList(){
 //        adapter.clear();
 //        adapter.notifyDataSetChanged();
+
             getItemsList(this.listID);
 
     }
@@ -277,7 +278,10 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                                         !cursor.getString(cursor.getColumnIndex("DUE_DATE")).equals("null") &&
                                         !cursor.getString(cursor.getColumnIndex("DUE_DATE")).equals("false") ?
                                         inputFormat.parse(cursor.getString(cursor.getColumnIndex("DUE_DATE"))) :
-                                        null);
+                                        null,
+                                cursor.getString(cursor.getColumnIndex("ASSIGNEE_ID")) != null &&
+                                        !cursor.getString(cursor.getColumnIndex("ASSIGNEE_ID")).equals("false")?
+                                        cursor.getString(cursor.getColumnIndex("ASSIGNEE_ID")) : "");
                         taskList.add(todoItem);
                         Log.e("DATA", cursor.getString(cursor.getColumnIndex("ITEM_DESC")));
                     } catch (ParseException e) {

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -137,6 +138,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         //Initialize TodoItem and temporary values
         item = null;
         tempDate = null;
+        tempAssigneeID = null;
         isUpdate = false;
 
         if (getIntent().hasExtra("TODO_LIST_ID")) {
@@ -325,6 +327,11 @@ public class TaskDetailsActivity extends AppCompatActivity {
         if (item.getNote() != null) {
             this.noteInput.setText(item.getNote());
         }
+
+        if (item.getAssignedUserID() != null) {
+            this.tempAssigneeID = item.getAssignedUserID();
+            this.updateAssignee(getUserFromLocal(tempAssigneeID));
+        }
     }
 
     private String checkNullable(String str) {
@@ -340,6 +347,20 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     private String getNewNote() {
         return checkNullable(noteInput.getText().toString());
+    }
+
+    private User getUserFromLocal(String userID){
+        Cursor c = db.select("users", "WHERE USER_ID=" + userID);
+        User user = null;
+        if (c.moveToFirst())
+        {
+            user = new User(
+                    c.getInt(c.getColumnIndex("USER_ID")),
+                    c.getString(c.getColumnIndex("NAME")),
+                    c.getString(c.getColumnIndex("EMAIL"))
+            );
+        }
+        return user;
     }
 
     private Boolean isDescriptionValid(String desc) {
@@ -550,6 +571,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         data.put("list_id", listID);
         data.put("due_date", dueDate);
         data.put("note", note);
+        data.put("assign_to", tempAssigneeID);
         updateTask(data, returnIntent);
     }
 
@@ -699,7 +721,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
     }
 
     private void saveItemToLocalStorage(int todoID, int listID, String itemDesc, String dueDate, String note,
-                                        int completed, int status, boolean success, String mode) {
+                                        int completed, String assigneeID, int status, boolean success, String mode) {
         Map<String, String> contentValues = new HashMap<>();
         contentValues.put("TODO_ID", String.valueOf(todoID));
         contentValues.put("LIST_ID", String.valueOf(listID));
@@ -707,6 +729,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
         contentValues.put("DUE_DATE", dueDate);
         contentValues.put("NOTE", note);
         contentValues.put("IS_COMPLETED", String.valueOf(completed));
+        contentValues.put("ASSIGNEE_ID", assigneeID);
         contentValues.put("STATUS", String.valueOf(status));
         if (success) {
             contentValues.put("SERVER_ID", String.valueOf(todoID));
@@ -764,7 +787,8 @@ public class TaskDetailsActivity extends AppCompatActivity {
                                         jsonObject.getString("item_desc"),
                                         jsonObject.getString("due_date"),
                                         jsonObject.getString("note"),
-                                        jsonObject.getInt("is_completed"), 1, true,
+                                        jsonObject.getInt("is_completed"),
+                                        jsonObject.getString("assign_to"), 1, true,
                                         updateMode);
 
                                 setResult(RESULT_OK, intent);
@@ -819,12 +843,13 @@ public class TaskDetailsActivity extends AppCompatActivity {
     public void updateAssignee(User newAssignee){
         if(newAssignee == null){
             assigneeInput.setText(R.string.task_details_assign_null_label);
-            tempDate = null;
+            tempAssigneeID = null;
             this.setAssignBtnsVisibility(false);
             return;
         }
 
-        this.assigneeInput.setText(newAssignee.getName());
+        this.assigneeInput.setText(newAssignee.getName() + "(" + newAssignee.getEmail() + ")");
+        tempAssigneeID = String.valueOf(newAssignee.getUserID());
         this.setAssignBtnsVisibility(true);
     }
 
@@ -837,8 +862,6 @@ public class TaskDetailsActivity extends AppCompatActivity {
 
     public void showAssignDialog(){
         Context context = TaskDetailsActivity.this;
-        final TextView test = this.assigneeInput;
-
         ArrayList<User> users = new ArrayList<>();
 
         LayoutInflater inflater = LayoutInflater.from(context);
