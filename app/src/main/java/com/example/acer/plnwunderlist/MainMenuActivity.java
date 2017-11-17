@@ -106,6 +106,8 @@ public class MainMenuActivity extends AppCompatActivity {
         adapter = new TodoListAdapter(this, todoLists, accessList);
         todoListsList.setAdapter(adapter);
 
+
+
         emptyTextView = getLayoutInflater().inflate(R.layout.main_menu_empty_list_text, null);
 
         todoListsList.addHeaderView(emptyTextView, null, false);
