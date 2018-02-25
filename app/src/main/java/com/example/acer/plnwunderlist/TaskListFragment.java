@@ -25,6 +25,7 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
 import com.example.acer.plnwunderlist.Singleton.AppSingleton;
 
@@ -111,9 +112,8 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
     public void refreshList(){
 //        adapter.clear();
 //        adapter.notifyDataSetChanged();
-
+//        if (!mIsStrikethrough)
             getItemsList(this.listID);
-
     }
 
     public void addTask(TodoItem task) {
@@ -231,7 +231,6 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
             switch (item.getItemId()) {
 
                 case R.id.markTask:
-                    Log.e("CLICKEDDDD", adapter.getItem(info.position).getDescription());
                     checkboxClicked(info.position);
                     return true;
                 case R.id.deleteTask:
@@ -365,9 +364,13 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
 
 
                                 if(currentItem != null) { //It means the deleted is here
-                                    adapter.remove(currentItem);
+                                    taskList.remove(currentItem);
+                                    adapter = new CustomAdapter(taskList, getContext(), mIsStrikethrough);
+                                    adapter.notifyDataSetChanged();
+                                    adapter.sort(CustomAdapter.TodoItemComparator);
+//                                    adapter.remove(currentItem);
                                     refreshList();
-                                    Log.e("DELETION","TARGET FOUND!" + currentItem.getDescription());
+                                    getItemsList(listID);
                                 }
 
                                 Toast.makeText(getActivity().getApplicationContext(), "Item deleted!", Toast.LENGTH_SHORT).show();
@@ -405,7 +408,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
 
     private void getItemsList(final String listID) {
         taskList.clear();
-        adapter.notifyDataSetChanged();
+        adapter = new CustomAdapter(taskList, getContext(), mIsStrikethrough);
         final String REQUEST_TAG = "get_todo_item";
         String REQUEST_URI = endpoint + "?action=" + REQUEST_TAG + "&list_id=" + listID;
         JsonArrayRequest jsonArrayRequest = new JsonArrayRequest(Request.Method.GET, REQUEST_URI, null,
@@ -441,9 +444,9 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                                 e.printStackTrace();
                             }
                         }
-                        adapter.sort(CustomAdapter.TodoItemComparator);
 
-//                        adapter.notifyDataSetChanged();
+                        adapter.sort(adapter.TodoItemComparator);
+                        adapter.notifyDataSetChanged();
                     }
                 },
                 new Response.ErrorListener() {

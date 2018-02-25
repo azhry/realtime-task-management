@@ -364,7 +364,7 @@ public class TaskDetailsActivity extends AppCompatActivity {
     }
 
     private Boolean isDescriptionValid(String desc) {
-        //------------------------------------------------------------------------------------------
+        //----------------------------------------------------------------------------------------
         //START AlertDialog Definition
         final AlertDialog.Builder invalidDescriptionDialog = new AlertDialog.Builder(this);
 

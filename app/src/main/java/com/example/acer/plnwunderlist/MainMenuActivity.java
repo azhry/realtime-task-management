@@ -494,16 +494,14 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     private boolean deleteListFromLocalStorage(int listID, boolean success) {
+        SessionManager userData = new SessionManager(this);
+        Map<String, String> userDetails = userData.getUserDetails();
         if (!success) {
-            SessionManager userData = new SessionManager(this);
-            Map<String, String> userDetails = userData.getUserDetails();
             Map<String, String> contentValues = new HashMap<>();
             contentValues.put("ACTION", "2");
             return db.update("todo_lists", contentValues, "LIST_ID=" + listID) &&
                     db.update("list_access", contentValues, "LIST_ID=" + listID + " AND USER_ID=" + userDetails.get("user_id"));
         } else {
-            SessionManager userData = new SessionManager(this);
-            Map<String, String> userDetails = userData.getUserDetails();
             return db.delete("list_access", "LIST_ID=" + listID + " AND USER_ID=" + userDetails.get("user_id"))
                     && db.delete("todo_lists", "LIST_ID=" + listID);
         }
@@ -534,6 +532,10 @@ public class MainMenuActivity extends AppCompatActivity {
                                 adapter.sort(TodoListAdapter.TodoListComparator);
                                 saveListToLocalStorage(Integer.parseInt(newListID), newListName, SYNCED, true);
                                 setEmptyTextVisibility(emptyTextView);
+
+                                //
+                                adapter.notifyDataSetChanged();
+
                                 Toast.makeText(getApplicationContext(), newListName + " has been added", Toast.LENGTH_LONG).show();
                             } else if (status == 1)
                                 Toast.makeText(getApplicationContext(), "Insert list failed!", Toast.LENGTH_LONG).show();
@@ -641,8 +643,8 @@ public class MainMenuActivity extends AppCompatActivity {
                     if (status == 0) {
                         String listName = jsonObject.getString("list_name");
                         adapter.remove(list);
-                        adapter.notifyDataSetChanged();
                         deleteListFromLocalStorage(Integer.parseInt(list.getID()), true);
+                        adapter.notifyDataSetChanged();
                         Toast.makeText(MainMenuActivity.this, listName + " has been deleted", Toast.LENGTH_LONG).show();
                         setEmptyTextVisibility(emptyTextView);
                     } else if (status == 1) {
@@ -833,8 +835,8 @@ public class MainMenuActivity extends AppCompatActivity {
                             int status = jsonObject.getInt("status");
                             if (status == 0) {
                                 adapter.remove(todoList);
-                                adapter.notifyDataSetChanged();
                                 db.delete("list_access", "LIST_ID=" + todoList.getID() + " AND USER_ID=" + userData.get("user_id"));
+                                adapter.notifyDataSetChanged();
                                 Toast.makeText(MainMenuActivity.this, "You left this list", Toast.LENGTH_SHORT).show();
                             }
                             hideDialog();

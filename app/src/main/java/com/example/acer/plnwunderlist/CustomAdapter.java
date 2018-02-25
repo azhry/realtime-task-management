@@ -76,6 +76,10 @@ public class CustomAdapter extends ArrayAdapter {
     public CustomAdapter(ArrayList data, Context context, Boolean isStrikethrough) {
         super(context, R.layout.list_menu_list, data);
         this.dataSet = data;
+//        Log.e("ADAPTER", "CUSTOMADAPTER");
+//        for (TodoItem t : dataSet) {
+//            Log.e("ITEM", t.getDescription());
+//        }
         this.mContext = context;
         this.isStrikethrough = isStrikethrough;
     }
@@ -118,9 +122,8 @@ public class CustomAdapter extends ArrayAdapter {
                 viewHolder.txtName.setPaintFlags(viewHolder.txtName.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
             }
 
-            result = convertView;
             convertView.setTag(viewHolder);
-
+            result = convertView;
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
             viewHolder.noteIcon = (ImageView) convertView.findViewById(R.id.noteIcon);
@@ -129,7 +132,6 @@ public class CustomAdapter extends ArrayAdapter {
         }
 
         TodoItem item = getItem(position);
-
         viewHolder.txtName.setText(item.getDescription());
 
         //Check if there's due date set
@@ -147,7 +149,6 @@ public class CustomAdapter extends ArrayAdapter {
         } else {
             viewHolder.fileIcon.setVisibility(View.GONE);
         }
-
 
         //Check if there's note attached
         if (item.getNote() != null) {

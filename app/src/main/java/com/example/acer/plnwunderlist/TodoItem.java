@@ -23,7 +23,6 @@ public class TodoItem implements Parcelable {
     private static final String TODO_DATE_TAG = "DUE_DATE";
     private static final String TODO_ASSIGNED_USER_TAG = "ASSIGNEE_ID";
 
-
     private int ID;
     private int listID;
     private String description;
@@ -151,7 +150,8 @@ public class TodoItem implements Parcelable {
                 newAssigneeID = param.getString(TODO_ASSIGNED_USER_TAG);
             } else {
                 Log.e("PLN-Comm","JSON error, no " + TODO_ASSIGNED_USER_TAG + " found");
-                return null;
+                newAssigneeID = null;
+//                return null;
             }
 
         } catch (JSONException e) {
