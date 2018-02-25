@@ -281,6 +281,7 @@ public class TaskListFragment extends Fragment implements CustomAdapter.OnCheckb
                                 cursor.getString(cursor.getColumnIndex("ASSIGNEE_ID")) != null &&
                                         !cursor.getString(cursor.getColumnIndex("ASSIGNEE_ID")).equals("false")?
                                         cursor.getString(cursor.getColumnIndex("ASSIGNEE_ID")) : "");
+                        Log.e("HELOHELO",todoItem.getDescription());
                         taskList.add(todoItem);
                         Log.e("DATA", cursor.getString(cursor.getColumnIndex("ITEM_DESC")));
                     } catch (ParseException e) {

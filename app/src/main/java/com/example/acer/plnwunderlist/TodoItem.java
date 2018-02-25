@@ -151,7 +151,7 @@ public class TodoItem implements Parcelable {
             } else {
                 Log.e("PLN-Comm","JSON error, no " + TODO_ASSIGNED_USER_TAG + " found");
                 newAssigneeID = null;
-//                return null;
+                //return null;
             }
 
         } catch (JSONException e) {

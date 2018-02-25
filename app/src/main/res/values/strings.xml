@@ -14,6 +14,7 @@
     <!--<string name="uri_endpoint">http://pudinglab.id/puding-master/PLN/endpoint.php</string>-->
     <string name="uri_endpoint">http://192.168.43.144/PLN/endpoint.php</string>
     <!--<string name="uri_endpoint">http://192.168.1.101/PLN/endpoint.php</string>-->
+
     <!--<string name="uri_endpoint">http://192.168.0.123/PLN/endpoint.php</string>-->
     <string name="list_default_value">DEFAULT TITLE</string>
     <string name="delete_dialog_start">Are you sure you want to delete</string>
